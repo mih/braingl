@@ -10,7 +10,7 @@ var Viewer = (function() {
 	var $container;
 	var canvas; // = document.getElementById("viewer-canvas"); // id of canvas in the DOM
 	var $canvas; // jQuery object of the canvas element
-	var gl; // stores the webgl context
+	var gl = {}; // stores the webgl context
 	
 	var elements = {}; // set of loaded triangle meshes and fiber bundles
 	var scenes = {}; // set of scenes
@@ -61,7 +61,6 @@ var Viewer = (function() {
 	variables.scene.sagittal = 80;
 	variables.scene.secTex = "none"; //"fmri1";
 	variables.scene.localFibreColor = false;
-	variables.scene.somethingHighlighted = false; // global flag indicating something is highlighted, for use in shader
 	variables.scene.showSlices = true;
 	variables.scene.lastActivated = "none";
 	
@@ -175,7 +174,8 @@ var Viewer = (function() {
 	//
 	//***************************************************************************************************/
 	function initGL(canvas) {
-		gl = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
+		//gl = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
+		gl = WebGLDebugUtils.makeDebugContext(canvas.getContext("experimental-webgl"));
 		gl.viewportWidth = $canvas.width();
 		gl.viewportHeight = $canvas.height();
 	}
@@ -262,7 +262,6 @@ var Viewer = (function() {
 					elements[el.id].cutWhite = el.cutWhite;
 					elements[el.id].transparency = el.transparency;
 					elements[el.id].hasBuffer = false;
-					elements[el.id].isHighlighted = false;
 					pickColor = createPickColor(variables.picking.pickIndex);
 					variables.picking.pickArray[pickColor.join()] = el.id;
 					variables.picking.pickIndex++;
@@ -396,14 +395,13 @@ var Viewer = (function() {
 		$(Viewer).trigger('loadActivationsStart');
 
 		$.each(activationsToLoad, function(i, ac) {
-			co = tal2pixel(ac.coord.x, ac.coord.y, ac.coord.z);
+			var co = tal2pixel(ac.coord.x, ac.coord.y, ac.coord.z);
 			elements[ac.id] = createSphere(co[0], co[1], co[2], ac.size, ac.color);
 			elements[ac.id].name = ac.name;
 			elements[ac.id].type = 'activation';
 			elements[ac.id].display = ac.display;
 			elements[ac.id].id = ac.id;
 			elements[ac.id].hasBuffer = false;
-			elements[ac.id].isHighlighted = false;
 			elements[ac.id].cutFS = false;
 			elements[ac.id].transparency = 1.0;
 			elements[ac.id].fromJSON = true;
@@ -665,9 +663,9 @@ var Viewer = (function() {
 		getShader('fibre', 'fs');
 		getShader('slice', 'vs');
 		getShader('slice', 'fs');
+		initShader('slice');
 		initShader('mesh');
 		initShader('fibre');
-		initShader('slice');
 	}
 
 	function getShader(name, type) {
@@ -724,52 +722,49 @@ var Viewer = (function() {
 			gl.enableVertexAttribArray(shaderPrograms[name].vertexColorAttribute);
 		}
 
-		shaderPrograms[name].pMatrixUniform = gl.getUniformLocation(shaderPrograms[name], "uPMatrix");
+		shaderPrograms[name].pMatrixUniform  = gl.getUniformLocation(shaderPrograms[name], "uPMatrix");
 		shaderPrograms[name].mvMatrixUniform = gl.getUniformLocation(shaderPrograms[name], "uMVMatrix");
-		shaderPrograms[name].nMatrixUniform = gl.getUniformLocation(shaderPrograms[name], "uNMatrix");
-		shaderPrograms[name].samplerUniform = gl.getUniformLocation(shaderPrograms[name], "uSampler");
-		shaderPrograms[name].samplerUniform1 = gl.getUniformLocation(shaderPrograms[name], "uSampler1");
-		shaderPrograms[name].ambientColorUniform = gl.getUniformLocation(shaderPrograms[name], "uAmbientColor");
-		shaderPrograms[name].pointLightingLocationUniform = gl.getUniformLocation(shaderPrograms[name], "uPointLightingLocation");
-		shaderPrograms[name].pointLightingDiffuseColorUniform = gl.getUniformLocation(shaderPrograms[name], "uPointLightingDiffuseColor");
-		shaderPrograms[name].isT1Uniform = gl.getUniformLocation(shaderPrograms[name], "isT1");
-		shaderPrograms[name].useLightUniform = gl.getUniformLocation(shaderPrograms[name], "useLight");
-		shaderPrograms[name].alphaUniform = gl.getUniformLocation(shaderPrograms[name], "uAlpha");
-		shaderPrograms[name].cutWhiteUniform = gl.getUniformLocation(shaderPrograms[name], "uCutWhite");
-		shaderPrograms[name].isHighlightedUniform = gl.getUniformLocation(shaderPrograms[name], "uIsHighlighted");
-		shaderPrograms[name].somethingHighlightedUniform = gl.getUniformLocation(shaderPrograms[name], "uSomethingHighlighted");
-		shaderPrograms[name].zoomUniform = gl.getUniformLocation(shaderPrograms[name], "uZoom");
-		shaderPrograms[name].thicknessUniform = gl.getUniformLocation(shaderPrograms[name], "uThickness");
-		shaderPrograms[name].fibreColorUniform = gl.getUniformLocation(shaderPrograms[name], "uFibreColor");
-		shaderPrograms[name].fibreColorModeUniform = gl.getUniformLocation(shaderPrograms[name], "uFibreColorMode");
-		shaderPrograms[name].pickingUniform = gl.getUniformLocation(shaderPrograms[name], "uPicking");
-		shaderPrograms[name].pickColorUniform = gl.getUniformLocation(shaderPrograms[name], "uPickColor");
-		shaderPrograms[name].colorMapUniform = gl.getUniformLocation(shaderPrograms[name], "uColorMap");
+		shaderPrograms[name].nMatrixUniform  = gl.getUniformLocation(shaderPrograms[name], "uNMatrix");
+		shaderPrograms[name].pointLightingLocationUniform     = gl.getUniformLocation(shaderPrograms[name], "uPointLightingLocation");
 		
-		shaderPrograms[name].animateUniform = gl.getUniformLocation(shaderPrograms[name], "uAnimate");
-		shaderPrograms[name].lengthUniform = gl.getUniformLocation(shaderPrograms[name], "uLength");
-		shaderPrograms[name].speedUniform = gl.getUniformLocation(shaderPrograms[name], "uSpeed");
-		shaderPrograms[name].blobsizeUniform = gl.getUniformLocation(shaderPrograms[name], "uBlobSize");
-		shaderPrograms[name].distanceUniform = gl.getUniformLocation(shaderPrograms[name], "uDistance");
-		shaderPrograms[name].timestepUniform = gl.getUniformLocation(shaderPrograms[name], "uTimestep");
-		shaderPrograms[name].barShiftUniform = gl.getUniformLocation(shaderPrograms[name], "uBarShift");
+		if (name == "slice") {
+			shaderPrograms[name].colorMapUniform = gl.getUniformLocation(shaderPrograms[name], "uColorMap");
+			shaderPrograms[name].samplerUniform  = gl.getUniformLocation(shaderPrograms[name], "uSampler");
+			shaderPrograms[name].samplerUniform1 = gl.getUniformLocation(shaderPrograms[name], "uSampler1");
+		}
 		
+		if (name == "mesh") {
+			shaderPrograms[name].alphaUniform    = gl.getUniformLocation(shaderPrograms[name], "uAlpha");
+			shaderPrograms[name].cutWhiteUniform = gl.getUniformLocation(shaderPrograms[name], "uCutWhite");	
+		}
+
+		if (name == "fibre") {
+			shaderPrograms[name].zoomUniform           = gl.getUniformLocation(shaderPrograms[name], "uZoom");
+			shaderPrograms[name].thicknessUniform      = gl.getUniformLocation(shaderPrograms[name], "uThickness");
+			shaderPrograms[name].fibreColorUniform     = gl.getUniformLocation(shaderPrograms[name], "uFibreColor");
+			shaderPrograms[name].fibreColorModeUniform = gl.getUniformLocation(shaderPrograms[name], "uFibreColorMode");
+			shaderPrograms[name].animateUniform        = gl.getUniformLocation(shaderPrograms[name], "uAnimate");
+			shaderPrograms[name].lengthUniform         = gl.getUniformLocation(shaderPrograms[name], "uLength");
+			shaderPrograms[name].speedUniform          = gl.getUniformLocation(shaderPrograms[name], "uSpeed");
+			shaderPrograms[name].blobsizeUniform       = gl.getUniformLocation(shaderPrograms[name], "uBlobSize");
+			shaderPrograms[name].distanceUniform       = gl.getUniformLocation(shaderPrograms[name], "uDistance");
+			shaderPrograms[name].timestepUniform       = gl.getUniformLocation(shaderPrograms[name], "uTimestep");
+			shaderPrograms[name].barShiftUniform       = gl.getUniformLocation(shaderPrograms[name], "uBarShift");	
+		}
+
+		if (name == "fibre" || name == "mesh" ) {
+			shaderPrograms[name].pickingUniform   = gl.getUniformLocation(shaderPrograms[name], "uPicking");
+			shaderPrograms[name].pickColorUniform = gl.getUniformLocation(shaderPrograms[name], "uPickColor");
+		}
 	}
 
 	function setMeshUniforms() {
 		gl.useProgram(shaderPrograms['mesh']);
-
 		gl.uniformMatrix4fv(shaderPrograms['mesh'].pMatrixUniform, false, variables.webgl.pMatrix);
 		gl.uniformMatrix4fv(shaderPrograms['mesh'].mvMatrixUniform, false, variables.webgl.mvMatrix);
 		gl.uniformMatrix3fv(shaderPrograms['mesh'].nMatrixUniform, false, variables.webgl.nMatrix);
-
-		gl.uniform3f(shaderPrograms['mesh'].ambientColorUniform, 0.4, 0.4, 0.4);
-		gl.uniform1i(shaderPrograms['mesh'].useLightUniform, true);
 		gl.uniform1f(shaderPrograms['mesh'].alphaUniform, 1.0);
 		gl.uniform3f(shaderPrograms['mesh'].pointLightingLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
-		gl.uniform3f(shaderPrograms['mesh'].pointLightingDiffuseColorUniform, 0.6, 0.6, 0.6);
-		gl.uniform1i(shaderPrograms['mesh'].somethingHighlightedUniform, variables.scene.somethingHighlighted);
-
 		gl.uniform1i(shaderPrograms['mesh'].pickingUniform, variables.picking.pickMode);
 	}
 
@@ -779,15 +774,11 @@ var Viewer = (function() {
 		gl.uniformMatrix4fv(shaderPrograms['fibre'].mvMatrixUniform, false, variables.webgl.mvMatrix);
 		gl.uniformMatrix3fv(shaderPrograms['fibre'].nMatrixUniform, false, variables.webgl.nMatrix);
 
-		gl.uniform3f(shaderPrograms['fibre'].ambientColorUniform, 0.4, 0.4, 0.4);
 		gl.uniform3f(shaderPrograms['fibre'].pointLightingLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
-		gl.uniform3f(shaderPrograms['fibre'].pointLightingDiffuseColorUniform, 0.6, 0.6, 0.6);
-		gl.uniform1i(shaderPrograms['fibre'].somethingHighlightedUniform, variables.scene.somethingHighlighted);
 		gl.uniform1f(shaderPrograms['fibre'].zoomUniform, variables.scene.zoom);
 
 		gl.uniform1i(shaderPrograms['fibre'].fibreColorModeUniform, variables.scene.localFibreColor);
 		gl.uniform1i(shaderPrograms['fibre'].pickingUniform, variables.picking.pickMode);
-		gl.uniform1f(shaderPrograms['fibre'].thicknessUniform, 0.6);
 		
 		gl.uniform1i(shaderPrograms['fibre'].animateUniform, false);
 		gl.uniform1i(shaderPrograms['fibre'].timestepUniform, 0);
@@ -878,16 +869,14 @@ var Viewer = (function() {
 			if (this.display) {
 				if (this.type == 'fibre') {
 					setFiberUniforms();
-					gl.uniform1f(shaderPrograms['fibre'].isHighlightedUniform, this.isHighlighted);
 					drawFibers(this);
 				}
 			}
 		});
 		
-		setMeshUniforms();
 		$.each(elements, function() {
 			if (this.type == 'activation' && this.display) {
-				gl.uniform1i(shaderPrograms['mesh'].isHighlightedUniform, this.isHighlighted);
+				setMeshUniforms();
 				drawMesh(this);
 			}
 		});
@@ -895,13 +884,14 @@ var Viewer = (function() {
 		$.each(elements, function() {
 			if (this.display) {
 				if (this.type == 'mesh' && !(this.id == 'head')) {
-					gl.uniform1f(shaderPrograms['mesh'].isHighlightedUniform, this.isHighlighted);
+					setMeshUniforms();
 					drawMesh(this);
 				}
 			}
 		});
 		
 		if (elements['head'] && elements['head'].display) {
+			setMeshUniforms();
 			drawMesh(elements['head']);
 		}
 	}
@@ -943,20 +933,18 @@ var Viewer = (function() {
 			drawSlices();
 		}
 		
-		setFiberUniforms();
 		$.each(elements, function() {
 			if (this.display) {
 				if (this.type == 'fibre') {
-					gl.uniform1f(shaderPrograms['fibre'].isHighlightedUniform, false);
+					setFiberUniforms();
 					drawFibers(this);
 				}
 			}
 		});
 
-		setMeshUniforms();
 		$.each(elements, function() {
 			if (this.type == 'activation' && this.display) {
-				gl.uniform1i(shaderPrograms['mesh'].isHighlightedUniform, false);
+				setMeshUniforms();
 				drawMesh(this);
 			}
 		});
@@ -996,7 +984,6 @@ var Viewer = (function() {
 		gl.enable(gl.DEPTH_TEST);
 
 		if (elem.transparency < 1.0) {
-			gl.uniform1f(shaderPrograms['mesh'].useLightUniform, false);
 			gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 			gl.enable(gl.BLEND);
 			gl.uniform1f(shaderPrograms['mesh'].alphaUniform, elem.transparency);
@@ -1021,12 +1008,13 @@ var Viewer = (function() {
 		gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexTexCoordBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, elem.vertexTexCoordBuffer.data, gl.STATIC_DRAW);
 		gl.vertexAttribPointer(shaderPrograms['fibre'].textureCoordAttribute, elem.vertexTexCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
+	
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer);
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
 
 		gl.uniform3f(shaderPrograms['fibre'].fibreColorUniform, elem.color.r, elem.color.g, elem.color.b);
 		gl.uniform3f(shaderPrograms['fibre'].pickColorUniform, elem.pickColor[0], elem.pickColor[1], elem.pickColor[2]);
+		gl.uniform1f(shaderPrograms['fibre'].thicknessUniform, 0.6);
 		gl.uniform1f(shaderPrograms['fibre'].barShiftUniform, 0.0);
 		
 		if (elem.strength) {
@@ -1039,7 +1027,7 @@ var Viewer = (function() {
 			gl.uniform1f(shaderPrograms['fibre'].lengthUniform, elem.length);
 			gl.uniform1f(shaderPrograms['fibre'].barShiftUniform, elem.barShift);
 		}
-		
+
 		lineStart = 0;
 		for ( var i = 0; i < elem.indices.length; ++i) {
 			gl.drawArrays(gl.TRIANGLE_STRIP, lineStart, elem.indices[i] * 2);
@@ -1133,6 +1121,9 @@ var Viewer = (function() {
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 		axialTextureCoordBuffer.itemSize = 2;
 		axialTextureCoordBuffer.numItems = 4;
+		// don't ask why this line is needed, i don't understand it myself
+		// but without it the slices won't be rendered until another object is turned on and off
+		gl.vertexAttribPointer(shaderPrograms['fibre'].textureCoordAttribute, axialTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 		gl.vertexAttribPointer(shaderPrograms['slice'].textureCoordAttribute, axialTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 		
 		var axialVertexIndexBuffer = gl.createBuffer();
@@ -1779,25 +1770,6 @@ var Viewer = (function() {
 		$container.css('background-color', color);
 	}
 
-	function highlight(id) {
-		$.each(elements, function() {
-			this.isHighlighted = false;
-		});
-		if (elements[id] && !elements[id].type == "control") {
-			elements[id].isHighlighted = true;
-			variables.scene.somethingHighlighted = true;
-			redraw();
-		}
-	}
-
-	function unHighlight() {
-		$.each(elements, function() {
-			this.isHighlighted = false;
-		});
-		variables.scene.somethingHighlighted = false;
-		redraw();
-	}
-
 	function setAxial(position) {
 		if (position < 0)
 			position = 0;
@@ -1963,7 +1935,6 @@ var Viewer = (function() {
 		elements[id].display = true;
 		elements[id].id = id;
 		elements[id].hasBuffer = false;
-		elements[id].isHighlighted = false;
 		elements[id].cutFS = false;
 		elements[id].fromJSON = false;
 		elements[id].transparency = 1.0;
@@ -2083,14 +2054,6 @@ var Viewer = (function() {
             e.preventDefault();
             Viewer.toggleActivation(id);
             return false;
-        }).mouseover(function(e) {
-            if ($(this).is('.active')) {
-                window.setTimeout(function() {
-                    Viewer.highlight(id);
-                }, 0);
-            }
-        }).mouseout(function(e) {
-            Viewer.unHighlight();
         });
         $('#activations').append($toggle);
         
@@ -2268,7 +2231,6 @@ var Viewer = (function() {
 		elements[id].cutWhite = false;
 		elements[id].transparency = 1.0;
 		elements[id].hasBuffer = false;
-		elements[id].isHighlighted = false;
 		pickColor = createPickColor(variables.picking.pickIndex);
 		variables.picking.pickArray[pickColor.join()] = id;
 		variables.picking.pickIndex++;
@@ -2347,14 +2309,6 @@ var Viewer = (function() {
             e.preventDefault();
             Viewer.toggleActivation(id);
             return false;
-        }).mouseover(function(e) {
-            if ($(this).is('.active')) {
-                window.setTimeout(function() {
-                    Viewer.highlight(id);
-                }, 0);
-            }
-        }).mouseout(function(e) {
-            Viewer.unHighlight();
         });
         $('#connections').append($toggle);
 	}
@@ -2530,8 +2484,6 @@ var Viewer = (function() {
 		'getAxial' : getAxial,
 		'getCoronal' : getCoronal,
 		'getSagittal' : getSagittal,
-		'highlight' : highlight,
-		'unHighlight' : unHighlight,
 		'updateSize' : updateSize,
 		'saveScene' : saveScene,
 		'loadScene' : loadScene,

@@ -3,9 +3,7 @@ precision highp float;
 #endif
 
 varying vec2 vTextureCoord;
-varying vec3 vTransformedNormal;
 varying vec4 vPosition;
-varying vec4 vColor;
 
 uniform int uColorMap;
 

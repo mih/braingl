@@ -2,9 +2,6 @@
 precision highp float;
 #endif
 
-uniform bool uIsHighlighted;
-uniform bool uSomethingHighlighted;
-
 uniform vec3 uFibreColor;
 uniform bool uFibreColorMode;
 
@@ -45,11 +42,6 @@ void main(void)
 		else
 		{
 			color = uFibreColor;
-		}
-	
-		if ( uSomethingHighlighted && !uIsHighlighted )
-		{
-			color = vec3( 0.4, 0.4, 0.4 );
 		}
 		
 		color *= min(1.0, vLocation + 0.3);

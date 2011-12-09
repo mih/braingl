@@ -291,15 +291,15 @@
         });
         
         if (config.debug) Viewer.bind('loadElementStart', function(evt, data) {
-            //console.log('START ELEMENT:', data.id);
+        	if (config.debug) console.log('START ELEMENT:', data.id);
         });
         
         if (config.debug) Viewer.bind('loadActivationComplete', function(evt, data) {
-            //console.log('FINISHED ACTIVATION:', data.id);
+        	if (config.debug) console.log('FINISHED ACTIVATION:', data.id);
         });
                 
         if (config.debug) Viewer.bind('loadActivationsComplete', function(evt, data) {
-            //console.log('ALL ACTIVATIONS LOADED.');
+        	if (config.debug) console.log('ALL ACTIVATIONS LOADED.');
         });
         
         var $viewerTooltip = $('<div id="tooltip"></div>');

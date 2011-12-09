@@ -43,6 +43,7 @@
 		};
 	
 		this.getImage = function (orient, pos) {
+			if ( !loaded ) console.log( "DEBUG nifti file not finished loading");
 			if ( hdr.datatype === 2 ) {
 				if (hdr.dim4 === 1 ) {
 					return getImageGrayByte(orient,pos);

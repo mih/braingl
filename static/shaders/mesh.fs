@@ -7,14 +7,7 @@ varying vec4 vPosition;
 varying vec4 vColor;
 varying vec3 vLightPos;
 
-
-uniform vec3 uAmbientColor;
-uniform vec3 uPointLightingDiffuseColor;
-uniform bool useLight;
 uniform float uAlpha;
-
-uniform bool uIsHighlighted;
-uniform bool uSomethingHighlighted;
 
 uniform bool uPicking;
 uniform vec3 uPickColor;
@@ -23,6 +16,9 @@ uniform bool uCutWhite;
 
 void main(void) 
 {
+	vec3 uAmbientColor = vec3(0.4);
+	vec3 uPointLightingDiffuseColor= vec3(0.6);
+
 	vec4 fragmentColor = vColor;
 	fragmentColor.a = uAlpha;
 	vec3 lightDirection = normalize(vLightPos);
@@ -54,11 +50,6 @@ void main(void)
 			
 		lightWeighting = uAmbientColor + uPointLightingDiffuseColor * diffuseLightWeighting;
 	
-		if ( uSomethingHighlighted && !uIsHighlighted )
-		{
-			fragmentColor = vec4( 0.4, 0.4, 0.4, fragmentColor.a );
-		}
-		
 		gl_FragColor = vec4(fragmentColor.rgb * lightWeighting * fragmentColor.a, fragmentColor.a);
 
 	}
