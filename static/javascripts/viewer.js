@@ -784,7 +784,7 @@ var Viewer = (function() {
 		gl.uniform3f(shaderPrograms['fibre_t'].pointLightingLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
 		gl.uniform1f(shaderPrograms['fibre_t'].zoomUniform, variables.scene.zoom);
 
-		gl.uniform1i(shaderPrograms['fibre_t'].fibre_tColorModeUniform, variables.scene.localfibre_tColor);
+		gl.uniform1i(shaderPrograms['fibre_t'].fibreColorModeUniform, variables.scene.localFibreColor);
 		gl.uniform1i(shaderPrograms['fibre_t'].pickingUniform, variables.picking.pickMode);
 		
 		gl.uniform1i(shaderPrograms['fibre_t'].animateUniform, false);
@@ -1064,7 +1064,14 @@ var Viewer = (function() {
 			
 			lineStart = 0;
 			for ( var i = 0; i < elem.indices.length; ++i) {
-				gl.drawArrays(gl.LINE_STRIP, lineStart, elem.indices[i]);
+				if ( elem.activFibres ) {
+					if ( elem.activFibres[i] ) {
+						gl.drawArrays(gl.LINE_STRIP, lineStart, elem.indices[i]);
+					}
+				}
+				else {
+					gl.drawArrays(gl.LINE_STRIP, lineStart, elem.indices[i]);
+				}
 				lineStart += elem.indices[i];
 			}
 		}
