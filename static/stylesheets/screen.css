@@ -181,19 +181,19 @@
 	border-color: #807a7c
 }
 
-#controls-slices {
+#controls-slices, #controls-textures {
 	width: 60%;
 	white-space: nowrap
 }
 
-#controls-slices input[type="range"] {
+#controls-slices input[type="range"], #controls-textures input[type="range"] {
 	-webkit-appearance: none;
 	background: #aeaead;
 	width: 80%;
 	margin: 4px 0
 }
 
-#controls-slices .value {
+#controls-slices .value, #controls-textures .value {
 	font-size: 80%;
 	width: 2em;
 	display: -moz-inline-box;

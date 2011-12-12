@@ -10,6 +10,11 @@ uniform int uColorMap;
 uniform sampler2D uSampler;
 uniform sampler2D uSampler1;
 
+uniform float uMin;
+uniform float uMax;
+uniform float uThreshold1;
+uniform float uThreshold2;
+
 vec3 rainbowColorMap( in float value )
 {
 	value *= 5.0;
@@ -53,24 +58,53 @@ void main(void) {
 	vec4 fragmentColor1 = texture2D(uSampler1, vec2(vTextureCoord.s, vTextureCoord.t));
 	
 	// if present show secondary texture
-	if ( ( fragmentColor1.r + fragmentColor1.g + fragmentColor1.b ) > 0.01 )
+	if ( length( fragmentColor1.rgb ) > 0.01 )
 	{
 		if ( uColorMap != 0 )
 		{
-			vec3 c;
-			if ( uColorMap == 1 )
-			{
-				c = redYellowColorMap( fragmentColor1.r );
-			}
-			if ( uColorMap == 2 )
-			{
-				c = blueLightblueColorMap( fragmentColor1.r );
-			}
+			vec3 c = vec3(0.0);
 			if ( uColorMap == 3 )
 			{
 				c = rainbowColorMap( fragmentColor1.r );
 			}
-			fragmentColor = vec4(mix(fragmentColor.rgb, c, 1.0), 1.0 );
+			else
+			{
+				float val = fragmentColor1.r * ( uMax - uMin );
+							
+				if ( abs( val + uMin ) > 0.01 )
+				{
+					if ( val < uMin * -1.0 )
+					{
+						val = 1.0 - ( ( val ) / ( uMin * -1.0 ) );
+						val = val - abs(uThreshold1);
+						if ( val > 0.0 )
+						{
+							val = val / ( 1.0 - abs(uThreshold1) );
+							if ( uColorMap == 1 )
+								c = blueLightblueColorMap( val );
+							else
+								c = redYellowColorMap( val );
+						}
+					} 
+					else
+					{
+						val = ( val + uMin ) / uMax;
+						val = val - uThreshold2;
+						if ( val > 0.0 )
+						{
+							val = val / ( 1.0 - uThreshold2 );
+							if ( uColorMap == 1 )
+								c = redYellowColorMap( val );
+							else
+								c = blueLightblueColorMap( val );
+						}
+					}
+				}
+			}
+			if ( length(c) > 0.01 )
+			{
+				fragmentColor = vec4(mix(fragmentColor.rgb, c, 1.0), 1.0 );
+			}
 		}
 		else
 		{
@@ -79,7 +113,7 @@ void main(void) {
 	}
 	
 	// color texture, discard zero values
-	if ( ( ( fragmentColor.r + fragmentColor.g + fragmentColor.b ) / 3.0 ) < 0.001 )
+	if ( length( fragmentColor.rgb ) < 0.001 )
 		discard;
 	
 	gl_FragColor = vec4(fragmentColor.r, fragmentColor.g, fragmentColor.b, fragmentColor.a);

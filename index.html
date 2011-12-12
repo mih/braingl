@@ -62,6 +62,8 @@
 					</table>
 					<input type="button" name="Submit" value="New" onclick="Viewer.addActivation();">
 					<input type="button" name="Submit" value="Edit" onclick="Viewer.editActivation();">
+					<input type="button" name="Submit" value="Select Fibres" onclick="Viewer.recalcFibres();">
+					<input type="button" name="Submit" value="Reset Fibres" onclick="Viewer.resetFibres();">
 				</section>
 				<a href="#connections">Connections</a><br>
 				<section id="connections" style="display:none"></section>
@@ -159,7 +161,7 @@
 						</tr>
 					</table>
 					<br>
-					<div><label for="transp">transparency</label><input type="range" min="0" max="99" id="transp" value="100" step="1" /></div>
+					<div><label for="transp">transparency</label><input type="range" min="0" max="99" id="transp" value="100" step="1" /><span class="value"></span></div>
 				</section>
 				<a href="#textures">Textures</a><br>
 				<section id="textures" style="display:block">
@@ -190,6 +192,12 @@
 							</td>
 						</tr>
 					</table>
+					<br>
+					<div id="controls-textures">
+					<div><label class ="lab1" for="threshold1">threshold neg</label><input type="range" min="0" max="100" id="threshold1" value="0" step="1" /><span class="value"></span></div>
+					<br>
+					<div><label class ="lab1" for="threshold2">threshold pos</label><input type="range" min="0" max="100" id="threshold2" value="0" step="1" /><span class="value"></span></div>
+					</div>
 				</section>
 			</div>
 	        <footer id="footer">

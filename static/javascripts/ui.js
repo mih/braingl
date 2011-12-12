@@ -126,7 +126,15 @@
         // SLICES
         var sliderChangeHandler = function(method) {
             return function(e) {
-                var value = $(this).val();
+            	var lab1 = $(this).parent().find('.lab1').html();
+            	var value = "";
+            	if ( lab1 === "threshold neg" || lab1 === "threshold pos") {
+            		value = parseFloat($(this).val()).toFixed(3);	
+            	}
+            	else {
+            		value = $(this).val();
+            	}
+                
                 $(this).parent().find('.value').text(value);
                 Viewer[method](value);
             };
@@ -135,6 +143,8 @@
         $('#sliceY').bind('change', sliderChangeHandler('setCoronal')).trigger('change');
         $('#sliceZ').bind('change', sliderChangeHandler('setAxial')).trigger('change');
         $('#transp').bind('change', sliderChangeHandler('setTransparency')).trigger('change');
+        $('#threshold1').bind('change', sliderChangeHandler('setThreshold1')).trigger('change');
+        $('#threshold2').bind('change', sliderChangeHandler('setThreshold2')).trigger('change');
         
         
         // ELEMENTS

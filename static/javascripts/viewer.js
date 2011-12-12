@@ -63,6 +63,8 @@ var Viewer = (function() {
 	variables.scene.showSlices = true;
 	variables.scene.lastActivated = "none";
 	variables.scene.renderTubes = true;
+	variables.scene.texThreshold1 = 1.0;
+	variables.scene.texThreshold2 = 1.0;
 	
 	// picking
 	variables.picking = {};
@@ -398,6 +400,7 @@ var Viewer = (function() {
 			var co = tal2pixel(ac.coord.x, ac.coord.y, ac.coord.z);
 			elements[ac.id] = createSphere(co[0], co[1], co[2], ac.size, ac.color);
 			elements[ac.id].name = ac.name;
+			elements[ac.id].co = co;
 			elements[ac.id].type = 'activation';
 			elements[ac.id].display = ac.display;
 			elements[ac.id].id = ac.id;
@@ -728,9 +731,13 @@ var Viewer = (function() {
 		shaderPrograms[name].pointLightingLocationUniform     = gl.getUniformLocation(shaderPrograms[name], "uPointLightingLocation");
 		
 		if (name == "slice") {
-			shaderPrograms[name].colorMapUniform = gl.getUniformLocation(shaderPrograms[name], "uColorMap");
-			shaderPrograms[name].samplerUniform  = gl.getUniformLocation(shaderPrograms[name], "uSampler");
-			shaderPrograms[name].samplerUniform1 = gl.getUniformLocation(shaderPrograms[name], "uSampler1");
+			shaderPrograms[name].colorMapUniform   = gl.getUniformLocation(shaderPrograms[name], "uColorMap");
+			shaderPrograms[name].samplerUniform    = gl.getUniformLocation(shaderPrograms[name], "uSampler");
+			shaderPrograms[name].samplerUniform1   = gl.getUniformLocation(shaderPrograms[name], "uSampler1");
+			shaderPrograms[name].minUniform        = gl.getUniformLocation(shaderPrograms[name], "uMin");
+			shaderPrograms[name].maxUniform        = gl.getUniformLocation(shaderPrograms[name], "uMax");
+			shaderPrograms[name].threshold1Uniform = gl.getUniformLocation(shaderPrograms[name], "uThreshold1");
+			shaderPrograms[name].threshold2Uniform = gl.getUniformLocation(shaderPrograms[name], "uThreshold2");
 		}
 		
 		if (name == "mesh") {
@@ -1027,8 +1034,15 @@ var Viewer = (function() {
 	
 			lineStart = 0;
 			for ( var i = 0; i < elem.indices.length; ++i) {
-				gl.drawArrays(gl.TRIANGLE_STRIP, lineStart, elem.indices[i] * 2);
-				lineStart += elem.indices[i] * 2;
+				if ( elem.activFibres ) {
+					if ( elem.activFibres[i] ) {
+						gl.drawArrays(gl.TRIANGLE_STRIP, lineStart, elem.indices[i] * 2);
+					}
+				}
+				else {
+					gl.drawArrays(gl.TRIANGLE_STRIP, lineStart, elem.indices[i] * 2);
+				}
+				lineStart += elem.indices[i] * 2;				
 			}
 		}
 		else {
@@ -1135,6 +1149,10 @@ var Viewer = (function() {
 		gl.bindTexture(gl.TEXTURE_2D, null);
 		gl.uniform1i(shaderPrograms['slice'].samplerUniform1, 1);
 		gl.uniform1i(shaderPrograms['slice'].colorMapUniform,0);
+		gl.uniform1f(shaderPrograms['slice'].minUniform, 0);
+		gl.uniform1f(shaderPrograms['slice'].maxUniform, 0);
+		gl.uniform1f(shaderPrograms['slice'].threshold1Uniform, 0);
+		gl.uniform1f(shaderPrograms['slice'].threshold2Uniform, 0);
 
 		var axialPosBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, axialPosBuffer);
@@ -1171,6 +1189,10 @@ var Viewer = (function() {
 			gl.bindTexture(gl.TEXTURE_2D, getTexture($('#textureSelect2').val(), 'axial', variables.scene.axial));
 			gl.uniform1i(shaderPrograms['slice'].samplerUniform1, 1);
 			gl.uniform1i(shaderPrograms['slice'].colorMapUniform,parseInt($id('cMapSelect').value));
+			gl.uniform1f(shaderPrograms['slice'].minUniform, niftiis[$('#textureSelect2').val()].getMin() );
+			gl.uniform1f(shaderPrograms['slice'].maxUniform, niftiis[$('#textureSelect2').val()].getMax() );
+			gl.uniform1f(shaderPrograms['slice'].threshold1Uniform, variables.scene.texThreshold1);
+			gl.uniform1f(shaderPrograms['slice'].threshold2Uniform, variables.scene.texThreshold2);
 		}
 
 		gl.uniformMatrix4fv(shaderPrograms['slice'].pMatrixUniform, false, variables.webgl.pMatrix);
@@ -1697,6 +1719,9 @@ var Viewer = (function() {
 			case "control_fibreColor":
 				variables.scene.localFibreColor = !variables.scene.localFibreColor;
 				break;
+			case "control_fibreTubes":
+				variables.scene.renderTubes = !variables.scene.renderTubes;
+				break;				
 			case "control_tooltip":
 				variables.picking.showTooltips = !variables.picking.showTooltips;
 				break;
@@ -2308,6 +2333,7 @@ var Viewer = (function() {
 			tubeNormals.push(nz);
 		}
 		elements[id].tubeNormals = tubeNormals;
+		elements[id].normals = tubeNormals;
 
 		elements[id].color = color;
 		elements[id].colors = [1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0,1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0];
@@ -2482,6 +2508,12 @@ var Viewer = (function() {
 		var id = $('#textureSelect2').val();
 		variables.scene.secTex = id;
 		redraw();
+		$id('threshold1').min = niftiis[id].getMin();
+		$id('threshold1').max = 0;
+		$id('threshold1').step = niftiis[id].getMin() / 100 * -1.0;
+		$id('threshold2').min = 0;
+		$id('threshold2').max = niftiis[id].getMax();
+		$id('threshold2').step = niftiis[id].getMax() / 100;
 	}
 	
 	function changeColorMap() {
@@ -2489,6 +2521,69 @@ var Viewer = (function() {
 		redraw();
 	}
 
+	function setThreshold1(value) {
+		variables.scene.texThreshold1 = value;
+		redraw();
+	}
+	
+	function setThreshold2(value) {
+		variables.scene.texThreshold2 = value;
+		redraw();
+	}
+	
+	function recalcFibres() {
+		
+		$.each(elements, function() {
+			if (this.type == 'fibre' && this.display) {
+				this.activFibres = new Array( this.indices.length );
+				for (var i = 0; i < this.activFibres.length; ++i ) {
+					this.activFibres[i] = false;
+				}
+			}
+		});
+		
+		$.each(elements, function() {
+			if (this.type == 'activation' && this.display) {
+				var co = this.co;
+				var size = this.size / 2;
+				
+				$.each(elements, function() {
+					if (this.type == 'fibre' && this.display) {
+												
+						
+						lineStart = 0;
+						for ( var i = 0; i < this.indices.length; ++i) {
+							for(var j = lineStart; j < lineStart+ this.indices[i]; ++j) {
+								var xd = co[0] - this.vertices[j*3];
+								var yd = co[1] - this.vertices[j*3+1];
+								var zd = co[2] - this.vertices[j*3+2];
+								if ( Math.sqrt( xd*xd + yd*yd + zd*zd) < size ) {
+									this.activFibres[i] = true;
+								}
+							}
+							lineStart += this.indices[i];
+						}
+					}
+				});		
+				
+			}
+		});
+
+		redraw();
+	}
+	
+	function resetFibres() {
+		$.each(elements, function() {
+			if (this.type == 'fibre') {
+				this.activFibres = new Array( this.indices.length );
+				for (var i = 0; i < this.activFibres.length; ++i ) {
+					this.activFibres[i] = true;
+				}
+			}
+		});
+		redraw();
+	}
+	
 	
 	// Im Viewer-Singleton werden nur die im folgenden aufgefhrten
 	// Methoden/Eigenschaften nach
@@ -2528,6 +2623,10 @@ var Viewer = (function() {
 		'setTransparency' : setTransparency,
 		'changeTexture' : changeTexture,
 		'changeTexture2' : changeTexture2,
-		'changeColorMap' : changeColorMap
+		'changeColorMap' : changeColorMap,
+		'setThreshold1' : setThreshold1,
+		'setThreshold2' : setThreshold2,
+		'recalcFibres' : recalcFibres,
+		'resetFibres' : resetFibres
 	};
 })();

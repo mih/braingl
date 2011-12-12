@@ -13,6 +13,8 @@
 	window.Niftii = function () {
 		var data;
 		var hdr = {};
+		var max = -1000;
+		var min = 1000;
 				
 		this.load = function(url) {
 			var xhr = new XMLHttpRequest();
@@ -32,8 +34,24 @@
 				hdr.dim6 = data[52] + data[53] * 256;
 				hdr.dim7 = data[54] + data[54] * 256;
 				
+				if ( hdr.datatype === 2 ) {
+					min = 0;
+					max = 255;
+				}
+				
 				if ( hdr.datatype === 16 ) {
 					data = new Float32Array(this.response);
+					
+					for ( var i = 88; i < data.length; ++i ) {
+						if ( data[i] < min ) min = data[i];
+						if ( data[i] > max ) max = data[i];
+					}
+					console.log( "min: " + min + " max: " + max );
+					
+					var div = max - min;
+					for ( var j = 88; j < data.length; ++j ) {
+						data[j] = ( data[j] - min ) / div;
+					}
 				}
 				
 				loaded = true;
@@ -240,5 +258,13 @@
 			
 			return imageData;
 		}
+		
+		this.getMin = function() {
+			return min;
+		};
+		
+		this.getMax = function() {
+			return max;
+		};
 	};
 })();

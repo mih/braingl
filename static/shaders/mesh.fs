@@ -2,17 +2,15 @@
 precision highp float;
 #endif
 
-varying vec3 normal;
-varying vec4 vPosition;
-varying vec4 vColor;
-varying vec3 vLightPos;
-
 uniform float uAlpha;
-
+uniform bool uCutWhite;
 uniform bool uPicking;
 uniform vec3 uPickColor;
 
-uniform bool uCutWhite;
+varying vec4 vPosition;
+varying vec3 vLightPos;
+varying vec3 normal;
+varying vec4 vColor;
 
 void main(void) 
 {
@@ -31,7 +29,6 @@ void main(void)
 			discard;
 		}
 	}
-	
 	
 	if ( uCutWhite && ( ( vColor.r + vColor.g + vColor.b ) != 3.0 ) )
 	{
