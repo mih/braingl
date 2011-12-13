@@ -815,7 +815,9 @@ var Viewer = (function() {
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+//		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+//		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.bindTexture(gl.TEXTURE_2D, null);
 		delete texture.image;
@@ -1163,7 +1165,9 @@ var Viewer = (function() {
 
 		var axialPosBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, axialPosBuffer);
-		var vertices = [ 0, 0, variables.scene.axial, 160, 0, variables.scene.axial, 160, 200, variables.scene.axial, 0, 200, variables.scene.axial, ];
+		//var vertices = [ 0, 0, variables.scene.axial, 160, 0, variables.scene.axial, 160, 200, variables.scene.axial, 0, 200, variables.scene.axial, ];
+		var ap = variables.scene.axial + 0.5;
+		var vertices = [ 0, 0, ap, 160, 0.5, ap, 160, 200, ap, 0, 200, ap ];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 		axialPosBuffer.itemSize = 3;
 		axialPosBuffer.numItems = 4;
@@ -1210,7 +1214,9 @@ var Viewer = (function() {
 
 		var coronalPosBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, coronalPosBuffer);
-		var vertices = [ 0, variables.scene.coronal, 0, 160, variables.scene.coronal, 0, 160, variables.scene.coronal, 160, 0, variables.scene.coronal, 160, ];
+		//var vertices = [ 0, variables.scene.coronal, 0, 160, variables.scene.coronal, 0, 160, variables.scene.coronal, 160, 0, variables.scene.coronal, 160, ];
+		var cp = variables.scene.coronal + 0.5;
+		var vertices = [ 0, cp, 0, 160, cp, 0, 160, cp, 160, 0, cp, 160 ];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 		coronalPosBuffer.itemSize = 3;
 		coronalPosBuffer.numItems = 4;
@@ -1245,7 +1251,9 @@ var Viewer = (function() {
 
 		var sagittalPosBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, sagittalPosBuffer);
-		var vertices = [ variables.scene.sagittal, 0, 0, variables.scene.sagittal, 0, 160, variables.scene.sagittal, 200, 160, variables.scene.sagittal, 200, 0, ];
+		//var vertices = [ variables.scene.sagittal, 0, 0, variables.scene.sagittal, 0, 160, variables.scene.sagittal, 200, 160, variables.scene.sagittal, 200, 0, ];
+		var sp = variables.scene.sagittal + 0.5;
+		var vertices = [ sp, 0, 0, sp, 0, 160, sp, 200, 160, sp, 200, 0 ];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 		sagittalPosBuffer.itemSize = 3;
 		sagittalPosBuffer.numItems = 4;
@@ -1831,7 +1839,7 @@ var Viewer = (function() {
 			position = 0;
 		if (position > 159)
 			position = 159;
-		variables.scene.axial = position;
+		variables.scene.axial = parseFloat(position);
 		recordCommand("slice", "axial", position);
 		redraw();
 	}
@@ -1841,7 +1849,7 @@ var Viewer = (function() {
 			position = 0;
 		if (position > 199)
 			position = 199;
-		variables.scene.coronal = position;
+		variables.scene.coronal = parseFloat(position);
 		recordCommand("slice", "coronal", position);
 		redraw();
 	}
@@ -1851,7 +1859,7 @@ var Viewer = (function() {
 			position = 0;
 		if (position > 159)
 			position = 159;
-		variables.scene.sagittal = position;
+		variables.scene.sagittal = parseFloat(position);
 		recordCommand("slice", "sagittal", position);
 		redraw();
 	}

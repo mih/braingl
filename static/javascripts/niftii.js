@@ -15,6 +15,7 @@
 		var hdr = {};
 		var max = -1000;
 		var min = 1000;
+		var zero = 0;
 				
 		this.load = function(url) {
 			var xhr = new XMLHttpRequest();
@@ -49,6 +50,7 @@
 					console.log( "min: " + min + " max: " + max );
 					
 					var div = max - min;
+					zero = ( 0 - min ) / div;
 					for ( var j = 88; j < data.length; ++j ) {
 						data[j] = ( data[j] - min ) / div;
 					}
@@ -210,6 +212,13 @@
 			c2d.height = 256;
 			var ctx = c2d.getContext("2d");
 			var imageData = ctx.getImageData(0, 0, c2d.width, c2d.height);
+			
+			for ( var i = 0; i < 256*256; ++i ) {
+				imageData.data[i*4] = zero*255;
+                imageData.data[i*4+1] = zero*255;
+                imageData.data[i*4+2] = zero * 255;
+                imageData.data[i*4+3] = 255;
+			}
 			
 			if ( orient === "axial" ) {
 				for( var x = 0; x < hdr.dim1; ++x )

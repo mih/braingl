@@ -101,7 +101,7 @@ void main(void) {
 					}
 				}
 			}
-			if ( length(c) > 0.01 )
+			if ( length(c) > 0.0001 )
 			{
 				fragmentColor = vec4(mix(fragmentColor.rgb, c, 1.0), 1.0 );
 			}
