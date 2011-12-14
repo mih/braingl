@@ -65,6 +65,7 @@ var Viewer = (function() {
 	variables.scene.renderTubes = true;
 	variables.scene.texThreshold1 = 1.0;
 	variables.scene.texThreshold2 = 1.0;
+	variables.scene.texAlpha2 = 1.0;
 	
 	// picking
 	variables.picking = {};
@@ -224,7 +225,7 @@ var Viewer = (function() {
 
 			if (el.type == "mesh" || el.type == "fibre" || el.type == "control") {
 				//  die JSON-Daten von der URL laden, 
-				$.getJSON(settings.STATIC_URL + el.url, function(data) {
+				$.getJSON(settings.DATA_URL + el.url, function(data) {
 					//  in der oben definierten
 					// Eigenschaft elements
 					// speichern, 
@@ -305,7 +306,7 @@ var Viewer = (function() {
 			}
 			else if (el.type == "texture") {
 				var niftii  = new Niftii();
-				niftii.load( settings.STATIC_URL + el.url );
+				niftii.load( settings.DATA_URL + el.url );
 				niftiis[el.id] = niftii;
 				niftiis[el.id].name = el.name;
 				textures[el.id] = {};
@@ -489,7 +490,7 @@ var Viewer = (function() {
 
 	function loadScenes() {
 		$(Viewer).trigger('loadScenesStart');
-		$.getJSON(settings.STATIC_URL + 'data/scenes.json', function(data) {
+		$.getJSON(settings.DATA_URL + 'scenes.json', function(data) {
 			$.each(data, function(i, sc) {
 				scenes[sc.id] = {};
 				scenes[sc.id].cameraPosition = sc.cameraPosition;
@@ -674,7 +675,7 @@ var Viewer = (function() {
 	function getShader(name, type) {
 		var shader;
 		$.ajax({
-			url : settings.STATIC_URL + 'shaders/' + name + '.' + type,
+			url : 'static/shaders/' + name + '.' + type,
 			async : false,
 			success : function(data) {
 
@@ -738,6 +739,7 @@ var Viewer = (function() {
 			shaderPrograms[name].maxUniform        = gl.getUniformLocation(shaderPrograms[name], "uMax");
 			shaderPrograms[name].threshold1Uniform = gl.getUniformLocation(shaderPrograms[name], "uThreshold1");
 			shaderPrograms[name].threshold2Uniform = gl.getUniformLocation(shaderPrograms[name], "uThreshold2");
+			shaderPrograms[name].alpha2Uniform     = gl.getUniformLocation(shaderPrograms[name], "uAlpha2");
 		}
 		
 		if (name == "mesh") {
@@ -1167,7 +1169,7 @@ var Viewer = (function() {
 		gl.bindBuffer(gl.ARRAY_BUFFER, axialPosBuffer);
 		//var vertices = [ 0, 0, variables.scene.axial, 160, 0, variables.scene.axial, 160, 200, variables.scene.axial, 0, 200, variables.scene.axial, ];
 		var ap = variables.scene.axial + 0.5;
-		var vertices = [ 0, 0, ap, 160, 0.5, ap, 160, 200, ap, 0, 200, ap ];
+		var vertices = [ 0, 0, ap, 256, 0.5, ap, 256, 256, ap, 0, 256, ap ];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 		axialPosBuffer.itemSize = 3;
 		axialPosBuffer.numItems = 4;
@@ -1175,7 +1177,7 @@ var Viewer = (function() {
 
 		var axialTextureCoordBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, axialTextureCoordBuffer);
-		var textureCoords = [ 0.0, 0.0, 0.625, 0.0, 0.625, 0.78125, 0.0, 0.78125 ];
+		var textureCoords = [ 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0 ];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 		axialTextureCoordBuffer.itemSize = 2;
 		axialTextureCoordBuffer.numItems = 4;
@@ -1204,6 +1206,7 @@ var Viewer = (function() {
 			gl.uniform1f(shaderPrograms['slice'].maxUniform, niftiis[$('#textureSelect2').val()].getMax() );
 			gl.uniform1f(shaderPrograms['slice'].threshold1Uniform, variables.scene.texThreshold1);
 			gl.uniform1f(shaderPrograms['slice'].threshold2Uniform, variables.scene.texThreshold2);
+			gl.uniform1f(shaderPrograms['slice'].alpha2Uniform, variables.scene.texAlpha2);
 		}
 
 		gl.uniformMatrix4fv(shaderPrograms['slice'].pMatrixUniform, false, variables.webgl.pMatrix);
@@ -1216,7 +1219,7 @@ var Viewer = (function() {
 		gl.bindBuffer(gl.ARRAY_BUFFER, coronalPosBuffer);
 		//var vertices = [ 0, variables.scene.coronal, 0, 160, variables.scene.coronal, 0, 160, variables.scene.coronal, 160, 0, variables.scene.coronal, 160, ];
 		var cp = variables.scene.coronal + 0.5;
-		var vertices = [ 0, cp, 0, 160, cp, 0, 160, cp, 160, 0, cp, 160 ];
+		var vertices = [ 0, cp, 0, 256, cp, 0, 256, cp, 256, 0, cp, 256 ];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 		coronalPosBuffer.itemSize = 3;
 		coronalPosBuffer.numItems = 4;
@@ -1224,7 +1227,7 @@ var Viewer = (function() {
 
 		var coronalTextureCoordBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, coronalTextureCoordBuffer);
-		var textureCoords = [ 0.0, 0.0, 0.625, 0.0, 0.625, 0.625, 0.0, 0.625 ];
+		var textureCoords = [ 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0 ];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 		coronalTextureCoordBuffer.itemSize = 2;
 		coronalTextureCoordBuffer.numItems = 4;
@@ -1253,7 +1256,7 @@ var Viewer = (function() {
 		gl.bindBuffer(gl.ARRAY_BUFFER, sagittalPosBuffer);
 		//var vertices = [ variables.scene.sagittal, 0, 0, variables.scene.sagittal, 0, 160, variables.scene.sagittal, 200, 160, variables.scene.sagittal, 200, 0, ];
 		var sp = variables.scene.sagittal + 0.5;
-		var vertices = [ sp, 0, 0, sp, 0, 160, sp, 200, 160, sp, 200, 0 ];
+		var vertices = [ sp, 0, 0, sp, 0, 256, sp, 256, 256, sp, 256, 0 ];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 		sagittalPosBuffer.itemSize = 3;
 		sagittalPosBuffer.numItems = 4;
@@ -1261,7 +1264,7 @@ var Viewer = (function() {
 
 		var sagittalTextureCoordBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, sagittalTextureCoordBuffer);
-		var textureCoords = [ 0.0, 0.0, 0.0, 0.625, 0.78125, 0.625, 0.78125, 0.0 ];
+		var textureCoords = [ 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0 ];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 		sagittalTextureCoordBuffer.itemSize = 2;
 		sagittalTextureCoordBuffer.numItems = 4;
@@ -2599,6 +2602,10 @@ var Viewer = (function() {
 		redraw();
 	}
 	
+	function setAlpha2(value) {
+		variables.scene.texAlpha2 = value;
+		redraw();
+	}
 	
 	// Im Viewer-Singleton werden nur die im folgenden aufgefhrten
 	// Methoden/Eigenschaften nach
@@ -2642,6 +2649,7 @@ var Viewer = (function() {
 		'setThreshold1' : setThreshold1,
 		'setThreshold2' : setThreshold2,
 		'recalcFibres' : recalcFibres,
-		'resetFibres' : resetFibres
+		'resetFibres' : resetFibres,
+		'setAlpha2' : setAlpha2
 	};
 })();

@@ -6,10 +6,10 @@
         }
         
         // ��� die Konfigurationsdaten und die Elemente per AJAX laden.
-        var config = $.getSyncJSON(settings.STATIC_URL + 'data/config.json'),
-            elements = $.getSyncJSON(settings.STATIC_URL + 'data/elements.json'),
-            activations = $.getSyncJSON(settings.STATIC_URL + 'data/coordinates.json'),
-            connections = $.getSyncJSON(settings.STATIC_URL + 'data/connections.json'),
+        var config = $.getSyncJSON(settings.DATA_URL + 'config.json'),
+            elements = $.getSyncJSON(settings.DATA_URL + 'elements.json'),
+            activations = $.getSyncJSON(settings.DATA_URL + 'coordinates.json'),
+            connections = $.getSyncJSON(settings.DATA_URL + 'connections.json'),
             loadingDiv = $('<div class="loading" />'),
             $elementsTogglesContainer = $('#elements'),
             $activationsTogglesContainer = $('#activations'),
@@ -128,7 +128,7 @@
             return function(e) {
             	var lab1 = $(this).parent().find('.lab1').html();
             	var value = "";
-            	if ( lab1 === "threshold neg" || lab1 === "threshold pos") {
+            	if ( lab1 === "threshold neg" || lab1 === "threshold pos"  || lab1 === "alpha" ) {
             		value = parseFloat($(this).val()).toFixed(3);	
             	}
             	else {
@@ -145,6 +145,7 @@
         $('#transp').bind('change', sliderChangeHandler('setTransparency')).trigger('change');
         $('#threshold1').bind('change', sliderChangeHandler('setThreshold1')).trigger('change');
         $('#threshold2').bind('change', sliderChangeHandler('setThreshold2')).trigger('change');
+        $('#alpha2').bind('change', sliderChangeHandler('setAlpha2')).trigger('change');
         
         
         // ELEMENTS

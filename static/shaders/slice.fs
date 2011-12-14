@@ -14,6 +14,7 @@ uniform float uMin;
 uniform float uMax;
 uniform float uThreshold1;
 uniform float uThreshold2;
+uniform float uAlpha2;
 
 vec3 rainbowColorMap( in float value )
 {
@@ -103,7 +104,7 @@ void main(void) {
 			}
 			if ( length(c) > 0.0001 )
 			{
-				fragmentColor = vec4(mix(fragmentColor.rgb, c, 1.0), 1.0 );
+				fragmentColor = vec4(mix(fragmentColor.rgb, c, uAlpha2), 1.0 );
 			}
 		}
 		else

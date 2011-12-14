@@ -21,9 +21,9 @@
 				<section id="controls2" style="display:none">	
 					<div id="controls-toggles"></div>
 					<div id="controls-slices">
-						<div><label for="sliceX">X</label><input type="range" min="0" max="159" id="sliceX" value="80" step="1" /> <span class="value"></span></div>
-						<div><label for="sliceY">Y</label><input type="range" min="0" max="199" id="sliceY" value="100" step="1" /> <span class="value"></span></div>
-						<div><label for="sliceZ">Z</label><input type="range" min="0" max="159" id="sliceZ" value="80" step="1" /> <span class="value"></span></div>
+						<div><label for="sliceX">X</label><input type="range" min="0" max="255" id="sliceX" value="80" step="1" /> <span class="value"></span></div>
+						<div><label for="sliceY">Y</label><input type="range" min="0" max="255" id="sliceY" value="100" step="1" /> <span class="value"></span></div>
+						<div><label for="sliceZ">Z</label><input type="range" min="0" max="255" id="sliceZ" value="80" step="1" /> <span class="value"></span></div>
 					</div>
 				</section>
 				<a href="#elements">Elements</a><br>
@@ -197,6 +197,8 @@
 					<div><label class ="lab1" for="threshold1">threshold neg</label><input type="range" min="0" max="100" id="threshold1" value="0" step="1" /><span class="value"></span></div>
 					<br>
 					<div><label class ="lab1" for="threshold2">threshold pos</label><input type="range" min="0" max="100" id="threshold2" value="0" step="1" /><span class="value"></span></div>
+					<br>
+					<div><label class ="lab1" for="alpha2">alpha</label><input type="range" min="0" max="1.0" id="alpha2" value="1.0" step="0.01" /><span class="value"></span></div>
 					</div>
 				</section>
 			</div>
@@ -204,7 +206,7 @@
 	            Experimental Connectom Viewer
 	        </footer>
 		</div>
-		<script>window.settings = {'STATIC_URL': '/conview/static/'};</script>
+		<script>window.settings = {'DATA_URL': '/conview/data/'};</script>
 		<script src="static/javascripts/jquery.js"></script>
 		<script src="static/javascripts/ui.js"></script>
 		<script src="static/javascripts/html5slider.js"></script>
