@@ -184,7 +184,7 @@ a {
 	}
 }
 
-@media screen and (min-width: 900px) and (max-width: 1010px) and (min-height: 550px)  {
+@media screen and (min-width: 900px) and (max-width: 1010px) {
 	#viewer {
 		width: 500px;
 		height: 500px
@@ -195,7 +195,7 @@ a {
 	}
 }
 
-@media screen and (min-width: 1011px) and (max-width: 1120px) and (min-height: 650px)  {
+@media screen and (min-width: 1011px) and (max-width: 1120px) {
 	#viewer {
 		width: 600px;
 		height: 600px
@@ -206,7 +206,7 @@ a {
 	}
 }
 
-@media screen and (min-width: 1121px) and (max-width: 1230px) and (min-height: 750px)  {
+@media screen and (min-width: 1121px)  {
 	#viewer {
 		width: 700px;
 		height: 700px
