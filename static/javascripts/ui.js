@@ -90,6 +90,12 @@
             return false;
         });
         
+        $('a[href="#textures"]').click(function(e) {
+            e.preventDefault();
+            $('#textures').slideToggle();
+            return false;
+        });
+        
         $('a[href="#zoom"]').click(function(e) {
             e.preventDefault();
             

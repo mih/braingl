@@ -3,209 +3,200 @@
     <head>
         <meta charset="utf-8">
         <title>Connectom viewer</title>
-        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Droid+Sans:regular,bold|Droid+Serif:regular,bold,italic&amp;v1" />
         <link rel="stylesheet" type="text/css" href="static/stylesheets/screen.css" />
-        <link rel="stylesheet" type="text/css" href="static/stylesheets/temp.css" />
     </head>
-    <body class="">
-        <div id="wrapper">
-        	<a href="#zoom" style="font-size: 12px">Enlarge</a><br>
-        	<br>
-			<div id="viewer">
-				<canvas id="viewer-canvas"></canvas>
-			</div>
-			<div id="status"></div>
+    <body>
+		<div class="controlTab" id="toggles">
+			<a href="#controls2">Controls</a><br>
+			<section id="controls2" style="display:none">	
+				<div id="controls-toggles"></div>
+				<br>
+				<div id="controls-slices">
+					<div><label for="sliceX">X</label><input type="range" min="0" max="255" id="sliceX" value="80" step="1" /> <span class="value"></span></div>
+					<div><label for="sliceY">Y</label><input type="range" min="0" max="255" id="sliceY" value="100" step="1" /> <span class="value"></span></div>
+					<div><label for="sliceZ">Z</label><input type="range" min="0" max="255" id="sliceZ" value="80" step="1" /> <span class="value"></span></div>
+				</div>
+			</section>
+			<a href="#elements">Elements</a><br>
+			<section id="elements" style="display:block"></section>
+			<a href="#activations">Activations</a><br>
+			<section id="activations" style="display:none"></section>
+			<a href="#inputActivations">Input activations</a><br>
+			<section id="inputActivations" style="display:none">
+				<select id="editActivationSelect" onChange="Viewer.changeEditActivationSelection();">
+				</select>
+				<table>
+					<tr>
+						<th>Name</td>
+						<th>X</th>
+						<th>Y</th>
+						<th>Z</th>
+					</tr>
+					<tr>
+						<td><input type="text" size="10" id="acName" value='activ1'></td>
+						<td><input type="text" size="6" id="acX" value=-3></td>
+						<td><input type="text" size="6" id="acY" value=0></td>
+						<td><input type="text" size="6" id="acZ" value=0></td>
+					</tr>
+					<tr>
+						<th>Size</td>
+						<th>R</th>
+						<th>G</th>
+						<th>B</th>
+					</tr>
+					<tr>
+						<td><input type="text" size="10" id="acSize" value=3></td>
+						<td><input type="text" size="6" id="acR" value=1></td>
+						<td><input type="text" size="6" id="acG" value=0></td>
+						<td><input type="text" size="6" id="acB" value=0></td>
+					</tr>
+				</table>
+				<input type="button" name="Submit" value="New" onclick="Viewer.addActivation();">
+				<input type="button" name="Submit" value="Edit" onclick="Viewer.editActivation();">
+				<input type="button" name="Submit" value="Select Fibres" onclick="Viewer.recalcFibres();">
+				<input type="button" name="Submit" value="Reset Fibres" onclick="Viewer.resetFibres();">
+			</section>
+			<a href="#connections">Connections</a><br>
+			<section id="connections" style="display:none"></section>
+			<a href="#inputConnections">Input connections</a><br>
+			<section id="inputConnections" style="display:none">
+				<select id="editConnectionSelect" onChange="Viewer.changeEditConnectionSelection();">
+				</select>
+				<br>
+				<select id="fromSelect">
+				</select>
+				<select id="toSelect">
+				</select>
+				<table>
+					<tr>
+						<td></td>
+						<th>R</th>
+						<th>G</th>
+						<th>B</th>
+					</tr>
+					<tr>
+						<td></td>
+						<td><input type="text" size="6" id="coR" value=0></td>
+						<td><input type="text" size="6" id="coG" value=1></td>
+						<td><input type="text" size="6" id="coB" value=0></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td><input type="text" size="6" id="coR2" value=0></td>
+						<td><input type="text" size="6" id="coG2" value=0></td>
+						<td><input type="text" size="6" id="coB2" value=1></td>
+					</tr>
+					<tr>
+						<td></td>
+						<th>Strength</td>
+						<th>Size</th>
+						<th>Distance</th>
+						<th>Speed</th>
+					</tr>
+					<tr>
+						<td></td>
+						<td><input type="number" min=0.5 max=20 value=2 step=0.1 id="coStrength"></td>
+						<td><input type="number" min=0.5 max=20 value=5 step=0.1 id="coSize"></td>
+						<td><input type="number" min=0.5 max=20 value=20 step=0.1 id="coDistance"></td>
+						<td><input type="number" min=0.5 max=20 value=1 step=0.1 id="coSpeed"></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td><input type="number" min=0.5 max=20 value=1 step=0.1 id="coStrength2"></td>
+						<td><input type="number" min=0.5 max=20 value=3 step=0.1 id="coSize2"></td>
+						<td><input type="number" min=0.5 max=20 value=10 step=0.1 id="coDistance2"></td>
+						<td><input type="number" min=0.5 max=20 value=2 step=0.1 id="coSpeed2"></td>
+					</tr>
+				</table>
+				<input type="button" name="Submit" value="New" onclick="Viewer.addConnection();">
+				<input type="button" name="Submit" value="Edit" onclick="Viewer.editConnection();">
+				<br>
+				<input type="button" name="Animate" value="Animate" onclick="Viewer.toggleAnimation();">
+			</section>
+			<a href="#saveload">Save/Load</a><br>
+			<section id="saveload" style="display:none">
+				<input type="button" name="Save" value="Save" onclick="Viewer.saveScene();">
+				<input type="button" name="Load" value="Load" onclick="Viewer.loadScene();">
+				<input type="text" id="textInput">
+				<input type="button" name="Clear" value="Clear" onclick="document.getElementById('textInput').value =''">
+				<input type="checkbox" id="saveLoc">use browser storage<br>
+				<br>
+				<input type="button" name="Screenshot" value="Screenshot" onclick="Viewer.screenshot();">
+				<br>
+				<input type="button" id="recordButton" value="Record" onclick="Viewer.toggleRecording();">
+				<input type="button" id="playButton" value="Play" onclick="Viewer.playRecording();">
+			</section>
+			<a href="#animation">Animation</a><br>
+			<section id="animation" style="display:block">
+				<table>
+					<tr>
+						<td></td>
+						<th>time step</th>
+						<th>x step</th>
+						<th>y step</th>
+						<th>frames</th>
+						<th>capture</th>
+					</tr>
+					<tr>
+						<td><input type="button" name="Test" value="rotate" onclick="Viewer.autoRotate();"></td>
+						<td><input type="text" size="6" id="animT" value=50></td>
+						<td><input type="text" size="6" id="animX" value=30></td>
+						<td><input type="text" size="6" id="animY" value=0></td>
+						<td><input type="text" size="6" id="animF" value=50></td>
+						<td><input type="checkbox" id="animS" value=0></td>
+					</tr>
+					<tr>
+						<td><input type="button" name="left" value="left" onclick="Viewer.setViewLeft();"></td>
+						<td><input type="button" name="axial" value="axial" onclick="Viewer.setViewAxial();"></td>
+						<td><input type="button" name="coronal" value="coronal" onclick="Viewer.setViewCoronal();"></td>
+					</tr>
+				</table>
+				<br>
+				<!-- <div><label for="transp">transparency</label><input type="range" min="0" max="99" id="transp" value="100" step="1" /><span class="value"></span></div> -->
+			</section>
+			<a href="#textures">Textures</a><br>
+			<section id="textures" style="display:block">
+				<table>
+					<tr>
+						<th>Primary Texture</th>
+					</tr>
+					<tr>
+						<td><select id="textureSelect" onChange="Viewer.changeTexture();"></select></td>
+					</tr>
+					<tr>
+						<th>Secondary Texture</th>
+						<th>Color Map</th>
+					</tr>
+					<tr>
+						<td>
+							<select id="textureSelect2" onChange="Viewer.changeTexture2();">
+								<option value="none">none</option>
+							</select>
+						</td>
+						<td>
+							<select id="cMapSelect" onChange="Viewer.changeColorMap();">
+								<option value="0">none</option>
+								<option value="1">Red-Yellow</option>
+     								<option value="2">Blue-Light Blue</option>
+     								<option value="3">Rainbow</option>
+							</select>
+						</td>
+					</tr>
+				</table>
+				<br>
+				<div><label class ="lab1" for="threshold1">threshold neg</label><input type="range" min="0" max="100" id="threshold1" value="0" step="1" /><span class="value"></span></div>
+				<br>
+				<div><label class ="lab1" for="threshold2">threshold pos</label><input type="range" min="0" max="100" id="threshold2" value="0" step="1" /><span class="value"></span></div>
+				<br>
+				<div><label class ="lab1" for="alpha2">alpha</label><input type="range" min="0" max="1.0" id="alpha2" value="1.0" step="0.01" /><span class="value"></span></div>
 
-			<div id="toggles">
-				<a href="#controls2">Controls</a><br>
-				<section id="controls2" style="display:none">	
-					<div id="controls-toggles"></div>
-					<div id="controls-slices">
-						<div><label for="sliceX">X</label><input type="range" min="0" max="255" id="sliceX" value="80" step="1" /> <span class="value"></span></div>
-						<div><label for="sliceY">Y</label><input type="range" min="0" max="255" id="sliceY" value="100" step="1" /> <span class="value"></span></div>
-						<div><label for="sliceZ">Z</label><input type="range" min="0" max="255" id="sliceZ" value="80" step="1" /> <span class="value"></span></div>
-					</div>
-				</section>
-				<a href="#elements">Elements</a><br>
-				<section id="elements" style="display:block"></section>
-				<a href="#activations">Activations</a><br>
-				<section id="activations" style="display:none"></section>
-				<a href="#inputActivations">Input activations</a><br>
-				<section id="inputActivations" style="display:none">
-					<select id="editActivationSelect" onChange="Viewer.changeEditActivationSelection();">
-					</select>
-					<table>
-						<tr>
-							<th>Name</td>
-							<th>X</th>
-							<th>Y</th>
-							<th>Z</th>
-						</tr>
-						<tr>
-							<td><input type="text" size="10" id="acName" value='activ1'></td>
-							<td><input type="text" size="6" id="acX" value=-3></td>
-							<td><input type="text" size="6" id="acY" value=0></td>
-							<td><input type="text" size="6" id="acZ" value=0></td>
-						</tr>
-						<tr>
-							<th>Size</td>
-							<th>R</th>
-							<th>G</th>
-							<th>B</th>
-						</tr>
-						<tr>
-							<td><input type="text" size="10" id="acSize" value=3></td>
-							<td><input type="text" size="6" id="acR" value=1></td>
-							<td><input type="text" size="6" id="acG" value=0></td>
-							<td><input type="text" size="6" id="acB" value=0></td>
-						</tr>
-					</table>
-					<input type="button" name="Submit" value="New" onclick="Viewer.addActivation();">
-					<input type="button" name="Submit" value="Edit" onclick="Viewer.editActivation();">
-					<input type="button" name="Submit" value="Select Fibres" onclick="Viewer.recalcFibres();">
-					<input type="button" name="Submit" value="Reset Fibres" onclick="Viewer.resetFibres();">
-				</section>
-				<a href="#connections">Connections</a><br>
-				<section id="connections" style="display:none"></section>
-				<a href="#inputConnections">Input connections</a><br>
-				<section id="inputConnections" style="display:none">
-					<select id="editConnectionSelect" onChange="Viewer.changeEditConnectionSelection();">
-					</select>
-					<br>
-					<select id="fromSelect">
-					</select>
-					<select id="toSelect">
-					</select>
-					<table>
-						<tr>
-							<td></td>
-							<th>R</th>
-							<th>G</th>
-							<th>B</th>
-						</tr>
-						<tr>
-							<td></td>
-							<td><input type="text" size="6" id="coR" value=0></td>
-							<td><input type="text" size="6" id="coG" value=1></td>
-							<td><input type="text" size="6" id="coB" value=0></td>
-						</tr>
-						<tr>
-							<td></td>
-							<td><input type="text" size="6" id="coR2" value=0></td>
-							<td><input type="text" size="6" id="coG2" value=0></td>
-							<td><input type="text" size="6" id="coB2" value=1></td>
-						</tr>
-						<tr>
-							<td></td>
-							<th>Strength</td>
-							<th>Size</th>
-							<th>Distance</th>
-							<th>Speed</th>
-						</tr>
-						<tr>
-							<td></td>
-							<td><input type="number" min=0.5 max=20 value=2 step=0.1 id="coStrength"></td>
-							<td><input type="number" min=0.5 max=20 value=5 step=0.1 id="coSize"></td>
-							<td><input type="number" min=0.5 max=20 value=20 step=0.1 id="coDistance"></td>
-							<td><input type="number" min=0.5 max=20 value=1 step=0.1 id="coSpeed"></td>
-						</tr>
-						<tr>
-							<td></td>
-							<td><input type="number" min=0.5 max=20 value=1 step=0.1 id="coStrength2"></td>
-							<td><input type="number" min=0.5 max=20 value=3 step=0.1 id="coSize2"></td>
-							<td><input type="number" min=0.5 max=20 value=10 step=0.1 id="coDistance2"></td>
-							<td><input type="number" min=0.5 max=20 value=2 step=0.1 id="coSpeed2"></td>
-						</tr>
-					</table>
-					<input type="button" name="Submit" value="New" onclick="Viewer.addConnection();">
-					<input type="button" name="Submit" value="Edit" onclick="Viewer.editConnection();">
-					<br>
-					<input type="button" name="Animate" value="Animate" onclick="Viewer.toggleAnimation();">
-				</section>
-				<a href="#saveload">Save/Load</a><br>
-				<section id="saveload" style="display:none">
-					<input type="button" name="Save" value="Save" onclick="Viewer.saveScene();">
-					<input type="button" name="Load" value="Load" onclick="Viewer.loadScene();">
-					<input type="text" id="textInput">
-					<input type="button" name="Clear" value="Clear" onclick="document.getElementById('textInput').value =''">
-					<input type="checkbox" id="saveLoc">use browser storage<br>
-					<br>
-					<input type="button" name="Screenshot" value="Screenshot" onclick="Viewer.screenshot();">
-					<br>
-					<input type="button" id="recordButton" value="Record" onclick="Viewer.toggleRecording();">
-					<input type="button" id="playButton" value="Play" onclick="Viewer.playRecording();">
-				</section>
-				<a href="#animation">Animation</a><br>
-				<section id="animation" style="display:block">
-					<table>
-						<tr>
-							<td></td>
-							<th>time step</th>
-							<th>x step</th>
-							<th>y step</th>
-							<th>frames</th>
-							<th>capture</th>
-						</tr>
-						<tr>
-							<td><input type="button" name="Test" value="rotate" onclick="Viewer.autoRotate();"></td>
-							<td><input type="text" size="6" id="animT" value=50></td>
-							<td><input type="text" size="6" id="animX" value=30></td>
-							<td><input type="text" size="6" id="animY" value=0></td>
-							<td><input type="text" size="6" id="animF" value=50></td>
-							<td><input type="checkbox" id="animS" value=0></td>
-						</tr>
-						<tr>
-							<td><input type="button" name="left" value="left" onclick="Viewer.setViewLeft();"></td>
-							<td><input type="button" name="axial" value="axial" onclick="Viewer.setViewAxial();"></td>
-							<td><input type="button" name="coronal" value="coronal" onclick="Viewer.setViewCoronal();"></td>
-						</tr>
-					</table>
-					<br>
-					<div><label for="transp">transparency</label><input type="range" min="0" max="99" id="transp" value="100" step="1" /><span class="value"></span></div>
-				</section>
-				<a href="#textures">Textures</a><br>
-				<section id="textures" style="display:block">
-					<table>
-						<tr>
-							<th>Primary Texture</th>
-						</tr>
-						<tr>
-							<td><select id="textureSelect" onChange="Viewer.changeTexture();"></select></td>
-						</tr>
-						<tr>
-							<th>Secondary Texture</th>
-							<th>Color Map</th>
-						</tr>
-						<tr>
-							<td>
-								<select id="textureSelect2" onChange="Viewer.changeTexture2();">
-									<option value="none">none</option>
-								</select>
-							</td>
-							<td>
-								<select id="cMapSelect" onChange="Viewer.changeColorMap();">
-									<option value="0">none</option>
-									<option value="1">Red-Yellow</option>
-      								<option value="2">Blue-Light Blue</option>
-      								<option value="3">Rainbow</option>
-								</select>
-							</td>
-						</tr>
-					</table>
-					<br>
-					<div id="controls-textures">
-					<div><label class ="lab1" for="threshold1">threshold neg</label><input type="range" min="0" max="100" id="threshold1" value="0" step="1" /><span class="value"></span></div>
-					<br>
-					<div><label class ="lab1" for="threshold2">threshold pos</label><input type="range" min="0" max="100" id="threshold2" value="0" step="1" /><span class="value"></span></div>
-					<br>
-					<div><label class ="lab1" for="alpha2">alpha</label><input type="range" min="0" max="1.0" id="alpha2" value="1.0" step="0.01" /><span class="value"></span></div>
-					</div>
-				</section>
-			</div>
-	        <footer id="footer">
-	            Experimental Connectom Viewer
-	        </footer>
+			</section>
 		</div>
+		<div id="viewer">
+			<canvas id="viewer-canvas"></canvas>
+		</div>
+		<div id="status"></div>
+
 		<script>window.settings = {'DATA_URL': '/data/'};</script>
 		<script src="static/javascripts/jquery.js"></script>
 		<script src="static/javascripts/ui.js"></script>
