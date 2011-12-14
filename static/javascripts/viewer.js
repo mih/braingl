@@ -1840,8 +1840,8 @@ var Viewer = (function() {
 	function setAxial(position) {
 		if (position < 0)
 			position = 0;
-		if (position > 159)
-			position = 159;
+		if (position > 255)
+			position = 255;
 		variables.scene.axial = parseFloat(position);
 		recordCommand("slice", "axial", position);
 		redraw();
@@ -1850,8 +1850,8 @@ var Viewer = (function() {
 	function setCoronal(position) {
 		if (position < 0)
 			position = 0;
-		if (position > 199)
-			position = 199;
+		if (position > 255)
+			position = 255;
 		variables.scene.coronal = parseFloat(position);
 		recordCommand("slice", "coronal", position);
 		redraw();
@@ -1860,8 +1860,8 @@ var Viewer = (function() {
 	function setSagittal(position) {
 		if (position < 0)
 			position = 0;
-		if (position > 159)
-			position = 159;
+		if (position > 255)
+			position = 255;
 		variables.scene.sagittal = parseFloat(position);
 		recordCommand("slice", "sagittal", position);
 		redraw();
