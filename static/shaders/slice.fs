@@ -109,7 +109,7 @@ void main(void) {
 		}
 		else
 		{
-			fragmentColor = vec4(mix(fragmentColor.rgb, fragmentColor1.rgb, 1.0), 1.0 );
+			fragmentColor = vec4(mix(fragmentColor.rgb, fragmentColor1.rgb, uAlpha2), 1.0 );
 		}
 	}
 	
