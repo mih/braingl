@@ -32,15 +32,19 @@
             e.preventDefault();
             if( $('#mriTab').css('display') === "block" ) {
             	$('#mriTab').slideToggle();
+            	$('a[href="#textures"]').css('font-weight', 'normal');
             }
             if( $('#elementTab').css('display') === "block" ) {
             	$('#elementTab').slideToggle();
+            	$('a[href="#elements"]').css('font-weight', 'normal');
             }
             if( $('#activationTab').css('display') === "block" ) {
             	$('#activationTab').slideToggle();
+            	$('a[href="#activations"]').css('font-weight', 'normal');
             }
             if( $('#controlTab1').css('display') != "block" ) {
             	$('#controlTab1').slideToggle();
+            	$('a[href="#controls"]').css('font-weight', 'bold');
             }
             return false;
         });
@@ -49,15 +53,19 @@
             e.preventDefault();
             if( $('#controlTab1').css('display') === "block" ) {
             	$('#controlTab1').slideToggle();
+            	$('a[href="#controls"]').css('font-weight', 'normal');
             }
             if( $('#elementTab').css('display') === "block" ) {
             	$('#elementTab').slideToggle();
+            	$('a[href="#elements"]').css('font-weight', 'normal');
             }
             if( $('#activationTab').css('display') === "block" ) {
             	$('#activationTab').slideToggle();
+            	$('a[href="#activations"]').css('font-weight', 'normal');
             }
             if( $('#mriTab').css('display') != "block" ) {
             	$('#mriTab').slideToggle();
+            	$('a[href="#textures"]').css('font-weight', 'bold');
             }
             return false;
         });
@@ -66,15 +74,19 @@
             e.preventDefault();
             if( $('#controlTab1').css('display') === "block" ) {
             	$('#controlTab1').slideToggle();
+            	$('a[href="#controls"]').css('font-weight', 'normal');
             }
             if( $('#mriTab').css('display') === "block" ) {
             	$('#mriTab').slideToggle();
+            	$('a[href="#textures"]').css('font-weight', 'normal');
             }
             if( $('#activationTab').css('display') === "block" ) {
             	$('#activationTab').slideToggle();
+            	$('a[href="#activations"]').css('font-weight', 'normal');
             }
             if( $('#elementTab').css('display') != "block" ) {
             	$('#elementTab').slideToggle();
+            	$('a[href="#elements"]').css('font-weight', 'bold');
             }
             return false;
         });
@@ -83,15 +95,19 @@
             e.preventDefault();
             if( $('#controlTab1').css('display') === "block" ) {
             	$('#controlTab1').slideToggle();
+            	$('a[href="#controls"]').css('font-weight', 'normal');
             }
             if( $('#mriTab').css('display') === "block" ) {
             	$('#mriTab').slideToggle();
+            	$('a[href="#textures"]').css('font-weight', 'normal');
             }
             if( $('#elementTab').css('display') === "block" ) {
             	$('#elementTab').slideToggle();
+            	$('a[href="#elements"]').css('font-weight', 'normal');
             }
             if( $('#activationTab').css('display') != "block" ) {
             	$('#activationTab').slideToggle();
+            	$('a[href="#activations"]').css('font-weight', 'bold');
             }
             return false;
         });
