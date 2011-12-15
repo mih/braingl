@@ -275,5 +275,9 @@
 		this.getMax = function() {
 			return max;
 		};
+		
+		this.getDims = function() {
+			return new Array(hdr.dim1, hdr.dim2, hdr.dim3 ); 
+		};
 	};
 })();

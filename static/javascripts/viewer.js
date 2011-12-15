@@ -858,7 +858,8 @@ var Viewer = (function() {
 		variables.webgl.lightPos[1] = 0.0;
 		variables.webgl.lightPos[2] = -1.0;
 
-		mat4.translate(variables.webgl.mvMatrix, [ -80, -100, -80 ]);
+		var dim = niftiis[$('#textureSelect').val()].getDims();
+		mat4.translate(variables.webgl.mvMatrix, [ dim[0]/-2.0, dim[1]/-2.0, dim[2]/-2.0 ]);
 
 		mat4.inverse(variables.webgl.thisRot);
 		mat4.multiply(variables.webgl.thisRot, variables.webgl.mvMatrix, variables.webgl.mvMatrix);
@@ -922,7 +923,8 @@ var Viewer = (function() {
 		variables.webgl.lightPos[1] = 0.0;
 		variables.webgl.lightPos[2] = -1.0;
 
-		mat4.translate(variables.webgl.mvMatrix, [ -80, -100, -80 ]);
+		var dim = niftiis[$('#textureSelect').val()].getDims();
+		mat4.translate(variables.webgl.mvMatrix, [ dim[0]/-2.0, dim[1]/-2.0, dim[2]/-2.0 ]);
 
 		mat4.inverse(variables.webgl.thisRot);
 		mat4.multiply(variables.webgl.thisRot, variables.webgl.mvMatrix, variables.webgl.mvMatrix);
