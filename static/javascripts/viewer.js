@@ -1452,13 +1452,18 @@ var Viewer = (function() {
 		}
 		if (wheelData < 0) {
 			recordCommand("mouse", "wheel", -1);
-			variables.scene.zoom -= 1;
+			if ( variables.scene.zoom <= 1 ) {
+				variables.scene.zoom -= 0.1;
+			}
+			else {
+				variables.scene.zoom -= 1;
+			}
 		} else {
 			recordCommand("mouse", "wheel", 0.5);
 			variables.scene.zoom += 0.5;
 		}
-		if (variables.scene.zoom < 1) {
-			variables.scene.zoom = 1;
+		if (variables.scene.zoom < 0.5) {
+			variables.scene.zoom = 0.5;
 		}
 		e.preventDefault();
 		redraw();
