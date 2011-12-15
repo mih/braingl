@@ -349,7 +349,7 @@ var Viewer = (function() {
 		for ( var i = 0; i < elem.indices.length; ++i) {
 			length = elem.indices[i];
 
-			var x1, x2, y1, y2, z1, z2, nx, ny, nz;
+			var x1=0, x2=0, y1=0, y2=0, z1=0, z2=0, nx=0, ny=0, nz=0;
 
 			tubeNormals.push(0);
 			tubeNormals.push(0);
@@ -1102,7 +1102,7 @@ var Viewer = (function() {
 				vertexNormalBuffer.numItems = elem.tubeNormals.length / 3;
 				
 				var vertexIndexBuffer      = gl.createBuffer();
-				vertexIndexBuffer.data     = new Uint16Array(elem.indices)
+				vertexIndexBuffer.data     = new Uint16Array(elem.indices);
 				vertexIndexBuffer.itemSize = 1;
 				vertexIndexBuffer.numItems = elem.indices.length;
 
@@ -1138,7 +1138,7 @@ var Viewer = (function() {
 				vertexColorBuffer.numItems = elem.colors.length / 4;
 
 				var vertexIndexBuffer = gl.createBuffer();
-				vertexIndexBuffer.data = new Uint16Array(elem.sortedIndices)
+				vertexIndexBuffer.data = new Uint16Array(elem.sortedIndices);
 				vertexIndexBuffer.itemSize = 1;
 				vertexIndexBuffer.numItems = elem.indices.length;
 
@@ -1902,7 +1902,7 @@ var Viewer = (function() {
 		var activs = [];
 		$.each(elements, function() {
 			if (this.display) {
-				activs.push(this.id)
+				activs.push(this.id);
 			}
 		});
 		variables.scene.activ = activs;
@@ -1947,7 +1947,7 @@ var Viewer = (function() {
 		variables.connectom = loadData.connectom;
 		//$('#activations').empty();
 		$.each(loadData.connectom.activations, function() {
-			createActivation(this.id, this.name, this.co[0], this.co[1], this.co[2], this.size, this.rgb.r, this.rgb.g, this.rgb.b )
+			createActivation(this.id, this.name, this.co[0], this.co[1], this.co[2], this.size, this.rgb.r, this.rgb.g, this.rgb.b );
 			addActivationToggle(this.id);
 		});
 		
@@ -1989,7 +1989,7 @@ var Viewer = (function() {
 		
 		addActivationToggle(id);
 
-		var saveAct = {}
+		var saveAct = {};
         saveAct.id = id;
         saveAct.name = elements[id].name;
         saveAct.co = elements[id].coordinates;
@@ -2104,7 +2104,7 @@ var Viewer = (function() {
 		        variables.connectom.connections[id3].barShift = barShift;
 		        
 		        var sel = $id('editConnectionSelect');
-				for (i = sel.length - 1; i>=0; i--) {
+				for (var i = sel.length - 1; i>=0; i--) {
 					if (sel.options[i].value == id3) {
 						sel.options[i].text = elements[id3].name;
 				    }
@@ -2131,7 +2131,7 @@ var Viewer = (function() {
         });
         $('#activations').append($toggle);
         
-        addActivationSelect(id)
+        addActivationSelect(id);
 	}
 	
 	function addActivationSelect(id) {
@@ -2168,8 +2168,8 @@ var Viewer = (function() {
 		var toId = $('#toSelect').val();
 		
 		elements[id] = {};
-		elements[id].fromId = fromId
-		elements[id].toId = toId
+		elements[id].fromId = fromId;
+		elements[id].toId = toId;
 		createConnection(id, name, cof, cot, color, strength, size, distance, speed, -strength);
 		
 		var id2 = 'cc' + variables.connectom.connectionIndex;
@@ -2181,8 +2181,8 @@ var Viewer = (function() {
 		var distance2 = parseFloat($id('coDistance2').value);
 		var speed2 = parseFloat($id('coSpeed2').value);
 		elements[id2] = {};
-		elements[id2].fromId = toId
-		elements[id2].toId = fromId
+		elements[id2].fromId = toId;
+		elements[id2].toId = fromId;
 		elements[id2].coId = id;
 		elements[id].coId = id2;
 		createConnection(id2, name2, cot, cof, color2, strength2, size2, distance2, speed2, strength2);
@@ -2191,7 +2191,7 @@ var Viewer = (function() {
 		addConnectionToggle(id2);
 		addConnectionSelect(id2);
 		
-		var saveCon = {}
+		var saveCon = {};
         saveCon.id = id;
         saveCon.name = elements[id].name;
         saveCon.cof = cof;
@@ -2206,7 +2206,7 @@ var Viewer = (function() {
         saveCon.barShift = -strength;
         variables.connectom.connections[id] = saveCon;
         
-        var saveCon2 = {}
+        var saveCon2 = {};
         saveCon2.id = id2;
         saveCon2.name = elements[id2].name;
         saveCon2.cof = cot;
@@ -2239,8 +2239,8 @@ var Viewer = (function() {
 		var fromId = $('#fromSelect').val();
 		var toId = $('#toSelect').val();
 		
-		elements[id].fromId = fromId
-		elements[id].toId = toId
+		elements[id].fromId = fromId;
+		elements[id].toId = toId;
 		createConnection(id, name, cof, cot, color, strength, size, distance, speed, -strength);
 		
 		var id2 = elements[id].coId;
@@ -2251,8 +2251,8 @@ var Viewer = (function() {
 		var distance2 = parseFloat($id('coDistance2').value);
 		var speed2 = parseFloat($id('coSpeed2').value);
 		
-		elements[id2].fromId = toId
-		elements[id2].toId = fromId
+		elements[id2].fromId = toId;
+		elements[id2].toId = fromId;
 		createConnection(id2, name2, cot, cof, color2, strength2, size2, distance2, speed2, strength2);
 		
         variables.connectom.connections[id].name = elements[id].name;
@@ -2281,7 +2281,7 @@ var Viewer = (function() {
 
         
         var sel = $id('editConnectionSelect');
-		for (i = sel.length - 1; i>=0; i--) {
+		for (var i = sel.length - 1; i>=0; i--) {
 			if (sel.options[i].value == id) {
 				sel.options[i].text = elements[id].name;
 		    }
@@ -2374,7 +2374,7 @@ var Viewer = (function() {
 	function addConnectionToggle(id) {
 		var $toggle = $('<a />');
         $toggle.append('<span/>');
-        var $label = $('<label>'+elements[id].name+'</label>')
+        var $label = $('<label>'+elements[id].name+'</label>');
         $toggle.append($label);
         $label.attr('id', 'label-' + id);
         $toggle.addClass('toggle');
@@ -2398,7 +2398,7 @@ var Viewer = (function() {
 	
 	function toggleAnimation() {
 		if (variables.connectom.animate) {
-			clearInterval(variables.connectom.animationInterval)
+			clearInterval(variables.connectom.animationInterval);
 			variables.connectom.animate = false;
 		}
 		else {
@@ -2436,13 +2436,13 @@ var Viewer = (function() {
 		$id("coDistance").value =  elements[id].distance;
 		$id("coSpeed").value =  elements[id].speed;
 		var sel1 = $id('fromSelect');
-		for (i = sel1.length - 1; i>=0; i--) {
+		for (var i = sel1.length - 1; i>=0; i--) {
 			if (sel1.options[i].value == elements[id].fromId ) {
 				sel1.options[i].selected = true;
 		    }
 		}
 		var sel2 = $id('toSelect');
-		for (i = sel2.length - 1; i>=0; i--) {
+		for (var i = sel2.length - 1; i>=0; i--) {
 			if (sel2.options[i].value == elements[id].toId) {
 				sel2.options[i].selected = true;
 		    }
@@ -2464,9 +2464,9 @@ var Viewer = (function() {
 	}
 	
 	var rotation = false;
-	var centerX;
-	var centerY;
-	var rotFrames;
+	var centerX = 0;
+	var centerY = 0;
+	var rotFrames = 0;
 	function autoRotate() {
 		if ( rotation ) {
 			clearInterval(variables.webgl.preloadTextures);
@@ -2506,15 +2506,15 @@ var Viewer = (function() {
 	}
 	
 	function setViewLeft() {
-		activateView("scene1")
+		activateView("scene1");
 	}
 	
 	function setViewAxial() {
-		activateView("scene2")
+		activateView("scene2");
 	}
 	
 	function setViewCoronal() {
-		activateView("scene3")
+		activateView("scene3");
 	}
 	
 	function setTransparency(value) {
@@ -2525,7 +2525,7 @@ var Viewer = (function() {
 	}
 	
 	function changeTexture() {
-		var id = $('#textureSelect').val();
+		//var id = $('#textureSelect').val();
 		redraw();
 	}
 	
@@ -2542,7 +2542,7 @@ var Viewer = (function() {
 	}
 	
 	function changeColorMap() {
-		var id = $('#cMapSelect').val();
+		//var id = $('#cMapSelect').val();
 		redraw();
 	}
 

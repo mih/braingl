@@ -11,7 +11,7 @@
 
 (function() {
 	window.Niftii = function () {
-		var data;
+		var data = [];
 		var hdr = {};
 		var dim1 = 0, dim2=0, dim3=0;
 		var max = -1000;

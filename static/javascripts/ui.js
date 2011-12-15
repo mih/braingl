@@ -13,9 +13,7 @@
             loadingDiv = $('<div class="loading" />'),
             $elementsTogglesContainer = $('#elements'),
             $activationsTogglesContainer = $('#activations'),
-            $controlsTogglesContainer = $('#controls-toggles'),
-            webglNotSupported = false;
-        
+            $controlsTogglesContainer = $('#controls-toggles');
         
         // FIXED POSTION: SMALL SCREEN FALLBACK
         $(window).bind('resize', function(e) {
@@ -385,68 +383,6 @@
         
         // HISTORY
         $.support.historyPushState = window.history && history.pushState;
-        
-        var loadContent = function(url) {
-            var $container = $('#content-outer');
-            $('#content').addClass('transition-out');
-            window.setTimeout(function() {
-                $container.load(url + ' #content', function(responseText) {
-                    var $resp = $('<div>').append(responseText.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')),
-                        title = $resp.find('title').text(),
-                        scene = $resp.find('[data-scene]').data('scene');
-                    $container.data('contentReplaced', true);
-                    window.setTimeout(function() {
-                        var $target;
-                        $('#content').removeClass('transition-in');
-                        if (location.hash) {
-                            $target = $('#'+location.hash.replace('#',''));
-                            if ($target.length) {
-                                window.setTimeout(function() {
-                                    $.scrollTo(location.hash, {'duration': 250});
-                                }, 250);
-                            }
-                        } 
-                        if ((!$target || !$target.length) && $('body').scrollTop()) $('html, body').animate({'scrollTop': 0}, 500);
-                    }, 0);
-                    if (title) {
-                        document.title = title;
-                    }
-                    if (scene) {
-                        if (config.debug) console.log('ACTIVATE SCENE:', scene);
-                        if (!webglNotSupported) Viewer.activateScene(scene);
-                        $('[data-scene]').data('scene', scene);
-                    }
-                    if (webglNotSupported) {
-                        var fallback = $resp.find('#viewer-canvas').html();
-                        $('#viewer-fallback').replaceWith(fallback);
-                    }
-                });
-            }, 400);
-        };
-        
-        $('a').live('click', function(e) {
-            var $link = $(this),
-                href = $link.attr('href');
-            if ((this.hostname.replace(/\:\d+$/, '') != location.hostname) || (href.substr(0,1) == '#') || (href.indexOf('/admin/') > -1)) {
-                return true;
-            }
-            e.preventDefault();
-            if (location.pathname == href) return;
-            if ($.support.historyPushState) {
-                history.pushState(null, null, href);
-            } else {
-                location.hash = '#!' + href;
-            }
-            loadContent(href);
-            return false;
-        });
-        
-        $(window).bind('popstate', function(e) {
-            if (!$('#content-outer').data('contentReplaced')) return;
-            loadContent(location.pathname);
-        });
-        
-        
         // KEYBOARD SHORTCUTS
         $('a').live('clickflash', function() {
             var $link = $(this);
