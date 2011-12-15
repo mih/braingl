@@ -167,8 +167,9 @@ a {
 	-webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 	-o-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 	box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-	position: relative;
-	float: left;
+	position: fixed;
+	top: 0px;
+	left: 365px;
 	margin-top: 5px;
 	margin-left: 5px;
 }

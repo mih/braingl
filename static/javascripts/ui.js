@@ -30,101 +30,70 @@
         // CONTROLS
         $('a[href="#controls"]').click(function(e) {
             e.preventDefault();
-            $('#controls').slideToggle();
-            return false;
-        });
-        
-        $('a[href="#controls2"]').click(function(e) {
-            e.preventDefault();
-            $('#controls2').slideToggle();
-            return false;
-        });
-        
-        $('a[href="#elements"]').click(function(e) {
-            e.preventDefault();
-            $('#elements').slideToggle();
-            return false;
-        });
-        
-        $('a[href="#activations"]').click(function(e) {
-            e.preventDefault();
-            $('#activations').slideToggle();
-            return false;
-        });
-        
-        $('a[href="#connections"]').click(function(e) {
-            e.preventDefault();
-            $('#connections').slideToggle();
-            return false;
-        });
-        
-        $('a[href="#saveload"]').click(function(e) {
-            e.preventDefault();
-            $('#saveload').slideToggle();
-            return false;
-        });
-        
-        $('a[href="#animation"]').click(function(e) {
-            e.preventDefault();
-            $('#animation').slideToggle();
-            return false;
-        });
-        
-        $('a[href="#inputActivations"]').click(function(e) {
-            e.preventDefault();
-            $('#inputActivations').slideToggle();
-            return false;
-        });
-        
-        $('a[href="#inputConnections"]').click(function(e) {
-            e.preventDefault();
-            $('#inputConnections').slideToggle();
-            return false;
-        });
-        
-        $('a[href="#editActivations"]').click(function(e) {
-            e.preventDefault();
-            $('#editActivations').slideToggle();
+            if( $('#mriTab').css('display') === "block" ) {
+            	$('#mriTab').slideToggle();
+            }
+            if( $('#elementTab').css('display') === "block" ) {
+            	$('#elementTab').slideToggle();
+            }
+            if( $('#activationTab').css('display') === "block" ) {
+            	$('#activationTab').slideToggle();
+            }
+            if( $('#controlTab1').css('display') != "block" ) {
+            	$('#controlTab1').slideToggle();
+            }
             return false;
         });
         
         $('a[href="#textures"]').click(function(e) {
             e.preventDefault();
-            $('#textures').slideToggle();
+            if( $('#controlTab1').css('display') === "block" ) {
+            	$('#controlTab1').slideToggle();
+            }
+            if( $('#elementTab').css('display') === "block" ) {
+            	$('#elementTab').slideToggle();
+            }
+            if( $('#activationTab').css('display') === "block" ) {
+            	$('#activationTab').slideToggle();
+            }
+            if( $('#mriTab').css('display') != "block" ) {
+            	$('#mriTab').slideToggle();
+            }
             return false;
         });
         
-        $('a[href="#zoom"]').click(function(e) {
+        $('a[href="#elements"]').click(function(e) {
             e.preventDefault();
-            
-            var $vc = $('#viewer-canvas');
-            var $vd = $('#viewer');
-            
-            $('#toggles').slideToggle();
-            
-            if (Viewer.enlarged === true) {
-            	console.log("small");
-                $vc.height(Viewer.oldHeight);
-                $vc.width(Viewer.oldWidth);
-                $vd.height(Viewer.oldHeight);
-                $vd.width(Viewer.oldWidth);
-                
-                Viewer.enlarged = false;
+            if( $('#controlTab1').css('display') === "block" ) {
+            	$('#controlTab1').slideToggle();
             }
-            else {
-            	Viewer.oldWidth = $vc.width();
-            	Viewer.oldHeight = $vc.height();
-            	
-            	var newSize = Math.min($(window).width(), $(window).height()) - 40;
-            	
-                $vc.height(newSize);
-                $vc.width(newSize);
-                $vd.height(newSize);
-                $vd.width(newSize);
-                
-                Viewer.enlarged = true;
+            if( $('#mriTab').css('display') === "block" ) {
+            	$('#mriTab').slideToggle();
             }
-            Viewer.updateSize();
+            if( $('#activationTab').css('display') === "block" ) {
+            	$('#activationTab').slideToggle();
+            }
+            if( $('#elementTab').css('display') != "block" ) {
+            	$('#elementTab').slideToggle();
+            }
+            return false;
+        });
+        
+        $('a[href="#activations"]').click(function(e) {
+            e.preventDefault();
+            if( $('#controlTab1').css('display') === "block" ) {
+            	$('#controlTab1').slideToggle();
+            }
+            if( $('#mriTab').css('display') === "block" ) {
+            	$('#mriTab').slideToggle();
+            }
+            if( $('#elementTab').css('display') === "block" ) {
+            	$('#elementTab').slideToggle();
+            }
+            if( $('#activationTab').css('display') != "block" ) {
+            	$('#activationTab').slideToggle();
+            }
+            return false;
         });
         
         // SLICES

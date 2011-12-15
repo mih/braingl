@@ -6,9 +6,14 @@
         <link rel="stylesheet" type="text/css" href="static/stylesheets/screen.css" />
     </head>
     <body>
-		<div class="controlTab" id="toggles">
-			<a href="#controls2">Controls</a><br>
-			<section id="controls2" style="display:none">	
+    	<div class="controlTab" id="links">
+    		<a href="#controls">Controls</a>
+    		<a href="#textures">MRI</a>
+    		<a href="#elements">Elements</a>
+    		<a href="#activations">Activations</a>
+    	</div>
+    	<div class="controlTab" id="controlTab1" style="display:block">
+			<section id="controls">	
 				<div id="controls-toggles"></div>
 				<br>
 				<div id="controls-slices">
@@ -17,12 +22,91 @@
 					<div><label for="sliceZ">Z</label><input type="range" min="0" max="255" id="sliceZ" value="80" step="1" /> <span class="value"></span></div>
 				</div>
 			</section>
-			<a href="#elements">Elements</a><br>
-			<section id="elements" style="display:block"></section>
-			<a href="#activations">Activations</a><br>
-			<section id="activations" style="display:none"></section>
-			<a href="#inputActivations">Input activations</a><br>
-			<section id="inputActivations" style="display:none">
+			<section id="saveload">
+				<input type="button" name="Save" value="Save" onclick="Viewer.saveScene();">
+				<input type="button" name="Load" value="Load" onclick="Viewer.loadScene();">
+				<input type="text" id="textInput">
+				<input type="button" name="Clear" value="Clear" onclick="document.getElementById('textInput').value =''">
+				<input type="checkbox" id="saveLoc">use browser storage<br>
+				<br>
+				<input type="button" name="Screenshot" value="Screenshot" onclick="Viewer.screenshot();">
+				<br>
+				<input type="button" id="recordButton" value="Record" onclick="Viewer.toggleRecording();">
+				<input type="button" id="playButton" value="Play" onclick="Viewer.playRecording();">
+			</section>
+			<section id="animation">
+				<table>
+					<tr>
+						<td></td>
+						<th>time step</th>
+						<th>x step</th>
+						<th>y step</th>
+						<th>frames</th>
+					</tr>
+					<tr>
+						<td><input type="button" name="Test" value="rotate" onclick="Viewer.autoRotate();"></td>
+						<td><input type="text" size="6" id="animT" value=50></td>
+						<td><input type="text" size="6" id="animX" value=30></td>
+						<td><input type="text" size="6" id="animY" value=0></td>
+						<td><input type="text" size="6" id="animF" value=50></td>
+					</tr>
+					<tr>
+						<td><input type="button" name="left" value="left" onclick="Viewer.setViewLeft();"></td>
+						<td><input type="button" name="axial" value="axial" onclick="Viewer.setViewAxial();"></td>
+						<td><input type="button" name="coronal" value="coronal" onclick="Viewer.setViewCoronal();"></td>
+					</tr>
+				</table>
+				<br>
+				<!-- <div><label for="transp">transparency</label><input type="range" min="0" max="99" id="transp" value="100" step="1" /><span class="value"></span></div> -->
+			</section>
+			
+		</div>
+		<div class="controlTab" id="mriTab" style="display:none">
+			<section id="textures">
+				<table>
+					<tr>
+						<th>Primary MRI</th>
+					</tr>
+					<tr>
+						<td><select id="textureSelect" onChange="Viewer.changeTexture();"></select></td>
+					</tr>
+					<tr>
+						<th>Overlay</th>
+						<th>Color Map</th>
+					</tr>
+					<tr>
+						<td>
+							<select id="textureSelect2" onChange="Viewer.changeTexture2();">
+								<option value="none">none</option>
+							</select>
+						</td>
+						<td>
+							<select id="cMapSelect" onChange="Viewer.changeColorMap();">
+								<option value="0">none</option>
+								<option value="1">Red-Yellow</option>
+     								<option value="2">Blue-Light Blue</option>
+     								<option value="3">Rainbow</option>
+							</select>
+						</td>
+					</tr>
+				</table>
+				<br>
+				<div><label class ="lab1" for="threshold1">threshold neg</label><input type="range" min="0" max="100" id="threshold1" value="0" step="1" /><span class="value"></span></div>
+				<br>
+				<div><label class ="lab1" for="threshold2">threshold pos</label><input type="range" min="0" max="100" id="threshold2" value="0" step="1" /><span class="value"></span></div>
+				<br>
+				<div><label class ="lab1" for="alpha2">alpha</label><input type="range" min="0" max="1.0" id="alpha2" value="1.0" step="0.01" /><span class="value"></span></div>
+			</section>
+		</div>
+		
+		<div class="controlTab" id="elementTab" style="display:none">
+			<section id="elements"></section>
+		</div>
+		
+		<div class="controlTab" id="activationTab" style="display:none">
+			<section id="activations"></section>
+			<!--<a href="#inputActivations">Input activations</a><br>-->
+			<section id="inputActivations">
 				<select id="editActivationSelect" onChange="Viewer.changeEditActivationSelection();">
 				</select>
 				<table>
@@ -56,10 +140,8 @@
 				<input type="button" name="Submit" value="Select Fibres" onclick="Viewer.recalcFibres();">
 				<input type="button" name="Submit" value="Reset Fibres" onclick="Viewer.resetFibres();">
 			</section>
-			<a href="#connections">Connections</a><br>
-			<section id="connections" style="display:none"></section>
-			<a href="#inputConnections">Input connections</a><br>
-			<section id="inputConnections" style="display:none">
+			<section id="connections"></section>
+			<section id="inputConnections">
 				<select id="editConnectionSelect" onChange="Viewer.changeEditConnectionSelection();">
 				</select>
 				<br>
@@ -113,85 +195,8 @@
 				<br>
 				<input type="button" name="Animate" value="Animate" onclick="Viewer.toggleAnimation();">
 			</section>
-			<a href="#saveload">Save/Load</a><br>
-			<section id="saveload" style="display:none">
-				<input type="button" name="Save" value="Save" onclick="Viewer.saveScene();">
-				<input type="button" name="Load" value="Load" onclick="Viewer.loadScene();">
-				<input type="text" id="textInput">
-				<input type="button" name="Clear" value="Clear" onclick="document.getElementById('textInput').value =''">
-				<input type="checkbox" id="saveLoc">use browser storage<br>
-				<br>
-				<input type="button" name="Screenshot" value="Screenshot" onclick="Viewer.screenshot();">
-				<br>
-				<input type="button" id="recordButton" value="Record" onclick="Viewer.toggleRecording();">
-				<input type="button" id="playButton" value="Play" onclick="Viewer.playRecording();">
-			</section>
-			<a href="#animation">Animation</a><br>
-			<section id="animation" style="display:block">
-				<table>
-					<tr>
-						<td></td>
-						<th>time step</th>
-						<th>x step</th>
-						<th>y step</th>
-						<th>frames</th>
-						<th>capture</th>
-					</tr>
-					<tr>
-						<td><input type="button" name="Test" value="rotate" onclick="Viewer.autoRotate();"></td>
-						<td><input type="text" size="6" id="animT" value=50></td>
-						<td><input type="text" size="6" id="animX" value=30></td>
-						<td><input type="text" size="6" id="animY" value=0></td>
-						<td><input type="text" size="6" id="animF" value=50></td>
-						<td><input type="checkbox" id="animS" value=0></td>
-					</tr>
-					<tr>
-						<td><input type="button" name="left" value="left" onclick="Viewer.setViewLeft();"></td>
-						<td><input type="button" name="axial" value="axial" onclick="Viewer.setViewAxial();"></td>
-						<td><input type="button" name="coronal" value="coronal" onclick="Viewer.setViewCoronal();"></td>
-					</tr>
-				</table>
-				<br>
-				<!-- <div><label for="transp">transparency</label><input type="range" min="0" max="99" id="transp" value="100" step="1" /><span class="value"></span></div> -->
-			</section>
-			<a href="#textures">MRI</a><br>
-			<section id="textures" style="display:block">
-				<table>
-					<tr>
-						<th>Primary MRI</th>
-					</tr>
-					<tr>
-						<td><select id="textureSelect" onChange="Viewer.changeTexture();"></select></td>
-					</tr>
-					<tr>
-						<th>Overlay</th>
-						<th>Color Map</th>
-					</tr>
-					<tr>
-						<td>
-							<select id="textureSelect2" onChange="Viewer.changeTexture2();">
-								<option value="none">none</option>
-							</select>
-						</td>
-						<td>
-							<select id="cMapSelect" onChange="Viewer.changeColorMap();">
-								<option value="0">none</option>
-								<option value="1">Red-Yellow</option>
-     								<option value="2">Blue-Light Blue</option>
-     								<option value="3">Rainbow</option>
-							</select>
-						</td>
-					</tr>
-				</table>
-				<br>
-				<div><label class ="lab1" for="threshold1">threshold neg</label><input type="range" min="0" max="100" id="threshold1" value="0" step="1" /><span class="value"></span></div>
-				<br>
-				<div><label class ="lab1" for="threshold2">threshold pos</label><input type="range" min="0" max="100" id="threshold2" value="0" step="1" /><span class="value"></span></div>
-				<br>
-				<div><label class ="lab1" for="alpha2">alpha</label><input type="range" min="0" max="1.0" id="alpha2" value="1.0" step="0.01" /><span class="value"></span></div>
-
-			</section>
 		</div>
+		
 		<div id="viewer">
 			<canvas id="viewer-canvas"></canvas>
 		</div>

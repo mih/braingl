@@ -2499,9 +2499,6 @@ var Viewer = (function() {
 		redraw();
 		mat4.set(variables.webgl.thisRot, variables.webgl.lastRot);
 		Arcball.click(centerX, centerY);
-		if ($id("animS").checked) {
-			screenshot();
-		}
 		--rotFrames;
 	}
 	
