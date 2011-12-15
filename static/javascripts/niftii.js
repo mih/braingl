@@ -13,6 +13,7 @@
 	window.Niftii = function () {
 		var data;
 		var hdr = {};
+		var dim1 = 0, dim2=0, dim3=0;
 		var max = -1000;
 		var min = 1000;
 		var zero = 0;
@@ -34,6 +35,9 @@
 				hdr.dim5 = data[50] + data[51] * 256;
 				hdr.dim6 = data[52] + data[53] * 256;
 				hdr.dim7 = data[54] + data[54] * 256;
+				dim1 = Math.min( 255, hdr.dim1 );
+				dim2 = Math.min( 255, hdr.dim2 );
+				dim3 = Math.min( 255, hdr.dim3 );
 				
 				if ( hdr.datatype === 2 ) {
 					min = 0;
@@ -87,9 +91,9 @@
 			var imageData = ctx.getImageData(0, 0, c2d.width, c2d.height);
 			
 			if ( orient === "axial" ) {
-				for( var x = 0; x < hdr.dim1; ++x )
+				for( var x = 0; x < dim1; ++x )
 		        {
-		            for( var y = 0; y < hdr.dim2; ++y )
+		            for( var y = 0; y < dim2; ++y )
 		            {
 		            	var col = data[getId(x,y,pos)];
 		            	var index = 4 * (y * imageData.width + x);
@@ -102,9 +106,9 @@
 			}
 			
 			if ( orient === "coronal" ) {
-				for( var x = 0; x < hdr.dim1; ++x )
+				for( var x = 0; x < dim1; ++x )
 		        {
-		            for( var z = 0; z < hdr.dim3; ++z )
+		            for( var z = 0; z < dim3; ++z )
 		            {
 		            	var col = data[getId(x,pos,z)];
 		            	var index = 4 * (z * imageData.width + x);
@@ -117,9 +121,9 @@
 			}
 			
 			if ( orient === "sagittal" ) {
-				for( var y = 0; y < hdr.dim2; ++y )
+				for( var y = 0; y < dim2; ++y )
 		        {
-		            for( var z = 0; z < hdr.dim3; ++z )
+		            for( var z = 0; z < dim3; ++z )
 		            {
 		            	var col = data[getId(pos-1+1,y,z)];
 		            	var index = 4 * (z * imageData.width + y);
@@ -153,9 +157,9 @@
 			var bOff = 2 * gOff;
 			
 			if ( orient === "axial" ) {
-				for( var x = 0; x < hdr.dim1; ++x )
+				for( var x = 0; x < dim1; ++x )
 		        {
-		            for( var y = 0; y < hdr.dim2; ++y )
+		            for( var y = 0; y < dim2; ++y )
 		            {
 		            	var r = data[getId(x,y,pos)];
 		            	var g = data[parseInt(getId(x,y,pos))+parseInt(gOff)];
@@ -170,9 +174,9 @@
 			}
 			
 			if ( orient === "coronal" ) {
-				for( var x = 0; x < hdr.dim1; ++x )
+				for( var x = 0; x < dim1; ++x )
 		        {
-		            for( var z = 0; z < hdr.dim3; ++z )
+		            for( var z = 0; z < dim3; ++z )
 		            {
 		                var r = data[getId(x,pos,z)];
 		            	var g = data[getId(x,pos,z)+gOff];
@@ -187,9 +191,9 @@
 			}
 			
 			if ( orient === "sagittal" ) {
-				for( var y = 0; y < hdr.dim2; ++y )
+				for( var y = 0; y < dim2; ++y )
 		        {
-		            for( var z = 0; z < hdr.dim3; ++z )
+		            for( var z = 0; z < dim3; ++z )
 		            {
 		                var r = data[getId(pos-1+1,y,z)];
 		            	var g = data[getId(pos-1+1,y,z)+gOff];
@@ -221,9 +225,9 @@
 			}
 			
 			if ( orient === "axial" ) {
-				for( var x = 0; x < hdr.dim1; ++x )
+				for( var x = 0; x < dim1; ++x )
 		        {
-		            for( var y = 0; y < hdr.dim2; ++y )
+		            for( var y = 0; y < dim2; ++y )
 		            {
 		            	var col = data[getIdFloat(x,y,pos)];
 		            	var index = 4 * (y * imageData.width + x);
@@ -236,9 +240,9 @@
 			}
 			
 			if ( orient === "coronal" ) {
-				for( var x = 0; x < hdr.dim1; ++x )
+				for( var x = 0; x < dim1; ++x )
 		        {
-		            for( var z = 0; z < hdr.dim3; ++z )
+		            for( var z = 0; z < dim3; ++z )
 		            {
 		            	var col = data[getIdFloat(x,pos,z)];
 		            	var index = 4 * (z * imageData.width + x);
@@ -251,9 +255,9 @@
 			}
 			
 			if ( orient === "sagittal" ) {
-				for( var y = 0; y < hdr.dim2; ++y )
+				for( var y = 0; y < dim2; ++y )
 		        {
-		            for( var z = 0; z < hdr.dim3; ++z )
+		            for( var z = 0; z < dim3; ++z )
 		            {
 		            	var col = data[getIdFloat(pos-1+1,y,z)];
 		            	var index = 4 * (z * imageData.width + y);
