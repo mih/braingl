@@ -152,6 +152,14 @@ a {
 	margin: 4px 0
 }
 
+.texSliders input[type="range"] {
+	-webkit-appearance: none;
+	background: #aeaead;
+	width: 100%;
+	margin: 4px 0
+}
+
+
 ::-webkit-slider-thumb {
 	-webkit-appearance: none;
 	background: #807a7c;

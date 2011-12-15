@@ -2529,13 +2529,25 @@ var Viewer = (function() {
 	function changeTexture2() {
 		var id = $('#textureSelect2').val();
 		variables.scene.secTex = id;
-		redraw();
+		
 		$id('threshold1').min = niftiis[id].getMin();
 		$id('threshold1').max = 0;
 		$id('threshold1').step = niftiis[id].getMin() / 100 * -1.0;
 		$id('threshold2').min = 0;
 		$id('threshold2').max = niftiis[id].getMax();
 		$id('threshold2').step = niftiis[id].getMax() / 100;
+		
+		if ( niftiis[id].getType() === 'anatomy' || niftiis[id].getType() === 'rgb' ) {
+			$id('cMapSelect').options[0].selected = true;
+		}
+		else if ( niftiis[id].getType() === 'fmri' ) {
+			$id('cMapSelect').options[1].selected = true;
+		}
+		else if ( niftiis[id].getType() === 'overlay' ) {
+			$id('cMapSelect').options[3].selected = true;
+		}
+		
+		redraw();
 	}
 	
 	function changeColorMap() {

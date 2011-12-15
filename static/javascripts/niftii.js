@@ -17,6 +17,7 @@
 		var max = -1000;
 		var min = 1000;
 		var zero = 0;
+		var type = '';
 				
 		this.load = function(url) {
 			var xhr = new XMLHttpRequest();
@@ -42,6 +43,12 @@
 				if ( hdr.datatype === 2 ) {
 					min = 0;
 					max = 255;
+					if (hdr.dim4 === 1 ) {
+						type = 'anatomy';
+					}
+					if (hdr.dim4 === 3) {
+						type = 'rgb';
+					}
 				}
 				
 				if ( hdr.datatype === 16 ) {
@@ -57,6 +64,12 @@
 					zero = ( 0 - min ) / div;
 					for ( var j = 88; j < data.length; ++j ) {
 						data[j] = ( data[j] - min ) / div;
+					}
+					if ( min < 0 ) {
+						type = 'fmri';
+					}
+					else {
+						type = 'overlay';
 					}
 				}
 				
@@ -282,6 +295,10 @@
 		
 		this.getDims = function() {
 			return new Array(hdr.dim1, hdr.dim2, hdr.dim3 ); 
+		};
+		
+		this.getType = function() {
+			return type;
 		};
 	};
 })();

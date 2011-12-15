@@ -115,16 +115,17 @@
         // SLICES
         var sliderChangeHandler = function(method) {
             return function(e) {
-            	var lab1 = $(this).parent().find('.lab1').html();
             	var value = "";
-            	if ( lab1 === "threshold neg" || lab1 === "threshold pos"  || lab1 === "alpha" ) {
-            		value = parseFloat($(this).val()).toFixed(3);	
+            	value = $(this).val();
+            	if ( $(this).attr('id') === "threshold1" ) {
+            		value = parseFloat($(this).val()).toFixed(3);
+            		document.getElementById('tn').innerHTML = value;
             	}
-            	else {
-            		value = $(this).val();
+            	else if ( $(this).attr('id') === "threshold2" ) {
+            		value = parseFloat($(this).val()).toFixed(3);
+            		document.getElementById('tp').innerHTML = value;
             	}
-                
-                $(this).parent().find('.value').text(value);
+            	$(this).parent().find('.value').text(value);
                 Viewer[method](value);
             };
         };
@@ -195,22 +196,6 @@
             $('#toggle-' + data.id).toggleClass('active', data.active);
         });
         
-        
-        // INLINE HIGHLIGHT LINKS
-        $('[href^="#highlight:"]').live('mouseover mouseout', function(e) {
-            var href = $(this).attr('href'),
-                elementId = href.substr(href.lastIndexOf(':')+1);
-            if (e.type == 'mouseover') {
-                Viewer.highlight(elementId);
-            } else {
-                Viewer.unHighlight();
-            }
-        }).live('click', function(e) {
-            e.preventDefault();
-            return false;
-        });
-        
-        
         // SCENES
         Viewer.bind('activateSceneComplete', function(evt, data) {
             var scene = data.scene,
@@ -230,47 +215,6 @@
             $('#sliceY').val(scene.slices[1]).trigger('change');
             $('#sliceZ').val(scene.slices[2]).trigger('change');
             $(window).trigger('resize');
-        });
-        
-        $('a[href="#reset-view"]').click(function(e) {
-            var scene = $('[data-scene]').data('scene');
-            e.preventDefault();
-            if (scene) {
-                Viewer.activateScene(scene);
-            }
-            return false;
-        });
-        
-        
-        // INLINE SCENE LINKS
-        $('[href^="#scene:"]').live('click', function(e) {
-            e.preventDefault();
-            var href = $(this).attr('href'),
-                sceneId = href.substr(href.lastIndexOf(':')+1);
-            Viewer.activateScene(sceneId);
-            return false;
-        });
-        
-        
-        // IMAGE MAPS
-        var $tooltip = $('<div id="tooltip"></div>');
-        $('body').append($tooltip);
-        $('area[title]').each(function() {
-            $(this).data('title', $(this).attr('title'));
-            $(this).attr('title', '');
-        }).live('mouseover', function(e) {
-            var text = $(this).data('title');
-            if (text && text.length) {
-                $tooltip.text(text);
-                $tooltip.show();
-            }
-        }).live('mousemove', function(e) {
-            $tooltip.css({
-                'left': e.pageX+5,
-                'top': e.pageY-10 - $('#tooltip').height()
-            });
-        }).live('mouseout', function(e) {
-            $tooltip.hide();
         });
         
         // LOADING
