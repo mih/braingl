@@ -1,5 +1,6 @@
 attribute vec3 aVertexPosition;
 attribute vec3 aVertexNormal;
+attribute vec4 aVertexColor;
 attribute vec2 aTextureCoord;
 
 uniform mat4 uMVMatrix;
@@ -22,6 +23,7 @@ void main(void)
 {
 	vPosition = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
 	normal = normalize(aVertexNormal);
+	vec4 c = aVertexColor;
 
 	s_param = aTextureCoord.x; //< store texture coordinate for shader
 	vLocation = aTextureCoord.y;

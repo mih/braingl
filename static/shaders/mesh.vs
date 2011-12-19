@@ -1,6 +1,7 @@
 attribute vec3 aVertexPosition;
 attribute vec3 aVertexNormal;
 attribute vec4 aVertexColor;
+attribute vec2 aTextureCoord;
 
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
@@ -18,6 +19,7 @@ void main(void)
 	vLightPos = uPointLightingLocation;
 	normal = normalize(aVertexNormal);
 	vColor = aVertexColor;
+	vec2 t = aTextureCoord;
 	
 	gl_Position = vPosition;
 }

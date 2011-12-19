@@ -17,7 +17,7 @@ var Viewer = (function() {
 	var shaderPrograms = {}; // array storing the loaded shader programs
 	var textures = {};
 	var niftiis = {};
-
+	
 	var variables = {};
 	
 	// webgl
@@ -66,7 +66,7 @@ var Viewer = (function() {
 	variables.scene.texThreshold1 = 1.0;
 	variables.scene.texThreshold2 = 1.0;
 	variables.scene.texAlpha2 = 1.0;
-	
+			
 	// picking
 	variables.picking = {};
 	variables.picking.pickIndex = 1; // starting index for pick colors
@@ -277,6 +277,7 @@ var Viewer = (function() {
 					if (el.type == "fibre") {
 						tubeVertices = [];
 						tubeTexCoords = [];
+						tubeColors = [];
 	
 						for ( var m = 0; m < elements[el.id].vertices.length / 3; ++m) {
 							tubeVertices.push(elements[el.id].vertices[3 * m]);
@@ -285,6 +286,17 @@ var Viewer = (function() {
 							tubeVertices.push(elements[el.id].vertices[3 * m]);
 							tubeVertices.push(elements[el.id].vertices[3 * m + 1]);
 							tubeVertices.push(elements[el.id].vertices[3 * m + 2]);
+							
+							tubeColors.push(elements[el.id].colors[4 * m]);
+							tubeColors.push(elements[el.id].colors[4 * m + 1]);
+							tubeColors.push(elements[el.id].colors[4 * m + 2]);
+							tubeColors.push(elements[el.id].colors[4 * m + 3]);
+							tubeColors.push(elements[el.id].colors[4 * m]);
+							tubeColors.push(elements[el.id].colors[4 * m + 1]);
+							tubeColors.push(elements[el.id].colors[4 * m + 2]);
+							tubeColors.push(elements[el.id].colors[4 * m + 3]);
+							
+							
 	
 							tubeTexCoords.push(1.0);
 							tubeTexCoords.push(1.0);
@@ -294,6 +306,7 @@ var Viewer = (function() {
 	
 						elements[el.id].tubeVertices = tubeVertices;
 						elements[el.id].tubeTexCoords = tubeTexCoords;
+						elements[el.id].tubeColors = tubeColors;
 						calcTubeNormals(elements[el.id]);
 	
 						elements[el.id].color = el.color;
@@ -711,21 +724,15 @@ var Viewer = (function() {
 		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
 		gl.enableVertexAttribArray(shaderPrograms[name].vertexPositionAttribute);
 
-		if (name == "mesh" || name == "fibre_t") {
-			shaderPrograms[name].vertexNormalAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexNormal");
-			gl.enableVertexAttribArray(shaderPrograms[name].vertexNormalAttribute);
-		}
+		shaderPrograms[name].vertexNormalAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexNormal");
+		gl.enableVertexAttribArray(shaderPrograms[name].vertexNormalAttribute);
 
-		if (name == "fibre_t" || name == "slice") {
-			shaderPrograms[name].textureCoordAttribute = gl.getAttribLocation(shaderPrograms[name], "aTextureCoord");
-			gl.enableVertexAttribArray(shaderPrograms[name].textureCoordAttribute);
-		}
-
-		if (name == "mesh") {
-			shaderPrograms[name].vertexColorAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexColor");
-			gl.enableVertexAttribArray(shaderPrograms[name].vertexColorAttribute);
-		}
-
+		shaderPrograms[name].textureCoordAttribute = gl.getAttribLocation(shaderPrograms[name], "aTextureCoord");
+		gl.enableVertexAttribArray(shaderPrograms[name].textureCoordAttribute);
+		
+		shaderPrograms[name].vertexColorAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexColor");
+		gl.enableVertexAttribArray(shaderPrograms[name].vertexColorAttribute);
+		
 		shaderPrograms[name].pMatrixUniform  = gl.getUniformLocation(shaderPrograms[name], "uPMatrix");
 		shaderPrograms[name].mvMatrixUniform = gl.getUniformLocation(shaderPrograms[name], "uMVMatrix");
 		shaderPrograms[name].nMatrixUniform  = gl.getUniformLocation(shaderPrograms[name], "uNMatrix");
@@ -765,8 +772,9 @@ var Viewer = (function() {
 			shaderPrograms[name].pickingUniform   = gl.getUniformLocation(shaderPrograms[name], "uPicking");
 			shaderPrograms[name].pickColorUniform = gl.getUniformLocation(shaderPrograms[name], "uPickColor");
 		}
+		
 	}
-
+	
 	function setMeshUniforms() {
 		gl.useProgram(shaderPrograms['mesh']);
 		gl.uniformMatrix4fv(shaderPrograms['mesh'].pMatrixUniform, false, variables.webgl.pMatrix);
@@ -836,6 +844,8 @@ var Viewer = (function() {
 		variables.webgl.needsRedraw = true;
 	}
 	
+	var workaround = false;
+	
 	function drawScene() {
 		if (!variables.webgl.needsRedraw) {
 			return;
@@ -873,6 +883,11 @@ var Viewer = (function() {
 		gl.disable(gl.BLEND);
 		gl.enable(gl.DEPTH_TEST);
 
+		if ( !workaround ) {
+			//initShaders2();
+			workaround = true;
+		}
+		
 		if ( variables.scene.showSlices ) {
 			drawSlices();
 		}
@@ -981,6 +996,10 @@ var Viewer = (function() {
 		gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexColorBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, elem.vertexColorBuffer.data, gl.STATIC_DRAW);
 		gl.vertexAttribPointer(shaderPrograms['mesh'].vertexColorAttribute, elem.vertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+		
+		gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexTexCoordBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, elem.vertexTexCoordBuffer.data, gl.STATIC_DRAW);
+		gl.vertexAttribPointer(shaderPrograms['mesh'].textureCoordAttribute, elem.vertexTexCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer);
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
@@ -1018,6 +1037,10 @@ var Viewer = (function() {
 			gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexTexCoordBuffer);
 			gl.bufferData(gl.ARRAY_BUFFER, elem.vertexTexCoordBuffer.tubedata, gl.STATIC_DRAW);
 			gl.vertexAttribPointer(shaderPrograms['fibre_t'].textureCoordAttribute, elem.vertexTexCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+			
+			gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexColorBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, elem.vertexColorBuffer.tubedata, gl.STATIC_DRAW);
+			gl.vertexAttribPointer(shaderPrograms['fibre_t'].vertexColorAttribute, elem.vertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
 		
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer);
 			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
@@ -1064,6 +1087,10 @@ var Viewer = (function() {
 			gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexColorBuffer);
 			gl.bufferData(gl.ARRAY_BUFFER, elem.vertexColorBuffer.data, gl.STATIC_DRAW);
 			gl.vertexAttribPointer(shaderPrograms['mesh'].vertexColorAttribute, elem.vertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+			
+			gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexTexCoordBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, elem.vertexTexCoordBuffer.data, gl.STATIC_DRAW);
+			gl.vertexAttribPointer(shaderPrograms['mesh'].textureCoordAttribute, elem.vertexTexCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 			
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer);
 			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
@@ -1113,6 +1140,7 @@ var Viewer = (function() {
 				
 				var vertexColorBuffer      = gl.createBuffer();
 				vertexColorBuffer.data     = new Float32Array(elem.colors);
+				vertexColorBuffer.tubedata = new Float32Array(elem.tubeColors);
 				vertexColorBuffer.itemSize = 4;
 				vertexColorBuffer.numItems = elem.colors.length / 4;
 
@@ -1121,7 +1149,8 @@ var Viewer = (function() {
 				elem.vertexIndexBuffer    = vertexIndexBuffer;
 				elem.vertexTexCoordBuffer = vertexTexCoordBuffer;
 				elem.vertexColorBuffer    = vertexColorBuffer;
-			} else {
+			} 
+			else {
 				var vertexPositionBuffer = gl.createBuffer();
 				vertexPositionBuffer.data = new Float32Array(elem.vertices);
 				vertexPositionBuffer.itemSize = 3;
@@ -1141,19 +1170,29 @@ var Viewer = (function() {
 				vertexIndexBuffer.data = new Uint16Array(elem.sortedIndices);
 				vertexIndexBuffer.itemSize = 1;
 				vertexIndexBuffer.numItems = elem.indices.length;
+				
+				var texCoords = new Array(elem.colors.length / 2);
+				for (var i = 0; i < texCoords.length; ++i ) {
+					texCoords[i] = 0;
+				}
+				var vertexTexCoordBuffer      = gl.createBuffer();
+				vertexTexCoordBuffer.data = new Float32Array(texCoords);
+				vertexTexCoordBuffer.itemSize = 2;
+				vertexTexCoordBuffer.numItems = texCoords.length / 2;
 
 				elem.vertexNormalBuffer   = vertexNormalBuffer;
 				elem.vertexPositionBuffer = vertexPositionBuffer;
 				elem.vertexColorBuffer    = vertexColorBuffer;
 				elem.vertexIndexBuffer    = vertexIndexBuffer;
+				elem.vertexTexCoordBuffer = vertexTexCoordBuffer;
 			}
 			elem.hasBuffer = true;
 		}
 	}
-
+	
 	function drawSlices() {
 		gl.useProgram(shaderPrograms['slice']);
-
+		
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		gl.enable(gl.BLEND);
 
@@ -1167,6 +1206,22 @@ var Viewer = (function() {
 		gl.uniform1f(shaderPrograms['slice'].threshold1Uniform, 0);
 		gl.uniform1f(shaderPrograms['slice'].threshold2Uniform, 0);
 
+		var normalBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+		var normals = [ 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 ];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+		normalBuffer.itemSize = 3;
+		normalBuffer.numItems = 4;
+		gl.vertexAttribPointer(shaderPrograms['slice'].vertexNormalAttribute, normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+		
+		var colorBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+		var colors = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+		colorBuffer.itemSize = 4;
+		colorBuffer.numItems = 4;
+		gl.vertexAttribPointer(shaderPrograms['slice'].vertexColorAttribute, colorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+		
 		var axialPosBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, axialPosBuffer);
 		//var vertices = [ 0, 0, variables.scene.axial, 160, 0, variables.scene.axial, 160, 200, variables.scene.axial, 0, 200, variables.scene.axial, ];
@@ -1183,9 +1238,6 @@ var Viewer = (function() {
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 		axialTextureCoordBuffer.itemSize = 2;
 		axialTextureCoordBuffer.numItems = 4;
-		// don't ask why this line is needed, i don't understand it myself
-		// but without it the slices won't be rendered until another object is turned on and off
-		gl.vertexAttribPointer(shaderPrograms['fibre_t'].textureCoordAttribute, axialTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 		gl.vertexAttribPointer(shaderPrograms['slice'].textureCoordAttribute, axialTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 		
 		var axialVertexIndexBuffer = gl.createBuffer();
