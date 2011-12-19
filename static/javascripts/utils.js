@@ -290,7 +290,7 @@ function sortMeshIndices( elem, mvMat, pMat )
 		mat4.multiplyVec3(pMat, v3);
 		mat4.multiplyVec3(mvMat, v3);
 		
-		triMean.push( ( v1[2] + v2[2] + v3[2] ) / 3.0 );
+		triMean.push( ( v1[2] + v2[2] + v3[2] ) / -3.0 );
 		
 	}
 	
