@@ -347,66 +347,6 @@ var Viewer = (function() {
 		});
 	}
 
-	function createPickColor(index) {
-		hash = [];
-		hash[0] = index % 256;
-		hash[1] = ((index / 256) >> 0) % 256;
-		hash[2] = ((index / (256 * 256)) >> 0) % 256;
-		return hash;
-	}
-
-	function calcTubeNormals(elem) {
-		tubeNormals = [];
-
-		lineStart = 0;
-		for ( var i = 0; i < elem.indices.length; ++i) {
-			length = elem.indices[i];
-
-			var x1=0, x2=0, y1=0, y2=0, z1=0, z2=0, nx=0, ny=0, nz=0;
-
-			tubeNormals.push(0);
-			tubeNormals.push(0);
-			tubeNormals.push(0);
-			tubeNormals.push(0);
-			tubeNormals.push(0);
-			tubeNormals.push(0);
-
-			for ( var j = 1; j < length - 1; ++j) {
-				x1 = elem.vertices[lineStart + 3 * j - 3];
-				y1 = elem.vertices[lineStart + 3 * j - 2];
-				z1 = elem.vertices[lineStart + 3 * j - 1];
-				x2 = elem.vertices[lineStart + 3 * j + 3];
-				y2 = elem.vertices[lineStart + 3 * j + 4];
-				z2 = elem.vertices[lineStart + 3 * j + 5];
-
-				nx = x1 - x2;
-				ny = y1 - y2;
-				nz = z1 - z2;
-
-				tubeNormals.push(nx);
-				tubeNormals.push(ny);
-				tubeNormals.push(nz);
-				tubeNormals.push(nx);
-				tubeNormals.push(ny);
-				tubeNormals.push(nz);
-			}
-
-			tubeNormals.push(nx);
-			tubeNormals.push(ny);
-			tubeNormals.push(nz);
-			tubeNormals.push(nx);
-			tubeNormals.push(ny);
-			tubeNormals.push(nz);
-
-			for ( var k = 0; k < 6; ++k)
-				tubeNormals[k] = tubeNormals[6 + k];
-
-			lineStart += elem.indices[i] * 3;
-		}
-
-		elem.tubeNormals = tubeNormals;
-	}
-
 	function loadActivations(activationsToLoad) {
 		$(Viewer).trigger('loadActivationsStart');
 
@@ -722,19 +662,15 @@ var Viewer = (function() {
 		gl.useProgram(shaderPrograms[name]);
 
 		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
-		console.log( name + " pos " +  shaderPrograms[name].vertexPositionAttribute );
 		gl.enableVertexAttribArray(shaderPrograms[name].vertexPositionAttribute);
 
 		shaderPrograms[name].vertexNormalAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexNormal");
-		console.log( name + " normal " +  shaderPrograms[name].vertexNormalAttribute );
 		gl.enableVertexAttribArray(shaderPrograms[name].vertexNormalAttribute);
 
 		shaderPrograms[name].textureCoordAttribute = gl.getAttribLocation(shaderPrograms[name], "aTextureCoord");
-		console.log( name + " tex " +  shaderPrograms[name].textureCoordAttribute );
 		gl.enableVertexAttribArray(shaderPrograms[name].textureCoordAttribute);
 		
 		shaderPrograms[name].vertexColorAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexColor");
-		console.log( name + " color " +  shaderPrograms[name].vertexColorAttribute );
 		gl.enableVertexAttribArray(shaderPrograms[name].vertexColorAttribute);
 		
 		shaderPrograms[name].pMatrixUniform  = gl.getUniformLocation(shaderPrograms[name], "uPMatrix");
@@ -898,7 +834,7 @@ var Viewer = (function() {
 		
 		$.each(elements, function() {
 			if (this.display) {
-				if (this.type == 'fibre') {
+				if (this.type === 'fibre' || this.type === 'connection') {
 					drawFibers(this);
 				}
 			}
@@ -963,7 +899,7 @@ var Viewer = (function() {
 		
 		$.each(elements, function() {
 			if (this.display) {
-				if (this.type == 'fibre') {
+				if (this.type === 'fibre' || this.type === 'connection') {
 					drawFibers(this);
 				}
 			}
@@ -1039,7 +975,7 @@ var Viewer = (function() {
 			gl.vertexAttribPointer(shaderPrograms['fibre_t'].vertexNormalAttribute, elem.vertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
 	
 			gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexTexCoordBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, elem.vertexTexCoordBuffer.tubedata, gl.STATIC_DRAW);
+			gl.bufferData(gl.ARRAY_BUFFER, elem.vertexTexCoordBuffer.data, gl.STATIC_DRAW);
 			gl.vertexAttribPointer(shaderPrograms['fibre_t'].textureCoordAttribute, elem.vertexTexCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 			
 			gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexColorBuffer);
@@ -1119,7 +1055,7 @@ var Viewer = (function() {
 
 	function bindBuffers(elem) {
 		if (!elem.hasBuffer) {
-			if (elem.type == 'fibre') {
+			if (elem.type === 'fibre' || elem.type === 'connection') {
 				var vertexPositionBuffer      = gl.createBuffer();
 				vertexPositionBuffer.data     = new Float32Array(elem.vertices);
 				vertexPositionBuffer.tubedata = new Float32Array(elem.tubeVertices);
@@ -1138,7 +1074,7 @@ var Viewer = (function() {
 				vertexIndexBuffer.numItems = elem.indices.length;
 
 				var vertexTexCoordBuffer      = gl.createBuffer();
-				vertexTexCoordBuffer.tubedata = new Float32Array(elem.tubeTexCoords);
+				vertexTexCoordBuffer.data = new Float32Array(elem.tubeTexCoords);
 				vertexTexCoordBuffer.itemSize = 2;
 				vertexTexCoordBuffer.numItems = elem.tubeTexCoords.length / 2;
 				
@@ -2013,17 +1949,12 @@ var Viewer = (function() {
 			addConnectionSelect(this.id);
 		});
 		
-		
-		
 		$.each(elements, function(id, element) {
 			hideElement(id);
 		});
 		$.each(loadData.scene.activ, function() {
 			showElement(this);
 		});
-		
-		
-		
 		redraw();
 	}
 	
@@ -2353,7 +2284,7 @@ var Viewer = (function() {
 		
 		elements[id].id = id;
 		elements[id].name = name;
-		elements[id].type = 'fibre';
+		elements[id].type = 'connection';
 		elements[id].display = true;
 		elements[id].cutFS = false;
 		elements[id].cutWhite = false;

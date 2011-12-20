@@ -58,7 +58,7 @@
 						if ( data[i] < min ) min = data[i];
 						if ( data[i] > max ) max = data[i];
 					}
-					console.log( "min: " + min + " max: " + max );
+					//console.log( "min: " + min + " max: " + max );
 					
 					var div = max - min;
 					zero = ( 0 - min ) / div;
@@ -81,6 +81,10 @@
 	
 		this.getImage = function (orient, pos) {
 			if ( !loaded ) console.log( "DEBUG nifti file not finished loading");
+			if ( orient === 'sagittal' && pos > hdr.dim1 ) pos = 0;
+			if ( orient === 'coronal' && pos > hdr.dim2 ) pos = 0;
+			if ( orient === 'axial' && pos > hdr.dim3 ) pos = 0;
+			
 			if ( hdr.datatype === 2 ) {
 				if (hdr.dim4 === 1 ) {
 					return getImageGrayByte(orient,pos);
