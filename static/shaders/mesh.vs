@@ -12,6 +12,7 @@ varying vec4 vPosition;
 varying vec3 vLightPos;
 varying vec3 normal;
 varying vec4 vColor;
+varying vec2 vTex;
 
 void main(void) 
 {
@@ -19,7 +20,7 @@ void main(void)
 	vLightPos = uPointLightingLocation;
 	normal = normalize(aVertexNormal);
 	vColor = aVertexColor;
-	vec2 t = aTextureCoord;
+	vTex = normalize( aTextureCoord );
 	
 	gl_Position = vPosition;
 }

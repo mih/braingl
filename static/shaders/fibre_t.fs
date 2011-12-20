@@ -23,7 +23,7 @@ uniform float uDistance;
 uniform float uLength;
 uniform int uTimestep;
 varying float vLocation;
-
+varying vec3 cl;
 
 void main(void) 
 {
@@ -58,7 +58,8 @@ void main(void)
 			if (  pixModulo >= blobEnd && pixModulo < blobBegin )
 			{
 				color = vec3(1.0);
-			} 			
+			}
+			if ( length(cl) < 0.0 ) discard;		
 		}
 		
 		vec3 view = vec3(0., 0., -1.);

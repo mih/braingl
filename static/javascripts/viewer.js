@@ -722,15 +722,19 @@ var Viewer = (function() {
 		gl.useProgram(shaderPrograms[name]);
 
 		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
+		console.log( name + " pos " +  shaderPrograms[name].vertexPositionAttribute );
 		gl.enableVertexAttribArray(shaderPrograms[name].vertexPositionAttribute);
 
 		shaderPrograms[name].vertexNormalAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexNormal");
+		console.log( name + " normal " +  shaderPrograms[name].vertexNormalAttribute );
 		gl.enableVertexAttribArray(shaderPrograms[name].vertexNormalAttribute);
 
 		shaderPrograms[name].textureCoordAttribute = gl.getAttribLocation(shaderPrograms[name], "aTextureCoord");
+		console.log( name + " tex " +  shaderPrograms[name].textureCoordAttribute );
 		gl.enableVertexAttribArray(shaderPrograms[name].textureCoordAttribute);
 		
 		shaderPrograms[name].vertexColorAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexColor");
+		console.log( name + " color " +  shaderPrograms[name].vertexColorAttribute );
 		gl.enableVertexAttribArray(shaderPrograms[name].vertexColorAttribute);
 		
 		shaderPrograms[name].pMatrixUniform  = gl.getUniformLocation(shaderPrograms[name], "uPMatrix");
@@ -1207,16 +1211,17 @@ var Viewer = (function() {
 		gl.uniform1f(shaderPrograms['slice'].threshold2Uniform, 0);
 
 		var normalBuffer = gl.createBuffer();
+		var normals = [ 0., 0., 1., 0., 0., 1., 0., 0., 1., 0., 0., 1. ];
 		gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-		var normals = [ 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 ];
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+		normalBuffer.data = new Float32Array(normals);
+		gl.bufferData(gl.ARRAY_BUFFER, normalBuffer.data, gl.STATIC_DRAW);
 		normalBuffer.itemSize = 3;
 		normalBuffer.numItems = 4;
 		gl.vertexAttribPointer(shaderPrograms['slice'].vertexNormalAttribute, normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
 		
 		var colorBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
 		var colors = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+		gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
 		colorBuffer.itemSize = 4;
 		colorBuffer.numItems = 4;
@@ -1224,7 +1229,6 @@ var Viewer = (function() {
 		
 		var axialPosBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, axialPosBuffer);
-		//var vertices = [ 0, 0, variables.scene.axial, 160, 0, variables.scene.axial, 160, 200, variables.scene.axial, 0, 200, variables.scene.axial, ];
 		var ap = variables.scene.axial + 0.5;
 		var vertices = [ 0, 0, ap, 256, 0.5, ap, 256, 256, ap, 0, 256, ap ];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
@@ -1271,7 +1275,6 @@ var Viewer = (function() {
 
 		var coronalPosBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, coronalPosBuffer);
-		//var vertices = [ 0, variables.scene.coronal, 0, 160, variables.scene.coronal, 0, 160, variables.scene.coronal, 160, 0, variables.scene.coronal, 160, ];
 		var cp = variables.scene.coronal + 0.5;
 		var vertices = [ 0, cp, 0, 256, cp, 0, 256, cp, 256, 0, cp, 256 ];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
@@ -1308,7 +1311,6 @@ var Viewer = (function() {
 
 		var sagittalPosBuffer = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, sagittalPosBuffer);
-		//var vertices = [ variables.scene.sagittal, 0, 0, variables.scene.sagittal, 0, 160, variables.scene.sagittal, 200, 160, variables.scene.sagittal, 200, 0, ];
 		var sp = variables.scene.sagittal + 0.5;
 		var vertices = [ sp, 0, 0, sp, 0, 256, sp, 256, 256, sp, 256, 0 ];
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
@@ -2369,6 +2371,7 @@ var Viewer = (function() {
 		
 		tubeVertices = [];
 		tubeTexCoords = [];
+		tubeColors = [];
 
 		for ( var m = 0; m < elements[id].vertices.length / 3; ++m) {
 			tubeVertices.push(elements[id].vertices[3 * m]);
@@ -2414,6 +2417,7 @@ var Viewer = (function() {
 
 		elements[id].color = color;
 		elements[id].colors = [1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0,1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0];
+		elements[id].tubeColors = [1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0,1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0];
 		elements[id].strength = strength;
 		elements[id].size = size;
 		elements[id].distance = distance;

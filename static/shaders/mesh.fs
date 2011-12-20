@@ -11,6 +11,7 @@ varying vec4 vPosition;
 varying vec3 vLightPos;
 varying vec3 normal;
 varying vec4 vColor;
+varying vec2 vTex;
 
 void main(void) 
 {
@@ -33,6 +34,7 @@ void main(void)
 	if ( uCutWhite && ( ( vColor.r + vColor.g + vColor.b ) != 3.0 ) )
 	{
 		fragmentColor.a = 1.0;
+		if ( length( vTex ) < 0.0 ) discard;
 	}
 
 	if ( uPicking )

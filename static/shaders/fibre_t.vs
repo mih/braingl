@@ -18,12 +18,13 @@ varying float tangent_dot_view;
 varying vec3 tangentR3;
 varying float s_param;
 varying float vLocation;
+varying vec3 cl;
 
 void main(void) 
 {
 	vPosition = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
 	normal = normalize(aVertexNormal);
-	vec4 c = aVertexColor;
+	cl = normalize(aVertexColor.rgb);
 
 	s_param = aTextureCoord.x; //< store texture coordinate for shader
 	vLocation = aTextureCoord.y;

@@ -2,9 +2,6 @@
 precision highp float;
 #endif
 
-varying vec2 vTextureCoord;
-varying vec4 vPosition;
-
 uniform int uColorMap;
 
 uniform sampler2D uSampler;
@@ -15,6 +12,11 @@ uniform float uMax;
 uniform float uThreshold1;
 uniform float uThreshold2;
 uniform float uAlpha2;
+
+varying vec2 vTextureCoord;
+varying vec4 vPosition;
+varying vec3 normal;
+varying vec3 color;
 
 vec3 rainbowColorMap( in float value )
 {
@@ -57,6 +59,9 @@ void main(void) {
 	
 	vec4 fragmentColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
 	vec4 fragmentColor1 = texture2D(uSampler1, vec2(vTextureCoord.s, vTextureCoord.t));
+
+	if ( length(normal) < 0.0) discard;
+	if ( length(color) < 0.0) discard;
 	
 	// if present show secondary texture
 	if ( length( fragmentColor1.rgb ) > 0.01 )
@@ -114,8 +119,9 @@ void main(void) {
 	}
 	
 	// color texture, discard zero values
-	if ( length( fragmentColor.rgb ) < 0.001 )
+	if ( length( fragmentColor.rgb ) < 0.001 ) {
 		discard;
+	}
 	
 	gl_FragColor = vec4(fragmentColor.r, fragmentColor.g, fragmentColor.b, fragmentColor.a);
 }
