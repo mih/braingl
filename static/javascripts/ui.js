@@ -15,14 +15,6 @@
             $activationsTogglesContainer = $('#activations'),
             $controlsTogglesContainer = $('#controls-toggles');
         
-        // FIXED POSTION: SMALL SCREEN FALLBACK
-        $(window).bind('resize', function(e) {
-            var $sidebar = $('#sidebar'),
-                top = parseInt($('body').css('padding-top'),10);
-            $sidebar.parent().toggleClass('fixed', $(window).height() > $sidebar.outerHeight() + top);
-        }).trigger('resize');
-        
-        
         // LOADING
         $('#viewer').append(loadingDiv);
         
@@ -146,6 +138,8 @@
 	            $toggle.append('<label>'+el.name+'</label>');
 	            $toggle.addClass('toggle');
 	            $toggle.addClass('disabled');
+	            if ( el.display) 
+	            	$toggle.addClass('checked');
 	            $toggle.attr('href', '#toggle:' + el.id);
 	            $toggle.attr('id', 'toggle-' + el.id);
 	            $toggle.click(function(e) {
@@ -231,6 +225,7 @@
         });
         
         if (config.debug) Viewer.bind('loadElementsComplete', function(evt, data) {
+        	$('#status').css('display', 'none');
             console.log('ALL ELEMENTS LOADED.');
         });
         
