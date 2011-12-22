@@ -1456,11 +1456,16 @@ var Viewer = (function() {
 				variables.scene.zoom -= 0.1;
 			}
 			else {
-				variables.scene.zoom -= 1;
+				variables.scene.zoom -= 0.5;
 			}
 		} else {
 			recordCommand("mouse", "wheel", 0.5);
-			variables.scene.zoom += 0.5;
+			if ( variables.scene.zoom <= 1 ) {
+				variables.scene.zoom += 0.1;
+			}
+			else {
+				variables.scene.zoom += 0.5;
+			}
 		}
 		if (variables.scene.zoom < 0.5) {
 			variables.scene.zoom = 0.5;
