@@ -177,8 +177,10 @@ var Viewer = (function() {
 	//
 	//***************************************************************************************************/
 	function initGL(canvas) {
-		//gl = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
-		gl = WebGLDebugUtils.makeDebugContext(canvas.getContext("experimental-webgl"));
+//		if (config.debug) 
+//			gl = WebGLDebugUtils.makeDebugContext(canvas.getContext("experimental-webgl"));
+//		else
+			gl = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
 		gl.viewportWidth = $canvas.width();
 		gl.viewportHeight = $canvas.height();
 	}
@@ -316,6 +318,7 @@ var Viewer = (function() {
 						'id' : el.id,
 						'active' : el.display
 					});
+					redraw();
 				});
 			}
 			else if (el.type == "texture") {
@@ -342,8 +345,8 @@ var Viewer = (function() {
 
 			//  den loadElementsComplete-Event feuern, wenn alle Elemente geladen sind.
 			if (!elementsToLoad.length) {
-				redraw();
 				$(Viewer).trigger('loadElementsComplete');
+				redraw();
 			}
 		});
 	}
