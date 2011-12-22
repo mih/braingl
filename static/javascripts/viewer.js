@@ -120,7 +120,7 @@ var Viewer = (function() {
 			$(Viewer).trigger('ready');
 			redraw();
 		});
-
+		
 		// hier sollte der eigentliche WebGL-Viewer initialisiert werden 
 		try {
 			initGL(canvas);
@@ -177,10 +177,8 @@ var Viewer = (function() {
 	//
 	//***************************************************************************************************/
 	function initGL(canvas) {
-//		if (config.debug) 
-//			gl = WebGLDebugUtils.makeDebugContext(canvas.getContext("experimental-webgl"));
-//		else
-			gl = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
+		//gl = WebGLDebugUtils.makeDebugContext(canvas.getContext("experimental-webgl"));
+		gl = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
 		gl.viewportWidth = $canvas.width();
 		gl.viewportHeight = $canvas.height();
 	}
@@ -1399,7 +1397,7 @@ var Viewer = (function() {
 
 			if (variables.picking.pickArray[pickColor]) {
 				if (variables.picking.oldPick != elements[variables.picking.pickArray[pickColor]].id) {
-					//if (config.debug) console.log(elements[variables.picking.pickArray[pickColor]].name);
+					//console.log(elements[variables.picking.pickArray[pickColor]].name);
 					$(Viewer).trigger('pickChanged', {
 						'id' : elements[variables.picking.pickArray[pickColor]].id,
 						'name' : elements[variables.picking.pickArray[pickColor]].name,
@@ -1477,7 +1475,7 @@ var Viewer = (function() {
 
 		variables.recording.startTime = new Date();
 		variables.recording.record.startTime = variables.recording.startTime.getTime();
-		if (config.debug) console.log("start time: " + variables.recording.record.startTime);
+		console.log("start time: " + variables.recording.record.startTime);
 
 		variables.recording.record.startRot = mat4.create();
 		variables.recording.record.startRot.set(variables.webgl.thisRot);
@@ -1514,13 +1512,13 @@ var Viewer = (function() {
 		command.type = "end";
 
 		variables.recording.record.commands.push(command);
-		if (config.debug) console.log("end time: " + variables.recording.record.endTime);
-		if (config.debug) console.log("recorded time: " + (variables.recording.record.endTime - variables.recording.record.startTime));
+		console.log("end time: " + variables.recording.record.endTime);
+		console.log("recorded time: " + (variables.recording.record.endTime - variables.recording.record.startTime));
 		$id("recordButton").value = "Record";
 	}
 
 	function playRecording() {
-		if (config.debug) console.log("play recording ");
+		console.log("play recording ");
 		variables.recording.recordPlaying = true;
 		variables.mouse.leftDown = false;
 
@@ -1549,14 +1547,14 @@ var Viewer = (function() {
 
 	function playInterval() {
 		if (variables.recording.playStep >= variables.recording.record.commands.length || variables.recording.record.commands[variables.recording.playStep].type == "end") {
-			if (config.debug) console.log("finished playing recording");
+			console.log("finished playing recording");
 			variables.recording.recordPlaying = false;
 			variables.mouse.leftDown = false;
 			return;
 		}
 
 		var c = variables.recording.record.commands[variables.recording.playStep];
-		if (config.debug) console.log(c.relTime + " " + c.type + " " + c.what + " " + c.arg1 + " " + c.arg2);
+		console.log(c.relTime + " " + c.type + " " + c.what + " " + c.arg1 + " " + c.arg2);
 
 		switch (c.type) {
 			case "mouse":
@@ -1890,7 +1888,7 @@ var Viewer = (function() {
 	}
 
 	function saveScene() {
-		//if (config.debug) console.log( JSON.stringify(variables));
+		//console.log( JSON.stringify(variables));
 		var activs = [];
 		$.each(elements, function() {
 			if (this.display) {
@@ -1914,7 +1912,7 @@ var Viewer = (function() {
 		var loadData;
 		var mydomstorage=window.localStorage || (window.globalStorage? globalStorage[location.hostname] : null);
 		if (mydomstorage && mydomstorage.conviewSave && $id("saveLoc").checked){
-			if (config.debug) console.log("load from browser storage");
+			console.log("load from browser storage");
 			loadData = JSON.parse(mydomstorage.conviewSave);
 		}
 		else{
@@ -2481,7 +2479,7 @@ var Viewer = (function() {
 			variables.transition.transitionOngoing = false;
 			return;
 		}
-		if (config.debug) console.log("rotation step");
+		console.log("rotation step");
 		Arcball.drag(centerX+parseInt($id('animX').value), centerY+parseInt($id('animY').value));
 		mat4.set(Arcball.get(), variables.webgl.thisRot);
 		mat4.multiply(variables.webgl.lastRot, variables.webgl.thisRot, variables.webgl.thisRot);
