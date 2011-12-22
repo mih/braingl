@@ -7,12 +7,12 @@
     </head>
     <body>
     	<div class="controlTab" id="links">
-    		<a href="#controls" style='font-weight:bold'>Controls&nbsp&nbsp&nbsp</a>
-    		<a href="#textures">MRI&nbsp&nbsp&nbsp</a>
+    		<a href="#textures" style='font-weight:bold'>MRI&nbsp&nbsp&nbsp</a>
     		<a href="#elements">Elements&nbsp&nbsp&nbsp</a>
     		<a href="#activations">Activations&nbsp&nbsp&nbsp</a>
+    		<a href="#controls">Controls&nbsp&nbsp&nbsp</a>
     	</div>
-    	<div class="controlTab" id="controlTab1" style="display:block">
+    	<div class="controlTab" id="controlTab1" style="display:none">
 			<section id="controls">	
 				<div id="controls-toggles"></div>
 				<br>
@@ -56,7 +56,7 @@
 			</section>
 			
 		</div>
-		<div class="controlTab" id="mriTab" style="display:none">
+		<div class="controlTab" id="mriTab" style="display:block">
 			<section id="textures">
 				<div id="controls-slices">
 					<div><label for="sliceX">X</label><input type="range" min="0" max="255" id="sliceX" value="80" step="1" /> <span class="value"></span></div>
