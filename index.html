@@ -7,20 +7,15 @@
     </head>
     <body>
     	<div class="controlTab" id="links">
-    		<a href="#controls" style='font-weight:bold'>Controls</a>
-    		<a href="#textures">MRI</a>
-    		<a href="#elements">Elements</a>
-    		<a href="#activations">Activations</a>
+    		<a href="#controls" style='font-weight:bold'>Controls&nbsp&nbsp&nbsp</a>
+    		<a href="#textures">MRI&nbsp&nbsp&nbsp</a>
+    		<a href="#elements">Elements&nbsp&nbsp&nbsp</a>
+    		<a href="#activations">Activations&nbsp&nbsp&nbsp</a>
     	</div>
     	<div class="controlTab" id="controlTab1" style="display:block">
 			<section id="controls">	
 				<div id="controls-toggles"></div>
 				<br>
-				<div id="controls-slices">
-					<div><label for="sliceX">X</label><input type="range" min="0" max="255" id="sliceX" value="80" step="1" /> <span class="value"></span></div>
-					<div><label for="sliceY">Y</label><input type="range" min="0" max="255" id="sliceY" value="100" step="1" /> <span class="value"></span></div>
-					<div><label for="sliceZ">Z</label><input type="range" min="0" max="255" id="sliceZ" value="80" step="1" /> <span class="value"></span></div>
-				</div>
 			</section>
 			<section id="saveload">
 				<input type="button" name="Save" value="Save" onclick="Viewer.saveScene();">
@@ -63,6 +58,11 @@
 		</div>
 		<div class="controlTab" id="mriTab" style="display:none">
 			<section id="textures">
+				<div id="controls-slices">
+					<div><label for="sliceX">X</label><input type="range" min="0" max="255" id="sliceX" value="80" step="1" /> <span class="value"></span></div>
+					<div><label for="sliceY">Y</label><input type="range" min="0" max="255" id="sliceY" value="100" step="1" /> <span class="value"></span></div>
+					<div><label for="sliceZ">Z</label><input type="range" min="0" max="255" id="sliceZ" value="80" step="1" /> <span class="value"></span></div>
+				</div>
 				<table>
 					<tr>
 						<th>Primary MRI</th>
