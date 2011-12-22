@@ -107,12 +107,16 @@ var Viewer = (function() {
 	variables.connectom.animate = false;
 	variables.connectom.animationInterval;
 
+	var config = {};
+	
 	//***************************************************************************************************
 	//
 	//	init and loading of all the elements
 	//
 	//***************************************************************************************************/
 	function init(opts) {
+		config = $.getSyncJSON(settings.DATA_URL + 'config.json');
+		
 		$canvas = $(opts.canvas);
 		canvas = $canvas[0];
 		
@@ -446,6 +450,7 @@ var Viewer = (function() {
 	}
 
 	function loadScenes() {
+		$sceneButtons = $('#sceneButtons');
 		$(Viewer).trigger('loadScenesStart');
 		$.getJSON(settings.DATA_URL + 'scenes.json', function(data) {
 			$.each(data, function(i, sc) {
@@ -458,8 +463,17 @@ var Viewer = (function() {
 				scenes[sc.id].activationsAvailable = sc.activationsAvailable;
 				scenes[sc.id].activationsActive = sc.activationsActive;
 				scenes[sc.id].slices = sc.slices;
-				scenes[sc.id].colorTextures = sc.colorTextures;
-				scenes[sc.id].secondaryTexture = sc.secondaryTexture;
+				scenes[sc.id].texture1 = sc.texture1;
+				scenes[sc.id].texture2 = sc.texture2;
+				
+				var $button = $('<input type="button" />');
+	            $button.attr('id', 'scenebutton-' + sc.id);
+	            $button.attr('value', sc.id);
+	            $button.click(function(e) {
+	                Viewer.activateScene(sc.id);
+	                return false;
+	            });
+				$sceneButtons.append($button);
 			});
 			$(Viewer).trigger('loadScenesComplete');
 		});
@@ -542,8 +556,7 @@ var Viewer = (function() {
 		variables.scene.coronal = scenes[id].slices[1];
 		variables.scene.sagittal = scenes[id].slices[2];
 
-		variables.scene.colTex = scenes[id].colorTextures;
-		variables.scene.secTex = scenes[id].secondaryTexture;
+		variables.scene.secTex = scenes[id].texture2;
 
 		$.each(scenes[id].elementsActive, function(index, value) {
 			showElement(value);
@@ -552,6 +565,19 @@ var Viewer = (function() {
 		$.each(scenes[id].activationsActive, function(index, value) {
 			showActivation(value);
 		});
+		
+		for (var i = 0; i < $id('textureSelect').options.length; ++i ) {
+			if ( $id('textureSelect').options[i].value === scenes[id].texture1 ) {
+				$id('textureSelect').options[i].selected = true;
+			}
+		}
+		
+		for (var i = 0; i < $id('textureSelect2').options.length; ++i ) {
+			if ( $id('textureSelect2').options[i].value === scenes[id].texture2 ) {
+				$id('textureSelect2').options[i].selected = true;
+			}
+		}
+		changeTexture2()
 /*
 		$(Viewer).trigger('activateSceneComplete', {
 			'id' : id,
