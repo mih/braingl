@@ -138,8 +138,6 @@
 	            $toggle.append('<label>'+el.name+'</label>');
 	            $toggle.addClass('toggle');
 	            $toggle.addClass('disabled');
-	            if ( el.display) 
-	            	$toggle.addClass('checked');
 	            $toggle.attr('href', '#toggle:' + el.id);
 	            $toggle.attr('id', 'toggle-' + el.id);
 	            $toggle.click(function(e) {
@@ -160,11 +158,13 @@
         });
         
         Viewer.bind('loadElementComplete', function(evt, data) {
-            //if (config.debug) console.log('FINISHED ELEMENT:', data.id);
+            if (config.debug) console.log('FINISHED ELEMENT:', data.id);
             $('#toggle-' + data.id).removeClass('disabled');
+            $('#toggle-' + data.id).toggleClass('active', data.active);
         });
         
         Viewer.bind('elementDisplayChange', function(evt, data) {
+        	if (config.debug) console.log('ELEMENT DISPLAY CHANGE:', data.id);
             $('#toggle-' + data.id).toggleClass('active', data.active);
         });
         
@@ -226,7 +226,7 @@
         
         if (config.debug) Viewer.bind('loadElementsComplete', function(evt, data) {
         	$('#status').css('display', 'none');
-            console.log('ALL ELEMENTS LOADED.');
+        	if (config.debug) console.log('ALL ELEMENTS LOADED.');
         });
         
         if (config.debug) Viewer.bind('loadElementStart', function(evt, data) {
