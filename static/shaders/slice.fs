@@ -69,14 +69,19 @@ void main(void) {
 		if ( uColorMap != 0 )
 		{
 			vec3 c = vec3(0.0);
+			float val = fragmentColor1.r * ( uMax - uMin );
 			if ( uColorMap == 3 )
 			{
-				c = rainbowColorMap( fragmentColor1.r );
+				val = ( val + uMin ) / uMax;
+				val = val - uThreshold2;
+				if ( val > 0.0 )
+				{
+					val = val / ( 1.0 - uThreshold2 );
+					c = rainbowColorMap( fragmentColor1.r );
+				}
 			}
 			else
 			{
-				float val = fragmentColor1.r * ( uMax - uMin );
-							
 				if ( abs( val + uMin ) > 0.01 )
 				{
 					if ( val < uMin * -1.0 )
