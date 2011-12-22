@@ -117,6 +117,10 @@
             		value = parseFloat($(this).val()).toFixed(3);
             		document.getElementById('tp').innerHTML = value;
             	}
+            	else if ( $(this).attr('id') === "alpha2" ) {
+            		value = parseFloat($(this).val()).toFixed(3);
+            		document.getElementById('texAlpha').innerHTML = value;
+            	}
             	$(this).parent().find('.value').text(value);
                 Viewer[method](value);
             };

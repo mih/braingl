@@ -66,6 +66,7 @@ var Viewer = (function() {
 	variables.scene.texThreshold1 = 1.0;
 	variables.scene.texThreshold2 = 1.0;
 	variables.scene.texAlpha2 = 1.0;
+	variables.scene.texInterpolation = true;
 			
 	// picking
 	variables.picking = {};
@@ -323,6 +324,7 @@ var Viewer = (function() {
 				var niftii  = new Niftii();
 				niftii.load( settings.DATA_URL + el.url );
 				niftiis[el.id] = niftii;
+				niftiis[el.id].id = el.id;
 				niftiis[el.id].name = el.name;
 				textures[el.id] = {};
 				
@@ -766,10 +768,14 @@ var Viewer = (function() {
 	function handleLoadedTexture(texture) {
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-//		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-//		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		if ( variables.scene.texInterpolation ) {
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		}
+		else {
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		}
 		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.bindTexture(gl.TEXTURE_2D, null);
 		delete texture.image;
@@ -2610,6 +2616,15 @@ var Viewer = (function() {
 		redraw();
 	}
 	
+	function toggleInterpolation() {
+		variables.scene.texInterpolation = !variables.scene.texInterpolation;
+		textures = {};
+		$.each(niftiis, function() {
+			textures[this.id] = {};
+		});
+		redraw();
+	}
+	
 	// Im Viewer-Singleton werden nur die im folgenden aufgefhrten
 	// Methoden/Eigenschaften nach
 	// auen sichtbar gemacht.
@@ -2653,6 +2668,7 @@ var Viewer = (function() {
 		'setThreshold2' : setThreshold2,
 		'recalcFibres' : recalcFibres,
 		'resetFibres' : resetFibres,
-		'setAlpha2' : setAlpha2
+		'setAlpha2' : setAlpha2,
+		'toggleInterpolation' : toggleInterpolation
 	};
 })();
