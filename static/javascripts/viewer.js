@@ -781,13 +781,38 @@ var Viewer = (function() {
 	// texture management
 	//
 	//***************************************************************************************************/
+	var waitId=0;
+	var waitOrient=0;
+	var waitPos=0;
+	
 	function getTexture(id, orient, pos) {
 		if (textures[id][orient + pos]) {
 			return textures[id][orient + pos];
 		} else {
-			textures[id][orient + pos] = gl.createTexture();
-			textures[id][orient + pos].image = niftiis[id].getImage(orient, pos);
-			handleLoadedTexture(textures[id][orient + pos]);
+			if ( niftiis[id].loaded() ) {
+				textures[id][orient + pos] = gl.createTexture();
+				textures[id][orient + pos].image = niftiis[id].getImage(orient, pos);
+				handleLoadedTexture(textures[id][orient + pos]);
+			}
+			else {
+				// start time out and look a little bit later
+				waitId = id;
+				waitOrient = orient;
+				waitPos = pos;
+				setTimeout( waitForTextureLoad, 200 );
+			}
+		}
+	}
+	
+	function waitForTextureLoad() {
+		if ( niftiis[waitId].loaded() ) {
+			textures[waitId][waitOrient + waitPos] = gl.createTexture();
+			textures[waitId][waitOrient + waitPos].image = niftiis[waitId].getImage(waitOrient, waitPos);
+			handleLoadedTexture(textures[waitId][waitOrient + waitPos]);
+		}
+		else {
+			// start time out and look a little bit later
+			setTimeout( waitForTextureLoad, 200 );
 		}
 	}
 
@@ -2553,22 +2578,32 @@ var Viewer = (function() {
 	function changeTexture2() {
 		var id = $('#textureSelect2').val();
 		variables.scene.secTex = id;
-		
-		$id('threshold1').min = niftiis[id].getMin();
-		$id('threshold1').max = 0;
-		$id('threshold1').step = niftiis[id].getMin() / 100 * -1.0;
-		$id('threshold2').min = 0;
-		$id('threshold2').max = niftiis[id].getMax();
-		$id('threshold2').step = niftiis[id].getMax() / 100;
-		
-		if ( niftiis[id].getType() === 'anatomy' || niftiis[id].getType() === 'rgb' ) {
+		if ( id === 'none') {
+			$id('threshold1').min = 0;
+			$id('threshold1').max = 0;
+			$id('threshold1').step = 0;
+			$id('threshold2').min = 0;
+			$id('threshold2').max = 0;
+			$id('threshold2').step = 0;
 			$id('cMapSelect').options[0].selected = true;
 		}
-		else if ( niftiis[id].getType() === 'fmri' ) {
-			$id('cMapSelect').options[1].selected = true;
-		}
-		else if ( niftiis[id].getType() === 'overlay' ) {
-			$id('cMapSelect').options[3].selected = true;
+		else {
+			$id('threshold1').min = niftiis[id].getMin();
+			$id('threshold1').max = 0;
+			$id('threshold1').step = niftiis[id].getMin() / 100 * -1.0;
+			$id('threshold2').min = 0;
+			$id('threshold2').max = niftiis[id].getMax();
+			$id('threshold2').step = niftiis[id].getMax() / 100;
+		
+			if ( niftiis[id].getType() === 'anatomy' || niftiis[id].getType() === 'rgb' ) {
+				$id('cMapSelect').options[0].selected = true;
+			}
+			else if ( niftiis[id].getType() === 'fmri' ) {
+				$id('cMapSelect').options[1].selected = true;
+			}
+			else if ( niftiis[id].getType() === 'overlay' ) {
+				$id('cMapSelect').options[3].selected = true;
+			}
 		}
 		
 		redraw();

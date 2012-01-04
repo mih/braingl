@@ -18,10 +18,11 @@
 		var min = 1000;
 		var zero = 0;
 		var type = '';
+		var loaded = false;
 				
 		this.load = function(url) {
 			var xhr = new XMLHttpRequest();
-			xhr.open('GET', url, false);
+			xhr.open('GET', url, true);
 			xhr.responseType = 'arraybuffer';
 
 			xhr.onload = function(e) {
@@ -78,6 +79,10 @@
 			};
 			xhr.send();
 		};
+		
+		this.loaded = function() {
+			return loaded;
+		}
 	
 		this.getImage = function (orient, pos) {
 			if ( !loaded ) console.log( "DEBUG nifti file not finished loading");
