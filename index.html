@@ -119,13 +119,17 @@
 		
 		<div class="controlTab" id="elementTab" style="display:none">
 			<section id="elements"></section>
+			<select id="elementSelect">
+			</select>
+			<br />
+			<input type="range" min="0" max="100" id="elementAlpha" value="0" step="1" />
 		</div>
 		
 		<div class="controlTab" id="activationTab" style="display:none">
 			<section id="activations"></section>
 			<!--<a href="#inputActivations">Input activations</a><br>-->
 			<section id="inputActivations">
-				<select id="editActivationSelect" onChange="Viewer.changeEditActivationSelection();">
+				<select id="editActivationSelect">
 				</select>
 				<table>
 					<tr>
@@ -135,7 +139,7 @@
 						<th>Z</th>
 					</tr>
 					<tr>
-						<td><input type="text" size="10" id="acName" value='activ1'></td>
+						<td><input type="text" size="10" id="acName" name="name" value='activ1'></td>
 						<td><input type="text" size="6" id="acX" value=-3></td>
 						<td><input type="text" size="6" id="acY" value=0></td>
 						<td><input type="text" size="6" id="acZ" value=0></td>
@@ -153,14 +157,13 @@
 						<td><input type="text" size="6" id="acB" value=0></td>
 					</tr>
 				</table>
-				<input type="button" name="Submit" value="New" onclick="Viewer.addActivation();">
-				<input type="button" name="Submit" value="Edit" onclick="Viewer.editActivation();">
+				<input type="button" name="Submit" value="New" id="newActivation">
 				<input type="button" name="Submit" value="Select Fibres" onclick="Viewer.recalcFibres();">
 				<input type="button" name="Submit" value="Reset Fibres" onclick="Viewer.resetFibres();">
 			</section>
 			<section id="connections"></section>
 			<section id="inputConnections">
-				<select id="editConnectionSelect" onChange="Viewer.changeEditConnectionSelection();">
+				<select id="editConnectionSelect">
 				</select>
 				<br>
 				<select id="fromSelect">
@@ -209,7 +212,6 @@
 					</tr>
 				</table>
 				<input type="button" name="Submit" value="New" onclick="Viewer.addConnection();">
-				<input type="button" name="Submit" value="Edit" onclick="Viewer.editConnection();">
 				<br>
 				<input type="button" name="Animate" value="Animate" onclick="Viewer.toggleAnimation();">
 			</section>
