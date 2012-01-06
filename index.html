@@ -21,8 +21,8 @@
 				<br>
 			</section>
 			<section id="saveload">
-				<input type="button" name="Save" value="Save" onclick="Viewer.saveScene();">
-				<input type="button" name="Load" value="Load" onclick="Viewer.loadScene();">
+				<input type="button" name="Save" value="Save" id="save">
+				<input type="button" name="Load" value="Load" id="load">
 				<input type="text" id="textInput">
 				<input type="button" name="Clear" value="Clear" onclick="document.getElementById('textInput').value =''">
 				<br><input type="checkbox" id="saveLoc">use browser storage<br>
@@ -42,7 +42,7 @@
 						<th>frames</th>
 					</tr>
 					<tr>
-						<td><input type="button" name="Test" value="rotate" onclick="Viewer.autoRotate();"></td>
+						<td><input type="button" name="Test" value="rotate" id="rotate"></td>
 						<td><input type="text" size="6" id="animT" value=50></td>
 						<td><input type="text" size="6" id="animX" value=30></td>
 						<td><input type="text" size="6" id="animY" value=0></td>
@@ -71,7 +71,7 @@
 						<th>Primary MRI</th>
 					</tr>
 					<tr>
-						<td><select id="textureSelect" onChange="Viewer.changeTexture();"></select></td>
+						<td><select id="textureSelect"></select></td>
 					</tr>
 					<tr>
 						<th>Overlay</th>
@@ -79,12 +79,12 @@
 					</tr>
 					<tr>
 						<td>
-							<select id="textureSelect2" onChange="Viewer.changeTexture2();">
+							<select id="textureSelect2">
 								<option value="none">none</option>
 							</select>
 						</td>
 						<td>
-							<select id="cMapSelect" onChange="Viewer.changeColorMap();">
+							<select id="colormapSelect">
 								<option value="0">none</option>
 								<option value="1">Red-Yellow</option>
      							<option value="2">Blue-Light Blue</option>
@@ -211,7 +211,7 @@
 						<td><input type="number" min=0.5 max=20 value=2 step=0.1 id="coSpeed2"></td>
 					</tr>
 				</table>
-				<input type="button" name="Submit" value="New" onclick="Viewer.addConnection();">
+				<input type="button" name="Submit" value="New" id="newConnection">
 				<br>
 				<input type="button" name="Animate" value="Animate" onclick="Viewer.toggleAnimation();">
 			</section>

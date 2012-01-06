@@ -4,9 +4,6 @@ var Viewer = (function() {
 	//	definition of global variables
 	//
 	//***************************************************************************************************/
-	var $id = function(d) {
-		return document.getElementById(d);
-	};
 	var canvas = {}; // = document.getElementById("viewer-canvas"); // id of canvas in the DOM
 	var $canvas = {}; // jQuery object of the canvas element
 	var gl = {}; // stores the webgl context
@@ -16,6 +13,7 @@ var Viewer = (function() {
 	var shaders = {}; // set storing the shaders
 	var shaderPrograms = {}; // array storing the loaded shader programs
 	var textures = {};
+	var texIds =[];
 	var niftiis = {};
 	
 	var variables = {};
@@ -58,13 +56,15 @@ var Viewer = (function() {
 	variables.scene.axial = 80;
 	variables.scene.coronal = 100;
 	variables.scene.sagittal = 80;
-	variables.scene.secTex = "none"; //"fmri1";
+	variables.scene.tex1 = 'none';
+	variables.scene.tex2 = "none"; //"fmri1";
 	variables.scene.localFibreColor = false;
 	variables.scene.showSlices = true;
 	variables.scene.lastActivated = "none";
 	variables.scene.renderTubes = true;
 	variables.scene.texThreshold1 = 1.0;
 	variables.scene.texThreshold2 = 1.0;
+	variables.scene.colormap = 1.0;
 	variables.scene.texAlpha2 = 1.0;
 	variables.scene.texInterpolation = true;
 			
@@ -116,9 +116,10 @@ var Viewer = (function() {
 	//***************************************************************************************************/
 	function init(opts) {
 		config = $.getSyncJSON(settings.DATA_URL + 'config.json');
-		
 		$canvas = $(opts.canvas);
 		canvas = $canvas[0];
+		console.log($canvas);
+		console.log(canvas);
 		
 		$(Viewer).bind('loadElementsComplete', function(event) {
 			// wenn alle Elemente geladen wurden, soll der ready-Event gefeuert werden.
@@ -331,9 +332,11 @@ var Viewer = (function() {
 				niftiis[el.id].id = el.id;
 				niftiis[el.id].name = el.name;
 				textures[el.id] = {};
-				
-		        $('#textureSelect').append($('<option></option>').val(el.id).html(niftiis[el.id].name));
-		        $('#textureSelect2').append($('<option></option>').val(el.id).html(niftiis[el.id].name));
+				$(Viewer).trigger('loadTexture', {
+					'id' : el.id,
+					'name' : niftiis[el.id].name
+				});
+		        texIds.push(el.id);
 			}
 			//  das verarbeitete Element aus dem elementsToLoad-Array loeschen und 
 			elementsToLoad = $.grep(elementsToLoad, function(val) {
@@ -343,6 +346,7 @@ var Viewer = (function() {
 			//  den loadElementsComplete-Event feuern, wenn alle Elemente geladen sind.
 			if (!elementsToLoad.length) {
 				$(Viewer).trigger('loadElementsComplete');
+				variables.scene.tex1 = texIds[0];
 				redraw();
 			}
 		});
@@ -352,96 +356,52 @@ var Viewer = (function() {
 		$(Viewer).trigger('loadActivationsStart');
 
 		$.each(activationsToLoad, function(i, ac) {
-			var co = tal2pixel(ac.coord.x, ac.coord.y, ac.coord.z);
-			elements[ac.id] = createSphere(co[0], co[1], co[2], ac.size, ac.color);
-			elements[ac.id].name = ac.name;
-			elements[ac.id].co = co;
-			elements[ac.id].type = 'activation';
-			elements[ac.id].display = ac.display;
-			elements[ac.id].id = ac.id;
-			elements[ac.id].hasBuffer = false;
-			elements[ac.id].transparency = 1.0;
-			elements[ac.id].fromJSON = true;
-			pickColor = createPickColor(variables.picking.pickIndex);
-			variables.picking.pickIndex++;
-			variables.picking.pickArray[pickColor.join()] = ac.id;
-			pc = [];
-			pc[0] = pickColor[0] / 255;
-			pc[1] = pickColor[1] / 255;
-			pc[2] = pickColor[2] / 255;
-			elements[ac.id].pickColor = pc;
-
-			elements[ac.id].coordinates = [ac.coord.x, ac.coord.y, ac.coord.z];
-			elements[ac.id].rgb = ac.color;
-			elements[ac.id].size = ac.size;
-			
-			addActivationSelect(ac.id);
-			
-			$(Viewer).trigger('loadActivationComplete', {
-				'id' : ac.id
-			});
-		});
-/*	
-		$.each(activationsToLoad, function(i, ac) {
 			createActivation( ac.id, ac.name, ac.coord.x, ac.coord.y, ac.coord.z, ac.size, ac.color.r, ac.color.g, ac.color.b );
 			elements[ac.id].fromJSON = true;
-			addActivationSelect(ac.id);
+
+			$(Viewer).trigger('newActivation', {
+				'id' : ac.id,
+				'name' : ac.name,
+				'active' : true
+			});
+			
 			$(Viewer).trigger('loadActivationComplete', {
 				'id' : ac.id
 			});
+			
+			var saveAct = {};
+	        saveAct.id = ac.id;
+	        saveAct.name = ac.name;
+	        saveAct.co = elements[ac.id].coordinates;
+	        saveAct.size = ac.size;
+	        saveAct.rgb = elements[ac.id].rgb;
+	        variables.connectom.activations[ac.id] = saveAct;
 		});
-*/		
+		
 		$(Viewer).trigger('loadActivationsComplete');
 	}
-	
 	
 	function loadConnections(connectionsToLoad) {
 		$(Viewer).trigger('loadConnectionsStart');
 
 		$.each(connectionsToLoad, function(i, con) {
-			var id = con.id;
 			var fromId = con.fromId;
 			var toId = con.toId;
 			
 			var cofp = elements[fromId].coordinates;
 			var cotp = elements[toId].coordinates;
-			var cof = tal2pixel(cofp[0], cofp[1], cofp[2]);
-			var cot = tal2pixel(cotp[0], cotp[1], cotp[2]);
-			var name = elements[fromId].name + "-" + elements[toId].name;
 			var color = con.color;
 			var strength = con.strength;
 			var size = con.size;
 			var distance = con.distance;
 			var speed = con.speed;
-			
-			
-			elements[id] = {};
-			elements[id].fromId = fromId;
-			elements[id].toId = toId;
-			createConnection(id, name, cof, cot, color, strength, size, distance, speed, -strength);
-			
-			var id2 = con.id2;
-			var name2 = elements[toId].name + "-" + elements[fromId].name;
 			var color2 = con.color2;
 			var strength2 = con.strength2;
 			var size2 = con.size2;
 			var distance2 = con.distance2;
 			var speed2 = con.speed2;
-
 			
-			elements[id2] = {};
-			elements[id2].fromId = toId;
-			elements[id2].toId = fromId;
-			elements[id2].coId = id;
-			elements[id].coId = id2;
-			createConnection(id2, name2, cot, cof, color2, strength2, size2, distance2, speed2, strength2);
-			addConnectionToggle(id);
-			addConnectionSelect(id);
-			addConnectionToggle(id2);
-			addConnectionSelect(id2);
-			
-			elements[id].display = con.display;
-			elements[id2].display = con.display;
+			addConnection( fromId, toId, color, strength, size, distance, speed, color2, strength2, size2, distance2, speed2, false );
 			
 			$(Viewer).trigger('loadConnectionComplete', {
 				'id' : con.id
@@ -452,7 +412,7 @@ var Viewer = (function() {
 	}
 
 	function loadScenes() {
-		$sceneButtons = $('#sceneButtons');
+		
 		$(Viewer).trigger('loadScenesStart');
 		$.getJSON(settings.DATA_URL + 'scenes.json', function(data) {
 			$.each(data, function(i, sc) {
@@ -468,14 +428,9 @@ var Viewer = (function() {
 				scenes[sc.id].texture1 = sc.texture1;
 				scenes[sc.id].texture2 = sc.texture2;
 				
-				var $button = $('<input type="button" />');
-	            $button.attr('id', 'scenebutton-' + sc.id);
-	            $button.attr('value', sc.id);
-	            $button.click(function(e) {
-	                Viewer.activateScene(sc.id);
-	                return false;
-	            });
-				$sceneButtons.append($button);
+				$(Viewer).trigger('loadSceneComplete', {
+					'id' : sc.id
+				});
 			});
 			$(Viewer).trigger('loadScenesComplete');
 		});
@@ -558,8 +513,9 @@ var Viewer = (function() {
 		variables.scene.coronal = scenes[id].slices[1];
 		variables.scene.sagittal = scenes[id].slices[2];
 
-		variables.scene.secTex = scenes[id].texture2;
-
+		changeTexture(scenes[id].texture1);
+		changeTexture2(scenes[id].texture2);
+		
 		$.each(scenes[id].elementsActive, function(index, value) {
 			showElement(value);
 		});
@@ -568,15 +524,13 @@ var Viewer = (function() {
 			showActivation(value);
 		});
 		
-		$('#textureSelect option[value=' + scenes[id].texture1 + ']').attr('selected',true);
-		$('#textureSelect2 option[value=' + scenes[id].texture2 + ']').attr('selected',true);
-		changeTexture2();
-/*
+
 		$(Viewer).trigger('activateSceneComplete', {
 			'id' : id,
-			'scene' : scenes[id]
+			'scene' : scenes[id],
+			'tex1' : variables.scene.tex1,
+			'tex2' : variables.scene.tex2
 		});
-		*/
 		redraw();
 	}
 
@@ -860,7 +814,7 @@ var Viewer = (function() {
 		variables.webgl.lightPos[1] = 0.0;
 		variables.webgl.lightPos[2] = -1.0;
 
-		var dim = niftiis[$('#textureSelect').val()].getDims();
+		var dim = niftiis[variables.scene.tex1].getDims();
 		mat4.translate(variables.webgl.mvMatrix, [ dim[0]/-2.0, dim[1]/-2.0, dim[2]/-2.0 ]);
 
 		mat4.inverse(variables.webgl.thisRot);
@@ -930,7 +884,7 @@ var Viewer = (function() {
 		variables.webgl.lightPos[1] = 0.0;
 		variables.webgl.lightPos[2] = -1.0;
 
-		var dim = niftiis[$('#textureSelect').val()].getDims();
+		var dim = niftiis[variables.scene.tex1].getDims();
 		mat4.translate(variables.webgl.mvMatrix, [ dim[0]/-2.0, dim[1]/-2.0, dim[2]/-2.0 ]);
 
 		mat4.inverse(variables.webgl.thisRot);
@@ -1240,16 +1194,16 @@ var Viewer = (function() {
 		axialVertexIndexBuffer.numItems = 6;
 
 		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, getTexture($('#textureSelect').val(), 'axial', variables.scene.axial));
+		gl.bindTexture(gl.TEXTURE_2D, getTexture(variables.scene.tex1, 'axial', variables.scene.axial));
 		gl.uniform1i(shaderPrograms['slice'].samplerUniform, 0);
 
-		if (variables.scene.secTex != "none") {
+		if (variables.scene.tex2 != "none") {
 			gl.activeTexture(gl.TEXTURE1);
-			gl.bindTexture(gl.TEXTURE_2D, getTexture($('#textureSelect2').val(), 'axial', variables.scene.axial));
+			gl.bindTexture(gl.TEXTURE_2D, getTexture(variables.scene.tex2, 'axial', variables.scene.axial));
 			gl.uniform1i(shaderPrograms['slice'].samplerUniform1, 1);
-			gl.uniform1i(shaderPrograms['slice'].colorMapUniform,parseInt($('#cMapSelect').val()));
-			gl.uniform1f(shaderPrograms['slice'].minUniform, niftiis[$('#textureSelect2').val()].getMin() );
-			gl.uniform1f(shaderPrograms['slice'].maxUniform, niftiis[$('#textureSelect2').val()].getMax() );
+			gl.uniform1i(shaderPrograms['slice'].colorMapUniform,variables.scene.colormap);
+			gl.uniform1f(shaderPrograms['slice'].minUniform, niftiis[variables.scene.tex2].getMin() );
+			gl.uniform1f(shaderPrograms['slice'].maxUniform, niftiis[variables.scene.tex2].getMax() );
 			gl.uniform1f(shaderPrograms['slice'].threshold1Uniform, variables.scene.texThreshold1);
 			gl.uniform1f(shaderPrograms['slice'].threshold2Uniform, variables.scene.texThreshold2);
 			gl.uniform1f(shaderPrograms['slice'].alpha2Uniform, variables.scene.texAlpha2);
@@ -1286,12 +1240,12 @@ var Viewer = (function() {
 		coronalVertexIndexBuffer.numItems = 6;
 
 		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, getTexture($('#textureSelect').val(), 'coronal', variables.scene.coronal));
+		gl.bindTexture(gl.TEXTURE_2D, getTexture(variables.scene.tex1, 'coronal', variables.scene.coronal));
 		gl.uniform1i(shaderPrograms['slice'].samplerUniform, 0);
 
-		if (variables.scene.secTex != "none") {
+		if (variables.scene.tex2 != "none") {
 			gl.activeTexture(gl.TEXTURE1);
-			gl.bindTexture(gl.TEXTURE_2D, getTexture($('#textureSelect2').val(), 'coronal', variables.scene.coronal));
+			gl.bindTexture(gl.TEXTURE_2D, getTexture(variables.scene.tex2, 'coronal', variables.scene.coronal));
 			gl.uniform1i(shaderPrograms['slice'].samplerUniform1, 1);
 		}
 
@@ -1322,12 +1276,12 @@ var Viewer = (function() {
 		sagittalVertexIndexBuffer.numItems = 6;
 
 		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, getTexture($('#textureSelect').val(), 'sagittal', variables.scene.sagittal));
+		gl.bindTexture(gl.TEXTURE_2D, getTexture(variables.scene.tex1, 'sagittal', variables.scene.sagittal));
 		gl.uniform1i(shaderPrograms['slice'].samplerUniform, 0);
 
-		if (variables.scene.secTex != "none") {
+		if (variables.scene.tex2 != "none") {
 			gl.activeTexture(gl.TEXTURE1);
-			gl.bindTexture(gl.TEXTURE_2D, getTexture($('#textureSelect2').val(), 'sagittal', variables.scene.sagittal));
+			gl.bindTexture(gl.TEXTURE_2D, getTexture(variables.scene.tex2, 'sagittal', variables.scene.sagittal));
 			gl.uniform1i(shaderPrograms['slice'].samplerUniform1, 1);
 		}
 
@@ -1362,8 +1316,8 @@ var Viewer = (function() {
 			e.fixedX = event.offsetX;
 			e.fixedY = event.offsetY;
 		} else {
-			e.fixedX = e.x - findPosX($id('viewer'));
-			e.fixedY = e.y - findPosY($id('viewer'));
+			e.fixedX = e.x - findPosX(canvas);
+			e.fixedY = e.y - findPosY(canvas);
 		}
 
 		return e;
@@ -1945,63 +1899,57 @@ var Viewer = (function() {
 	function saveScene() {
 		//console.log( JSON.stringify(variables));
 		var activs = [];
-		$.each(elements, function() {
-			if (this.display) {
-				activs.push(this.id);
-			}
-		});
-		variables.scene.activ = activs;
+        $.each(elements, function() {
+            if (this.display) {
+                 activs.push(this.id);
+            }
+        });
+        variables.scene.activ = activs;
 		variables.connectom.animate = false;
-		$('#textInput').val( JSON.stringify(variables) );
-		
-		var mydomstorage=window.localStorage || (window.globalStorage? globalStorage[location.hostname] : null);
-		if (mydomstorage){
-			mydomstorage.conviewSave = JSON.stringify(variables);
-		}
-		else{
-		    // Your browser doesn't support DOM Storage unfortunately.
-		}
+
+		return JSON.stringify(variables);
 	}
 	
-	function loadScene() {
+	function loadScene( saveString ) {
 		var loadData;
-		var mydomstorage=window.localStorage || (window.globalStorage? globalStorage[location.hostname] : null);
-		if (mydomstorage && mydomstorage.conviewSave && $("#saveLoc").attr("checked") ) {
-			console.log("load from browser storage");
-			loadData = JSON.parse(mydomstorage.conviewSave);
-		}
-		else{
-			if ($('#textInput').val() != "") {
-				try {
-					loadData = JSON.parse($('#textInput').val());
-				}
-				catch(e) {
-					alert("Error while loading");
-					return;
-				}
+		
+		if (saveString != "") {
+			try {
+				loadData = JSON.parse(saveString);
 			}
-			else {
-				alert("Nothing to load!");
+			catch(e) {
+				alert("Error while loading");
 				return;
 			}
 		}
+		else {
+			alert("Nothing to load!");
+			return;
+		}
+
 		
 		variables.webgl.thisRot.set(loadData.webgl.thisRot);
 		variables.scene = loadData.scene;
 		
 		variables.connectom = loadData.connectom;
-		//$('#activations').empty();
+
 		$.each(loadData.connectom.activations, function() {
 			createActivation(this.id, this.name, this.co[0], this.co[1], this.co[2], this.size, this.rgb.r, this.rgb.g, this.rgb.b );
-			addActivationToggle(this.id);
+			$(Viewer).trigger('newActivation', {
+				'id' : this.id,
+				'name' : this.name,
+				'active' : true
+			});
 		});
 		
-		//$('#connections').empty();
 		$.each(loadData.connectom.connections, function() {
 			elements[this.id] = {};
 			createConnection(this.id, this.name, this.cof, this.cot, this.color, this.strength, this.size, this.distance, this.speed, this.barShift);
-			addConnectionToggle(this.id);
-			addConnectionSelect(this.id);
+			$(Viewer).trigger('newConnection', {
+				'id' : this.id,
+				'name' : this.name,
+				'active' : false
+			});
 		});
 		
 		$.each(elements, function(id, element) {
@@ -2030,7 +1978,7 @@ var Viewer = (function() {
 				var speed = this.speed;
 				var barShift = this.barShift;
 				
-				createConnection(id3, name, cof, cot, color, strength, size, distance, speed, barShift);
+				createConnection(id3, name, cof, cot, color, strength, size, distance, speed, barShift, this.display);
 				
 				variables.connectom.connections[id3].name = elements[id3].name;
 		        variables.connectom.connections[id3].cof = cof;
@@ -2042,13 +1990,7 @@ var Viewer = (function() {
 		        variables.connectom.connections[id3].color = color;
 		        variables.connectom.connections[id3].barShift = barShift;
 		        
-		        var sel = $id('editConnectionSelect');
-				for (var i = sel.length - 1; i>=0; i--) {
-					if (sel.options[i].value == id3) {
-						sel.options[i].text = elements[id3].name;
-				    }
-				}
-				$id("label-"+id3).innerHTML = elements[id3].name;
+		        changeConnectionAttrib( this.id, 'name', name);
 			}
 		});
 
@@ -2059,13 +2001,14 @@ var Viewer = (function() {
 		var cof = tal2pixel(x, y, z);
 		elements[id] = createSphere(cof[0], cof[1], cof[2], size, {"r": r, "g": g, "b": b});
 		elements[id].name = name;
+		elements[id].co = cof;
 		elements[id].type = 'activation';
-		elements[id].display = true;
+		elements[id].display = false;
 		elements[id].id = id;
 		elements[id].hasBuffer = false;
 		elements[id].fromJSON = false;
 		elements[id].transparency = 1.0;
-		elements[id].co = cof;
+		
 		elements[id].coordinates = [x,y,z];
 		elements[id].size = size;
 		elements[id].rgb = {"r": r, "g": g, "b": b};
@@ -2085,13 +2028,17 @@ var Viewer = (function() {
 		
 		createActivation( id, name, x, y, z, size, r, g, b );
 		
-		addActivationToggle(id);
-
+		$(Viewer).trigger('newActivation', {
+			'id' : id,
+			'name' : name,
+			'active' : true
+		});
+		
 		var saveAct = {};
         saveAct.id = id;
-        saveAct.name = elements[id].name;
+        saveAct.name = name;
         saveAct.co = elements[id].coordinates;
-        saveAct.size = parseFloat($('#acSize').val());
+        saveAct.size = size;
         saveAct.rgb = elements[id].rgb;
         variables.connectom.activations[id] = saveAct;
         
@@ -2105,25 +2052,25 @@ var Viewer = (function() {
 			elements[id].name = value;
 			break;
 		case 'acX' :
-			elements[id].coordinates[0] = parseFloat($("#acX").val());
+			elements[id].coordinates[0] = parseFloat(value);
 			break;			
 		case 'acY' :
-			elements[id].coordinates[1] = parseFloat($("#acY").val());
+			elements[id].coordinates[1] = parseFloat(value);
 			break;
 		case 'acZ' :
-			elements[id].coordinates[2] = parseFloat($("#acZ").val());
+			elements[id].coordinates[2] = parseFloat(value);
 			break;
 		case 'acSize' :
-			elements[id].size = parseFloat($("#acSize").val());
+			elements[id].size = parseFloat(value);
 			break;
 		case 'acR' :
-			elements[id].rgb.r = parseFloat($("#acR").val());
+			elements[id].rgb.r = parseFloat(value);
 			break;
 		case 'acG' :
-			elements[id].rgb.g = parseFloat($("#acG").val());
+			elements[id].rgb.g = parseFloat(value);
 			break;
 		case 'acB' :
-			elements[id].rgb.b = parseFloat($("#acB").val());
+			elements[id].rgb.b = parseFloat(value);
 			break;
 		default:
 			break;
@@ -2135,92 +2082,52 @@ var Viewer = (function() {
 		elements[id].indices = sphere.indices;
 		elements[id].colors = sphere.colors;
 		elements[id].hasBuffer = false;
-		//updateConnections(id);
+		updateConnections(id);
 		redraw();
 		
-		if ( !elements[id].fromJSON ) {
-	        variables.connectom.activations[id].name = elements[id].name;
-	        variables.connectom.activations[id].co = elements[id].coordinates;
-	        variables.connectom.activations[id].size = parseFloat($id('acSize').value);
-	        variables.connectom.activations[id].rgb = elements[id].rgb;
-		}
+
+        variables.connectom.activations[id].name = elements[id].name;
+        variables.connectom.activations[id].co = elements[id].coordinates;
+        variables.connectom.activations[id].size = elements[id].size;
+        variables.connectom.activations[id].rgb = elements[id].rgb;
+
 	}
 	
-	function addActivationToggle(id) {
-		var $toggle = $('<a />');
-        $toggle.append('<span/>');
-        var $label = $('<label>'+elements[id].name+'</label>');
-        $toggle.append($label);
-        $label.attr('id', 'label-' + id);
-        $toggle.addClass('toggle');
-        $toggle.attr('href', '#toggle:' +id);
-        $toggle.attr('id', 'toggle-' + id);
-        $toggle.click(function(e) {
-            e.preventDefault();
-            Viewer.toggleActivation(id);
-            return false;
-        });
-        $('#activations').append($toggle);
-        
-        addActivationSelect(id);
-	}
-	
-	function addActivationSelect(id) {
-		var $newOpt = document.createElement('option');
-        $newOpt.text = elements[id].name;
-        $newOpt.value = id;
-        $id('fromSelect').add($newOpt, null);
-        var $newOpt2 = document.createElement('option');
-        $newOpt2.text = elements[id].name;
-        $newOpt2.value = id;
-        $id('toSelect').add($newOpt2, null);
-        var $newOpt3 = document.createElement('option');
-        $newOpt3.text = elements[id].name;
-        $newOpt3.value = id;
-        $id('editActivationSelect').add($newOpt3, null);
-        $newOpt3.selected = true;
-	}
-	
-	function addConnection()
+	function addConnection( fromId, toId, color, strength, size, distance, speed, color2, strength2, size2, distance2, speed2, display )
 	{
-		var cofp = elements[$('#fromSelect').val()].coordinates;
-		var cotp = elements[$('#toSelect').val()].coordinates;
-		var cof = tal2pixel(cofp[0], cofp[1], cofp[2]);
-		var cot = tal2pixel(cotp[0], cotp[1], cotp[2]);
+		var name = elements[fromId].name + "-" + elements[toId].name;
+		var name2 = elements[toId].name + "-" + elements[fromId].name;
 		var id = 'cc' + variables.connectom.connectionIndex;
 		++variables.connectom.connectionIndex;
-		var name = elements[$('#fromSelect').val()].name + "-" + elements[$('#toSelect').val()].name;
-		var color = {"r": parseFloat($id('coR').value), "g": parseFloat($id('coG').value), "b": parseFloat($id('coB').value)};
-		var strength = parseFloat($id('coStrength').value);
-		var size = parseFloat($id('coSize').value);
-		var distance = parseFloat($id('coDistance').value);
-		var speed = parseFloat($id('coSpeed').value);
-		var fromId = $('#fromSelect').val();
-		var toId = $('#toSelect').val();
+		var id2 = 'cc' + variables.connectom.connectionIndex;
+		++variables.connectom.connectionIndex;
+		var cofp = elements[fromId].coordinates;
+		var cotp = elements[toId].coordinates;
+		var cof = tal2pixel(cofp[0], cofp[1], cofp[2]);
+		var cot = tal2pixel(cotp[0], cotp[1], cotp[2]);
 		
 		elements[id] = {};
 		elements[id].fromId = fromId;
 		elements[id].toId = toId;
-		createConnection(id, name, cof, cot, color, strength, size, distance, speed, -strength);
-		
-		var id2 = 'cc' + variables.connectom.connectionIndex;
-		++variables.connectom.connectionIndex;
-		var name2 = elements[$('#toSelect').val()].name + "-" + elements[$('#fromSelect').val()].name;
-		var color2 = {"r": parseFloat($id('coR2').value), "g": parseFloat($id('coG2').value), "b": parseFloat($id('coB2').value)};
-		var strength2 = parseFloat($id('coStrength2').value);
-		var size2 = parseFloat($id('coSize2').value);
-		var distance2 = parseFloat($id('coDistance2').value);
-		var speed2 = parseFloat($id('coSpeed2').value);
+		createConnection(id, name, cof, cot, color, strength, size, distance, speed, -strength, display);
 		elements[id2] = {};
 		elements[id2].fromId = toId;
 		elements[id2].toId = fromId;
 		elements[id2].coId = id;
 		elements[id].coId = id2;
-		createConnection(id2, name2, cot, cof, color2, strength2, size2, distance2, speed2, strength2);
-		addConnectionToggle(id);
-		addConnectionSelect(id);
-		addConnectionToggle(id2);
-		addConnectionSelect(id2);
+		createConnection(id2, name2, cot, cof, color2, strength2, size2, distance2, speed2, strength2, display);
+		
+		$(Viewer).trigger('newConnection', {
+			'id' : id,
+			'name' : name,
+			'active' : true
+		});
+		
+		$(Viewer).trigger('newConnection', {
+			'id' : id2,
+			'name' : name2,
+			'active' : true
+		});
 		
 		var saveCon = {};
         saveCon.id = id;
@@ -2256,7 +2163,7 @@ var Viewer = (function() {
 	}
 	
 	function changeConnectionAttrib( id, name, value) {
-		console.log( id + " " + name + " " + value);
+		console.log ( id + " " + name + " " + value);
 		var co = elements[id];
 		var co2 = elements[co.coId];
 		switch( name ) {
@@ -2304,9 +2211,13 @@ var Viewer = (function() {
 			break;
 		case 'fromId' :
 			co.fromId = value;
+			co.name = elements[co.fromId].name + '-' + elements[co.toId].name;
+			co2. name = elements[co.toId].name + '-' + elements[co.fromId].name;
 			break;
 		case 'toId' :
 			co.toId = value;
+			co.name = elements[co.fromId].name + '-' + elements[co.toId].name;
+			co2. name = elements[co.toId].name + '-' + elements[co.fromId].name;
 			break;
 		default:
 			break;
@@ -2317,9 +2228,9 @@ var Viewer = (function() {
 		var cof = tal2pixel(cofp[0], cofp[1], cofp[2]);
 		var cot = tal2pixel(cotp[0], cotp[1], cotp[2]);
 		
-		createConnection(id, co.name, cof, cot, co.color, co.strength, co.size, co.distance, co.speed, -co.strength);
-		createConnection(co2.id, co2.name, cot, cof, co2.color, co2.strength, co2.size, co2.distance, co2.speed, co.strength);
-		
+		createConnection(id, co.name, cof, cot, co.color, co.strength, co.size, co.distance, co.speed, -co.strength, co.display);
+		createConnection(co2.id, co2.name, cot, cof, co2.color, co2.strength, co2.size, co2.distance, co2.speed, co.strength, co2.display);
+		var id2 = co2.id;
 		variables.connectom.connections[id].name = co.name;
         variables.connectom.connections[id].cof = cof;
         variables.connectom.connections[id].cot = cot;
@@ -2332,7 +2243,7 @@ var Viewer = (function() {
         variables.connectom.connections[id].toId = co.toId;
         variables.connectom.connections[id].barShift = -co.strength;
 		
-        variables.connectom.connections[id2].name = co.name;
+        variables.connectom.connections[id2].name = co2.name;
         variables.connectom.connections[id2].cof = cot;
         variables.connectom.connections[id2].cot = cof;
         variables.connectom.connections[id2].strength = co2.strength;
@@ -2344,78 +2255,18 @@ var Viewer = (function() {
         variables.connectom.connections[id2].toId = co2.toId;
         variables.connectom.connections[id2].barShift = co.strength;
 		
+        $(Viewer).trigger('updateConnection', {
+			'id' : id,
+			'name' : co.name,
+			'id2' : id2,
+			'name2' : co2.name,
+			'active' : true
+		});
+        
 		redraw();
 	}
 	
-	
-	function editConnection() {
-		var cofp = elements[$('#fromSelect').val()].coordinates;
-		var cotp = elements[$('#toSelect').val()].coordinates;
-		var cof = tal2pixel(cofp[0], cofp[1], cofp[2]);
-		var cot = tal2pixel(cotp[0], cotp[1], cotp[2]);
-		var id = $('#editConnectionSelect').val();
-		var name = elements[$('#fromSelect').val()].name + "-" + elements[$('#toSelect').val()].name;
-		var color = {"r": parseFloat($id('coR').value), "g": parseFloat($id('coG').value), "b": parseFloat($id('coB').value)};
-		var strength = parseFloat($id('coStrength').value);
-		var size = parseFloat($id('coSize').value);
-		var distance = parseFloat($id('coDistance').value);
-		var speed = parseFloat($id('coSpeed').value);
-		var fromId = $('#fromSelect').val();
-		var toId = $('#toSelect').val();
-		
-		elements[id].fromId = fromId;
-		elements[id].toId = toId;
-		createConnection(id, name, cof, cot, color, strength, size, distance, speed, -strength);
-		
-		var id2 = elements[id].coId;
-		var name2 = elements[$('#toSelect').val()].name + "-" + elements[$('#fromSelect').val()].name;
-		var color2 = {"r": parseFloat($id('coR2').value), "g": parseFloat($id('coG2').value), "b": parseFloat($id('coB2').value)};
-		var strength2 = parseFloat($id('coStrength2').value);
-		var size2 = parseFloat($id('coSize2').value);
-		var distance2 = parseFloat($id('coDistance2').value);
-		var speed2 = parseFloat($id('coSpeed2').value);
-		
-		elements[id2].fromId = toId;
-		elements[id2].toId = fromId;
-		createConnection(id2, name2, cot, cof, color2, strength2, size2, distance2, speed2, strength2);
-		
-        variables.connectom.connections[id].name = elements[id].name;
-        variables.connectom.connections[id].cof = cof;
-        variables.connectom.connections[id].cot = cot;
-        variables.connectom.connections[id].strength = strength;
-        variables.connectom.connections[id].size = size;
-        variables.connectom.connections[id].distance = distance;
-        variables.connectom.connections[id].speed = speed;
-        variables.connectom.connections[id].color = color;
-        variables.connectom.connections[id].fromId = fromId;
-        variables.connectom.connections[id].toId = toId;
-        variables.connectom.connections[id].barShift = -strength;
-        
-        variables.connectom.connections[id2].name = elements[id2].name;
-        variables.connectom.connections[id2].cof = cot;
-        variables.connectom.connections[id2].cot = cof;
-        variables.connectom.connections[id2].strength = strength2;
-        variables.connectom.connections[id2].size = size2;
-        variables.connectom.connections[id2].distance = distance2;
-        variables.connectom.connections[id2].speed = speed2;
-        variables.connectom.connections[id2].color = color2;
-        variables.connectom.connections[id2].fromId = toId;
-        variables.connectom.connections[id2].toId = fromId;
-        variables.connectom.connections[id2].barShift = strength2;
-
-        
-        var sel = $id('editConnectionSelect');
-		for (var i = sel.length - 1; i>=0; i--) {
-			if (sel.options[i].value == id) {
-				sel.options[i].text = elements[id].name;
-		    }
-		}
-		$id("label-"+id).innerHTML = elements[id].name;
-		
-		redraw();
-	}
-	
-	function createConnection(id, name, cof, cot, color, strength, size, distance, speed, barShift)
+	function createConnection(id, name, cof, cot, color, strength, size, distance, speed, barShift, display)
 	{
 		elements[id].vertices = [cof[0],cof[1],cof[2],cot[0],cot[1],cot[2]];
 		elements[id].indices = [];
@@ -2424,7 +2275,7 @@ var Viewer = (function() {
 		elements[id].id = id;
 		elements[id].name = name;
 		elements[id].type = 'connection';
-		elements[id].display = true;
+		elements[id].display = display;
 		elements[id].transparency = 1.0;
 		elements[id].hasBuffer = false;
 		pickColor = createPickColor(variables.picking.pickIndex);
@@ -2495,31 +2346,6 @@ var Viewer = (function() {
 		elements[id].length = Math.sqrt( nx*nx + ny*ny + nz*nz);
 	}
 	
-	function addConnectionToggle(id) {
-		var $toggle = $('<a />');
-        $toggle.append('<span/>');
-        var $label = $('<label>'+elements[id].name+'</label>');
-        $toggle.append($label);
-        $label.attr('id', 'label-' + id);
-        $toggle.addClass('toggle');
-        $toggle.attr('href', '#toggle:' +id);
-        $toggle.attr('id', 'toggle-' + id);
-        $toggle.click(function(e) {
-            e.preventDefault();
-            Viewer.toggleActivation(id);
-            return false;
-        });
-        $('#connections').append($toggle);
-	}
-	
-	function addConnectionSelect(id) {
-		var $newOpt = document.createElement('option');
-        $newOpt.text = elements[id].name;
-        $newOpt.value = id;
-        $id('editConnectionSelect').add($newOpt, null);
-        $newOpt.selected = true;
-	}
-	
 	function toggleAnimation() {
 		if (variables.connectom.animate) {
 			clearInterval(variables.connectom.animationInterval);
@@ -2551,8 +2377,7 @@ var Viewer = (function() {
 	}
 	
 	function screenshot() {
-		var oCanvas = $id("viewer-canvas");
-		var img = oCanvas.toDataURL("image/png");
+		var img = canvas.toDataURL("image/png");
 		document.location.href = img.replace("image/png", "image/octet-stream");
 	}
 	
@@ -2560,22 +2385,27 @@ var Viewer = (function() {
 	var centerX = 0;
 	var centerY = 0;
 	var rotFrames = 0;
-	function autoRotate() {
+	var animX = 0;
+	var animY = 0;
+	function autoRotate(aniX, aniY, steps, frames ) {
+		console.log(aniX+ " " + aniY+ " " +  steps+ " " +  frames );
 		if ( rotation ) {
 			clearInterval(variables.webgl.preloadTextures);
 			rotation = false;
 			variables.transition.transitionOngoing = false;
 			return;
 		}
-		centerX = $id("viewer-canvas").width /2.0;
-		centerY = $id("viewer-canvas").height/2.0;
+		animX = aniX;
+		animY = aniY;
+		centerX = canvas.width /2.0;
+		centerY = canvas.height/2.0;
 		
 		variables.transition.transitionOngoing = true;
 		rotation = true;
 		mat4.set(variables.webgl.thisRot, variables.webgl.lastRot);
 		Arcball.click(centerX, centerY);
-		variables.webgl.preloadTextures = setInterval(autoRotateInterval, parseInt($id('animT').value));
-		rotFrames = parseInt($id('animF').value);
+		variables.webgl.preloadTextures = setInterval(autoRotateInterval, steps);
+		rotFrames = frames;
 	}
 	
 	function autoRotateInterval() {
@@ -2586,7 +2416,7 @@ var Viewer = (function() {
 			return;
 		}
 		console.log("rotation step");
-		Arcball.drag(centerX+parseInt($id('animX').value), centerY+parseInt($id('animY').value));
+		Arcball.drag(centerX+animX, centerY+animY);
 		mat4.set(Arcball.get(), variables.webgl.thisRot);
 		mat4.multiply(variables.webgl.lastRot, variables.webgl.thisRot, variables.webgl.thisRot);
 		redraw();
@@ -2614,47 +2444,59 @@ var Viewer = (function() {
 		}
 	}
 	
-	function changeTexture() {
-		//var id = $('#textureSelect').val();
+	function changeTexture(id) {
+		variables.scene.tex1 = id;
 		redraw();
 	}
 	
-	function changeTexture2() {
-		var id = $('#textureSelect2').val();
-		variables.scene.secTex = id;
+	function changeTexture2(id) {
+		variables.scene.tex2 = id;
+
+		var t1min = 0;
+		var t1max = 0;
+		var t1step = 0;
+		var t2min = 0;
+		var t2max = 0;
+		var t2step = 0;
 		if ( id === 'none') {
-			$id('threshold1').min = 0;
-			$id('threshold1').max = 0;
-			$id('threshold1').step = 0;
-			$id('threshold2').min = 0;
-			$id('threshold2').max = 0;
-			$id('threshold2').step = 0;
-			$id('cMapSelect').options[0].selected = true;
+			variables.scene.colormap = 0;
 		}
 		else {
-			$id('threshold1').min = niftiis[id].getMin();
-			$id('threshold1').max = 0;
-			$id('threshold1').step = niftiis[id].getMin() / 100 * -1.0;
-			$id('threshold2').min = 0;
-			$id('threshold2').max = niftiis[id].getMax();
-			$id('threshold2').step = niftiis[id].getMax() / 100;
+			t1min = niftiis[id].getMin();
+			t1max = 0;
+			t1step = niftiis[id].getMin() / 100 * -1.0;
+			t2min = 0;
+			t2max = niftiis[id].getMax();
+			t2step = niftiis[id].getMax() / 100;
 		
 			if ( niftiis[id].getType() === 'anatomy' || niftiis[id].getType() === 'rgb' ) {
-				$id('cMapSelect').options[0].selected = true;
+				variables.scene.colormap = 0;
 			}
 			else if ( niftiis[id].getType() === 'fmri' ) {
-				$id('cMapSelect').options[1].selected = true;
+				variables.scene.colormap = 1;
 			}
 			else if ( niftiis[id].getType() === 'overlay' ) {
-				$id('cMapSelect').options[3].selected = true;
+				variables.scene.colormap = 3;
 			}
 		}
+		
+		$(Viewer).trigger('colormapChanged', {
+			'id' : variables.scene.colormap,
+			't1' : variables.scene.texThreshold1,
+			't1min' : t1min,
+			't1max' : t1max,
+			't1step' : t1step,
+			't2' : variables.scene.texThreshold2,
+			't2min' : t2min,
+			't2max' : t2max,
+			't2step' : t2step
+		});
 		
 		redraw();
 	}
 	
-	function changeColorMap() {
-		//var id = $('#cMapSelect').val();
+	function changeColormap(id) {
+		variables.scene.colormap = id;
 		redraw();
 	}
 
@@ -2787,7 +2629,7 @@ var Viewer = (function() {
 		'setTransparency' : setTransparency,
 		'changeTexture' : changeTexture,
 		'changeTexture2' : changeTexture2,
-		'changeColorMap' : changeColorMap,
+		'changeColormap' : changeColormap,
 		'setThreshold1' : setThreshold1,
 		'setThreshold2' : setThreshold2,
 		'recalcFibres' : recalcFibres,
