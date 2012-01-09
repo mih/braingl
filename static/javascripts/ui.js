@@ -147,6 +147,12 @@
         
         Viewer.bind('colormapChanged', function(evt, data) {
         	$('#colormapSelect option[value='+ data.id + ']').attr('selected', true);
+        	$('#threshold1').attr('min', data.t1min );
+        	$('#threshold1').attr('max', data.t1max );
+        	$('#threshold1').attr('step', data.t1step );
+        	$('#threshold2').attr('min', data.t2min );
+        	$('#threshold2').attr('max', data.t2max );
+        	$('#threshold2').attr('step', data.t2step );
         });
         
         Viewer.bind('loadTexture', function(evt, data) {
