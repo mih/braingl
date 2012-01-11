@@ -118,8 +118,6 @@ var Viewer = (function() {
 		config = $.getSyncJSON(settings.DATA_URL + 'config.json');
 		$canvas = $(opts.canvas);
 		canvas = $canvas[0];
-		console.log($canvas);
-		console.log(canvas);
 		
 		$(Viewer).bind('loadElementsComplete', function(event) {
 			// wenn alle Elemente geladen wurden, soll der ready-Event gefeuert werden.

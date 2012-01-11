@@ -1,11 +1,11 @@
 (function($) {
-    // Sobald wir mit dem DOM arbeiten k��nnen, ���
+    // Sobald wir mit dem DOM arbeiten können,
     $(document).ready(function() {
         if (!window.WebGLRenderingContext) {
             $('html').addClass('no-webgl');
         }
         
-        // ��� die Konfigurationsdaten und die Elemente per AJAX laden.
+        // die Konfigurationsdaten und die Elemente per AJAX laden.
         var config = $.getSyncJSON(settings.DATA_URL + 'config.json'),
             elements = $.getSyncJSON(settings.DATA_URL + 'elements.json'),
             activations = $.getSyncJSON(settings.DATA_URL + 'coordinates.json'),
@@ -480,15 +480,16 @@
         
         if (config.debug) Viewer.bind('loadElementsComplete', function(evt, data) {
         	$('#status').css('display', 'none');
+        	$(Viewer).trigger('resize');
         	if (config.debug) console.log('ALL ELEMENTS LOADED.');
         });
         
         if (config.debug) Viewer.bind('loadElementStart', function(evt, data) {
-        	if (config.debug) console.log('START ELEMENT:', data.id);
+        	//if (config.debug) console.log('START ELEMENT:', data.id);
         });
         
         if (config.debug) Viewer.bind('loadActivationComplete', function(evt, data) {
-        	if (config.debug) console.log('FINISHED ACTIVATION:', data.id);
+        	//if (config.debug) console.log('FINISHED ACTIVATION:', data.id);
         });
                 
         if (config.debug) Viewer.bind('loadActivationsComplete', function(evt, data) {
@@ -555,7 +556,13 @@
         });
         
         $(window).bind('resize', function() {
+            var size = Math.min( $(document).height() - 20, $(document).width() - 400 );
+            $('#viewer').height( size );
+            $('#viewer').width( size );
+            $('#viewer-canvas').height( size );
+            $('#viewer-canvas').width( size );
             $(Viewer).trigger('resize');
+            //Viewer.updateSize();
         });
         
         $(document).bind('keypress', function(e) {

@@ -182,63 +182,6 @@ a {
 	margin-left: 5px;
 }
 
-@media screen and (max-width: 899px) {
-	#viewer {
-		width: 400px;
-		height: 400px
-	}
-	#viewer-canvas {
-		width: 400px;
-		height: 400px
-	}
-}
-
-@media screen and (min-width: 900px) and (max-width: 1010px) {
-	#viewer {
-		width: 500px;
-		height: 500px
-	}
-	#viewer-canvas {
-		width: 500px;
-		height: 500px
-	}
-}
-
-@media screen and (min-width: 1011px) and (max-width: 1120px) {
-	#viewer {
-		width: 600px;
-		height: 600px
-	}
-	#viewer-canvas {
-		width: 600px;
-		height: 600px
-	}
-}
-
-@media screen and (min-width: 1121px)  {
-	#viewer {
-		width: 700px;
-		height: 700px
-	}
-	#viewer-canvas {
-		width: 700px;
-		height: 700px
-	}
-}
-
-
-@media screen and (min-width: 1230px) and (min-height: 820px) {
-	#viewer {
-		width: 800px;
-		height: 800px
-	}
-	#viewer-canvas {
-		width: 800px;
-		height: 800px
-	}
-}
-
-
 .loading {
 	min-height: 120px;
 	background:
