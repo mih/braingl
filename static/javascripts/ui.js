@@ -254,7 +254,7 @@
         $('#acG').bind('change', activationChangeHandler('changeActivationAttrib'));
         $('#acB').bind('change', activationChangeHandler('changeActivationAttrib'));
 
-        $('#newActivation').bind('click',function() {
+        $('#button_newActivation').bind('click',function() {
         	  Viewer.addActivation($('#acName').val(), 
 						parseFloat($('#acX').val()), 
 						parseFloat($('#acY').val()), 
@@ -299,7 +299,7 @@
         });
         
         // CONNECTIONS
-        $('#newConnection').bind('click',function() {
+        $('#button_newConnection').bind('click',function() {
         	var color = {"r": parseFloat($('#coR').val()), "g": parseFloat($('#coG').val()), "b": parseFloat($('#coB').val())};
     		var strength = parseFloat($('#coStrength').val());
     		var size = parseFloat($('#coSize').val());
@@ -405,11 +405,11 @@
         //*
         //**********************************************************************************************************
 
-        $('#rotate').bind('click',function() {
+        $('#button_rotate').bind('click',function() {
         	Viewer.autoRotate(parseInt($('#animX').val()), parseInt($('#animY').val()), parseInt($('#animT').val()), parseInt($('#animF').val()) );
         });
         
-        $('#save').bind('click',function() {
+        $('#button_save').bind('click',function() {
         	$('#textInput').val( Viewer.saveScene() );
     		
     		var mydomstorage=window.localStorage || (window.globalStorage? globalStorage[location.hostname] : null);
@@ -421,7 +421,7 @@
     		}
         });
         
-        $('#load').bind('click',function() {
+        $('#button_load').bind('click',function() {
         	$('#activations').empty();
         	$('#connections').empty();
         	var mydomstorage=window.localStorage || (window.globalStorage? globalStorage[location.hostname] : null);
@@ -434,11 +434,23 @@
     		}
         });
         
-        $('#screenshot').bind('click',function() { Viewer.screenshot(); });
-        $('#recordbutton').bind('click',function() { Viewer.toggleRecoding(); });
-        $('#playbutton').bind('click',function() { Viewer.playRecording(); });
+        $('#button_screenshot').bind('click',function() { Viewer.control('screenshot'); });
+        $('#button_rotate').bind('click',function() { Viewer.control('autoRotate'); });
+        $('#button_record').bind('click',function() { Viewer.control('toggleRecording'); });
+        $('#button_play').bind('click',function() { Viewer.control('playRecording'); });
         
+        $('#button_localFiberColor').bind('click',function() { Viewer.control('fibreColor'); });
+        $('#button_textureInterpolation').bind('click',function() { Viewer.control('fibreTubes'); });
+        $('#button_toggleSlices').bind('click',function() { Viewer.control('slices'); });
+        $('#button_toggleTooltips').bind('click',function() { Viewer.control('tooltips'); });
+        $('#button_interpolate').bind('click',function() { Viewer.control('interpolation'); });
+        $('#button_recalcFibers').bind('click',function() { Viewer.control('recalcFibers'); });
+        $('#button_resetFibers').bind('click',function() { Viewer.control('resetFibers'); });
+        $('#button_animate').bind('click',function() { Viewer.control('animate'); });
         
+        $('#button_left').bind('click',function() { Viewer.control('setViewLeft'); });
+        $('#button_axial').bind('click',function() { Viewer.control('setViewAxial'); });
+        $('#button_coronal').bind('click',function() { Viewer.control('setViewCoronal'); });
         
         //**********************************************************************************************************
         //*
@@ -480,14 +492,23 @@
         });
         
         Viewer.bind('loadSceneComplete', function(evt, data) {
-        	var $button = $('<input type="button" />');
+    		var $button = $('<input type="button" />');
         	$button.attr('id', 'scenebutton-' + data.id);
-        	$button.attr('value', data.id);
-        	$button.click(function(e) {
-        		Viewer.activateScene(data.id);
-        		return false;
-        	});
-        	$('#sceneButtons').append($button);
+        	$button.attr('value', data.name);
+        	if ( !data.isView === true ) {
+	        	$button.click(function(e) {
+	        		Viewer.activateScene(data.id);
+	        		return false;
+	        	});
+	        	$('#sceneButtons').append($button);
+        	}
+        	else {
+	        	$button.click(function(e) {
+	        		Viewer.activateView(data.id);
+	        		return false;
+	        	});
+	        	$('#viewButtons').append($button);
+        	}
         });
         
         // LOADING
@@ -570,7 +591,7 @@
                     'width': w,
                     'height': h
                 });
-                Viewer.updateSize();
+                Viewer.control('updateSize');
             }
             
             Viewer._previousSize = size;
@@ -583,7 +604,6 @@
             $('#viewer-canvas').height( size );
             $('#viewer-canvas').width( size );
             $(Viewer).trigger('resize');
-            //Viewer.updateSize();
         });
         
         $(document).bind('keypress', function(e) {
@@ -593,35 +613,6 @@
             }
             
             switch(e.which) {
-                case 99: // c : toggle controls
-                    $('a[href="#controls"]').trigger('clickflash');
-                    break;
-                case 114: // r : reset view
-                    $('a[href="#reset-view"]').trigger('clickflash');
-                    break;
-                case 112: // p : previous
-                case 37: // <-
-                    $('nav.prev-next a.prev').trigger('clickflash');
-                    break;
-                case 110: // n : next
-                case 39: // ->
-                    $('nav.prev-next a.next').trigger('clickflash');
-                    break;
-                case 105: // i : introduction
-                    $('#nav a.intro').trigger('clickflash');
-                    break;
-                case 116: // t : table of contents
-                    $('#nav a.toc').trigger('clickflash');
-                    break;
-                case 103: // g : glossary
-                    $('#nav a.glossary').trigger('clickflash');
-                    break;
-                case 101: // e : reference list
-                    $('#nav a.sources').trigger('clickflash');
-                    break;
-                case 97: // a : about
-                    $('#nav a.about').trigger('clickflash');
-                    break;
                 case 120: // x
                     sliceMove('x', 1);
                     break;

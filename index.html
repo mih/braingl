@@ -12,30 +12,27 @@
     		<a href="#activations">Activations&nbsp&nbsp&nbsp</a>
     		<a href="#controls">Controls&nbsp&nbsp&nbsp</a>
     	</div>
-    	<div class="controlTab">
-    	<section id="sceneButtons"></section>
-    	</div>
     	<div class="controlTab" id="controlTab1" style="display:none">
 			<section id="controls">	
 				<div id="controls-toggles">
-				<input type="button" id="localFiberColor" value="toggle fibre color" onclick="Viewer.controlToggle('fibreColor');">
-				<input type="button" id="textureInterpolation" value="toggle fibre tubes" onclick="Viewer.controlToggle('fibreTubes');">
-				<input type="button" id="toggleSlices" value="toggle slices" onclick="Viewer.controlToggle('slices');">
-				<input type="button" id="toggleTooltips" value="toggle tooltips" onclick="Viewer.controlToggle('tooltips');">
+				<input type="button" id="button_localFiberColor" value="toggle fibre color">
+				<input type="button" id="button_textureInterpolation" value="toggle fibre tubes">
+				<input type="button" id="button_toggleSlices" value="toggle slices">
+				<input type="button" id="button_toggleTooltips" value="toggle tooltips">
 				</div>
 				<br>
 			</section>
 			<section id="saveload">
-				<input type="button" name="Save" value="Save" id="save">
-				<input type="button" name="Load" value="Load" id="load">
+				<input type="button" id="button_save" value="Save" id="save">
+				<input type="button" id="button_load" value="Load" id="load">
 				<input type="text" id="textInput">
-				<input type="button" name="Clear" value="Clear" onclick="document.getElementById('textInput').value =''">
+				<input type="button" id="button_clear" value="Clear" onclick="document.getElementById('textInput').value =''">
 				<br><input type="checkbox" id="saveLoc">use browser storage<br>
 				<br>
-				<input type="button" id="screenshot" value="Screenshot">
+				<input type="button" id="button_screenshot" value="Screenshot">
 				<br>
-				<input type="button" id="recordButton" value="Record">
-				<input type="button" id="playButton" value="Play">
+				<input type="button" id="button_record" value="Record">
+				<input type="button" id="button_play" value="Play">
 			</section>
 			<section id="animation">
 				<table>
@@ -47,16 +44,16 @@
 						<th>frames</th>
 					</tr>
 					<tr>
-						<td><input type="button" name="Test" value="rotate" id="rotate"></td>
+						<td><input type="button" name="Test" value="rotate" id="button_rotate"></td>
 						<td><input type="text" size="6" id="animT" value=50></td>
 						<td><input type="text" size="6" id="animX" value=30></td>
 						<td><input type="text" size="6" id="animY" value=0></td>
 						<td><input type="text" size="6" id="animF" value=50></td>
 					</tr>
 					<tr>
-						<td><input type="button" name="left" value="left" onclick="Viewer.setViewLeft();"></td>
-						<td><input type="button" name="axial" value="axial" onclick="Viewer.setViewAxial();"></td>
-						<td><input type="button" name="coronal" value="coronal" onclick="Viewer.setViewCoronal();"></td>
+						<td><input type="button" id="button_left" value="left"></td>
+						<td><input type="button" id="button_axial" value="axial"></td>
+						<td><input type="button" id="button_coronal" value="coronal"></td>
 					</tr>
 				</table>
 				<br>
@@ -117,7 +114,7 @@
 						<td><input type="range" min="0" max="1.0" id="alpha2" value="1.0" step="0.01" /></td>
 					</tr>
 				</table>
-				<br><input type="checkbox" id="interpolate" onClick="Viewer.toggleInterpolation()">disable texture interpolation<br>
+				<br><input type="checkbox" id="interpolate">disable texture interpolation<br>
 				</div>
 			</section>
 		</div>
@@ -162,9 +159,9 @@
 						<td><input type="text" size="6" id="acB" value=0></td>
 					</tr>
 				</table>
-				<input type="button" name="Submit" value="New" id="newActivation">
-				<input type="button" name="Submit" value="Select Fibres" onclick="Viewer.recalcFibres();">
-				<input type="button" name="Submit" value="Reset Fibres" onclick="Viewer.resetFibres();">
+				<input type="button" value="New" id="button_newActivation">
+				<!-- <input type="button" value="Select Fibres" id="button_recalcFibers">
+				<input type="button" value="Reset Fibres" id="button_resetFibers">  -->
 			</section>
 			<section id="connections"></section>
 			<section id="inputConnections">
@@ -216,15 +213,21 @@
 						<td><input type="number" min=0.5 max=20 value=2 step=0.1 id="coSpeed2"></td>
 					</tr>
 				</table>
-				<input type="button" name="Submit" value="New" id="newConnection">
+				<input type="button" name="Submit" value="New" id="button_newConnection">
 				<br>
-				<input type="button" name="Animate" value="Animate" onclick="Viewer.toggleAnimation();">
+				<input type="button" id="button_animate" value="Animate">
 			</section>
 		</div>
 		
 		<div class="controlTab" id="status">
 			Loading...Please wait.
 		</div>
+		<div class="controlTab">
+    	<section id="viewButtons"></section>
+    	</div>
+		<div class="controlTab">
+    	<section id="sceneButtons"></section>
+    	</div>
 		
 		<div id="viewer">
 			<canvas id="viewer-canvas"></canvas>

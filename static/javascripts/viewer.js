@@ -74,7 +74,7 @@ var Viewer = (function() {
 	variables.picking.pickArray = {};
 	variables.picking.pickMode = false;
 	variables.picking.oldPick = "none";
-	variables.picking.showTooltips = true;
+	variables.picking.showTooltips = false;
 
 	// smooth transition mechanism 
 	variables.transition = {};
@@ -404,28 +404,32 @@ var Viewer = (function() {
 	
 	function loadScenes() {
         
-	$(Viewer).trigger('loadScenesStart');
-	$.getJSON(settings.DATA_URL + 'scenes.json', function(data) {
-		$.each(data, function(i, sc) {
-			scenes[sc.id] = {};
-			scenes[sc.id].cameraPosition = sc.cameraPosition;
-			scenes[sc.id].cameraTranslation = sc.cameraTranslation;
-			scenes[sc.id].cameraZoom = sc.cameraZoom;
-			scenes[sc.id].elementsAvailable = sc.elementsAvailable;
-			scenes[sc.id].elementsActive = sc.elementsActive;
-			scenes[sc.id].activationsAvailable = sc.activationsAvailable;
-			scenes[sc.id].activationsActive = sc.activationsActive;
-			scenes[sc.id].slices = sc.slices;
-			scenes[sc.id].texture1 = sc.texture1;
-			scenes[sc.id].texture2 = sc.texture2;
-
-			$(Viewer).trigger('loadSceneComplete', {
-				'id' : sc.id
+		$(Viewer).trigger('loadScenesStart');
+		$.getJSON(settings.DATA_URL + 'scenes.json', function(data) {
+			$.each(data, function(i, sc) {
+				scenes[sc.id] = {};
+				scenes[sc.id].cameraPosition = sc.cameraPosition;
+				scenes[sc.id].cameraTranslation = sc.cameraTranslation;
+				scenes[sc.id].cameraZoom = sc.cameraZoom;
+				scenes[sc.id].elementsAvailable = sc.elementsAvailable;
+				scenes[sc.id].elementsActive = sc.elementsActive;
+				scenes[sc.id].activationsAvailable = sc.activationsAvailable;
+				scenes[sc.id].activationsActive = sc.activationsActive;
+				scenes[sc.id].slices = sc.slices;
+				scenes[sc.id].texture1 = sc.texture1;
+				scenes[sc.id].texture2 = sc.texture2;
+				scenes[sc.id].isView = sc.isView;
+				scenes[sc.id].name = sc.name;
+	
+				$(Viewer).trigger('loadSceneComplete', {
+					'id' : sc.id,
+					'isView' : sc.isView,
+					'name' : sc.name
+				});
 			});
+			$(Viewer).trigger('loadScenesComplete');
 		});
-		$(Viewer).trigger('loadScenesComplete');
-	});
-}
+	}
 
 
 	// ***************************************************************************************************
@@ -2398,18 +2402,6 @@ var Viewer = (function() {
 		--rotFrames;
 	}
 	
-	function setViewLeft() {
-		activateView("scene1");
-	}
-	
-	function setViewAxial() {
-		activateView("scene2");
-	}
-	
-	function setViewCoronal() {
-		activateView("scene3");
-	}
-	
 	function setTransparency(value) {
 		if ( variables.scene.lastActivated != "none") {
 			elements[variables.scene.lastActivated].transparency = value / 100.0;
@@ -2520,8 +2512,6 @@ var Viewer = (function() {
 				
 			}
 		});
-
-		redraw();
 	}
 	
 	function resetFibres() {
@@ -2533,20 +2523,10 @@ var Viewer = (function() {
 				}
 			}
 		});
-		redraw();
 	}
 	
 	function setAlpha2(value) {
 		variables.scene.texAlpha2 = value;
-		redraw();
-	}
-	
-	function toggleInterpolation() {
-		variables.scene.texInterpolation = !variables.scene.texInterpolation;
-		textures = {};
-		$.each(niftiis, function() {
-			textures[this.id] = {};
-		});
 		redraw();
 	}
 	
@@ -2561,7 +2541,7 @@ var Viewer = (function() {
 		redraw();
 	}
 
-	function controlToggle(id) {
+	function control(id) {
 		switch (id) {
 		case "fibreColor":
 			variables.scene.localFibreColor = !variables.scene.localFibreColor;
@@ -2575,11 +2555,38 @@ var Viewer = (function() {
 		case "slices":
 			variables.scene.showSlices = !variables.scene.showSlices;
 			break;
+		case "interpolation":
+			variables.scene.texInterpolation = !variables.scene.texInterpolation;
+			textures = {};
+			$.each(niftiis, function() {
+				textures[this.id] = {};
+			});
+			break;
+		case "recalcFibers":
+			recalcFibres();
+			break;
+		case "resetFibers":
+			resetFibres();
+			break;
+		case "animate":
+			toggleAnimation();
+			break;
+		case "toggleRecording" :
+			toggleRecording();
+			break;
+		case "playRecording" :
+			playRecording();
+			break;
+		case "screenshot" :
+			screenshot();
+			break;
+		case "updateSize" :
+			updateSize();
+			break;
 		default:
 		}
 		redraw();
 }
-	
 	
 	// Im Viewer-Singleton werden nur die im folgenden aufgefhrten
 	// Methoden/Eigenschaften nach
@@ -2599,38 +2606,28 @@ var Viewer = (function() {
 		'getAxial' : getAxial,
 		'getCoronal' : getCoronal,
 		'getSagittal' : getSagittal,
-		'updateSize' : updateSize,
+		
 		'saveScene' : saveScene,
 		'loadScene' : loadScene,
-		'toggleAnimation' : toggleAnimation,
+		'autoRotate' : autoRotate,
 		
 		'addActivation' : addActivation,
 		'changeActivationAttrib' : changeActivationAttrib,
 		'getActivation' : getActivation,
-		
 		'addConnection' : addConnection,
 		'changeConnectionAttrib' : changeConnectionAttrib,
 		'getConnection' : getConnection,
 		
-		'screenshot' : screenshot,
-		'autoRotate' : autoRotate,
-		'setViewLeft' : setViewLeft,
-		'setViewAxial' : setViewAxial,
-		'setViewCoronal' : setViewCoronal,
-		'toggleRecording' : toggleRecording,
-		'playRecording' : playRecording,
 		'setTransparency' : setTransparency,
 		'changeTexture' : changeTexture,
 		'changeTexture2' : changeTexture2,
 		'changeColormap' : changeColormap,
 		'setThreshold1' : setThreshold1,
 		'setThreshold2' : setThreshold2,
-		'recalcFibres' : recalcFibres,
-		'resetFibres' : resetFibres,
 		'setAlpha2' : setAlpha2,
-		'toggleInterpolation' : toggleInterpolation,
 		'getElementAlpha' : getElementAlpha,
 		'setElementAlpha' : setElementAlpha,
-		'controlToggle' : controlToggle
+		'control' : control
 	};
 })();
+
