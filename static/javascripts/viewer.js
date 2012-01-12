@@ -67,7 +67,6 @@ var Viewer = (function() {
 	variables.scene.colormap = 1.0;
 	variables.scene.texAlpha2 = 1.0;
 	variables.scene.texInterpolation = true;
-	variables.scene.index = 1; //starting index number for all elements
 			
 	// picking
 	variables.picking = {};
@@ -222,10 +221,8 @@ var Viewer = (function() {
 
 		// alle Elemente durchgehen, 
 		$.each(elementsToLoad, function(i, el) {
-			var id = "id" + variables.scene.index;
-			variables.scene.index++;
 			$(Viewer).trigger('loadElementStart', {
-				'id' : id,
+				'id' : el.id,
 				'name' : el.name,
 				'type' : el.type
 			});
@@ -236,17 +233,17 @@ var Viewer = (function() {
 					//  in der oben definierten
 					// Eigenschaft elements
 					// speichern, 
-					elements[id] = data;
-					if (elements[id].correction) {
-						for ( var m = 0; m < elements[id].vertices.length / 3; ++m) {
-							elements[id].vertices[3 * m] += elements[id].correction[0];
-							elements[id].vertices[3 * m + 1] += elements[id].correction[1];
-							elements[id].vertices[3 * m + 2] += elements[id].correction[2];
+					elements[el.id] = data;
+					if (elements[el.id].correction) {
+						for ( var m = 0; m < elements[el.id].vertices.length / 3; ++m) {
+							elements[el.id].vertices[3 * m] += elements[el.id].correction[0];
+							elements[el.id].vertices[3 * m + 1] += elements[el.id].correction[1];
+							elements[el.id].vertices[3 * m + 2] += elements[el.id].correction[2];
 						}
 					}
 	
-					if (!elements[id].colors) {
-						colorSize = (elements[id].indices.length / 3) * 4;
+					if (!elements[el.id].colors) {
+						colorSize = (elements[el.id].indices.length / 3) * 4;
 						colors = [];
 	
 						if (el.color) {
@@ -261,47 +258,47 @@ var Viewer = (function() {
 								colors.push(1);
 							}
 						}
-						elements[id].colors = colors;
+						elements[el.id].colors = colors;
 					}
 	
-					elements[id].id = id;
-					elements[id].name = el.name;
-					elements[id].type = el.type;
-					elements[id].display = el.display;
-					elements[id].cutFS = el.cutFS;
-					elements[id].cutWhite = el.cutWhite;
-					elements[id].transparency = el.transparency;
-					elements[id].hasBuffer = false;
+					elements[el.id].id = el.id;
+					elements[el.id].name = el.name;
+					elements[el.id].type = el.type;
+					elements[el.id].display = el.display;
+					elements[el.id].cutFS = el.cutFS;
+					elements[el.id].cutWhite = el.cutWhite;
+					elements[el.id].transparency = el.transparency;
+					elements[el.id].hasBuffer = false;
 					pickColor = createPickColor(variables.picking.pickIndex);
-					variables.picking.pickArray[pickColor.join()] = id;
+					variables.picking.pickArray[pickColor.join()] = el.id;
 					variables.picking.pickIndex++;
 					pc = [];
 					pc[0] = pickColor[0] / 255;
 					pc[1] = pickColor[1] / 255;
 					pc[2] = pickColor[2] / 255;
-					elements[id].pickColor = pc;
+					elements[el.id].pickColor = pc;
 	
 					if (el.type == "fibre") {
 						tubeVertices = [];
 						tubeTexCoords = [];
 						tubeColors = [];
 	
-						for ( var m = 0; m < elements[id].vertices.length / 3; ++m) {
-							tubeVertices.push(elements[id].vertices[3 * m]);
-							tubeVertices.push(elements[id].vertices[3 * m + 1]);
-							tubeVertices.push(elements[id].vertices[3 * m + 2]);
-							tubeVertices.push(elements[id].vertices[3 * m]);
-							tubeVertices.push(elements[id].vertices[3 * m + 1]);
-							tubeVertices.push(elements[id].vertices[3 * m + 2]);
+						for ( var m = 0; m < elements[el.id].vertices.length / 3; ++m) {
+							tubeVertices.push(elements[el.id].vertices[3 * m]);
+							tubeVertices.push(elements[el.id].vertices[3 * m + 1]);
+							tubeVertices.push(elements[el.id].vertices[3 * m + 2]);
+							tubeVertices.push(elements[el.id].vertices[3 * m]);
+							tubeVertices.push(elements[el.id].vertices[3 * m + 1]);
+							tubeVertices.push(elements[el.id].vertices[3 * m + 2]);
 							
-							tubeColors.push(elements[id].colors[4 * m]);
-							tubeColors.push(elements[id].colors[4 * m + 1]);
-							tubeColors.push(elements[id].colors[4 * m + 2]);
-							tubeColors.push(elements[id].colors[4 * m + 3]);
-							tubeColors.push(elements[id].colors[4 * m]);
-							tubeColors.push(elements[id].colors[4 * m + 1]);
-							tubeColors.push(elements[id].colors[4 * m + 2]);
-							tubeColors.push(elements[id].colors[4 * m + 3]);
+							tubeColors.push(elements[el.id].colors[4 * m]);
+							tubeColors.push(elements[el.id].colors[4 * m + 1]);
+							tubeColors.push(elements[el.id].colors[4 * m + 2]);
+							tubeColors.push(elements[el.id].colors[4 * m + 3]);
+							tubeColors.push(elements[el.id].colors[4 * m]);
+							tubeColors.push(elements[el.id].colors[4 * m + 1]);
+							tubeColors.push(elements[el.id].colors[4 * m + 2]);
+							tubeColors.push(elements[el.id].colors[4 * m + 3]);
 							
 							
 	
@@ -311,16 +308,16 @@ var Viewer = (function() {
 							tubeTexCoords.push(1.0);
 						}
 	
-						elements[id].tubeVertices = tubeVertices;
-						elements[id].tubeTexCoords = tubeTexCoords;
-						elements[id].tubeColors = tubeColors;
-						calcTubeNormals(elements[id]);
+						elements[el.id].tubeVertices = tubeVertices;
+						elements[el.id].tubeTexCoords = tubeTexCoords;
+						elements[el.id].tubeColors = tubeColors;
+						calcTubeNormals(elements[el.id]);
 	
-						elements[id].color = el.color;
+						elements[el.id].color = el.color;
 					}
 	
 					$(Viewer).trigger('loadElementComplete', {
-						'id' : id,
+						'id' : el.id,
 						'active' : el.display
 					});
 					redraw();
@@ -329,15 +326,15 @@ var Viewer = (function() {
 			else if (el.type == "texture") {
 				var niftii  = new Niftii();
 				niftii.load( settings.DATA_URL + el.url );
-				niftiis[id] = niftii;
-				niftiis[id].id = id;
-				niftiis[id].name = el.name;
-				textures[id] = {};
+				niftiis[el.id] = niftii;
+				niftiis[el.id].id = el.id;
+				niftiis[el.id].name = el.name;
+				textures[el.id] = {};
 				$(Viewer).trigger('loadTexture', {
-					'id' : id,
-					'name' : niftiis[id].name
+					'id' : el.id,
+					'name' : niftiis[el.id].name
 				});
-		        texIds.push(id);
+		        texIds.push(el.id);
 			}
 		});
 		//  den loadElementsComplete-Event feuern, wenn alle Elemente geladen sind.
