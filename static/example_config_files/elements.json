@@ -32,16 +32,14 @@
         "name": "Left hemisphere",
         "type": "mesh",
         "url": "mesh_lhemi.json",
-		"transparency": 0.6,
-		"display": false
+		"transparency": 0.6
     },
     {
         "id": "rhemi",
         "name": "Right hemisphere",
         "type": "mesh",
         "url": "mesh_rhemi.json",
-		"transparency": 0.6,
-		"display": false
+		"transparency": 0.6
     },
     {
         "id": "head",
@@ -49,7 +47,6 @@
         "type": "mesh",
         "url": "mesh_head.json",
 		"transparency": 0.4,
-		"display": false,
 		"color": {"r": 0.89, "g": 0.77, "b": 0.64}
     },
     {
@@ -57,7 +54,6 @@
         "name": "arcuate fascicle left",
         "type": "fibre",
         "url": "fib_ac_left.json",
-		"display": false,
 		"color": {"r": 0.2, "g": 1.0, "b": 0.6}
     },
     {
@@ -65,7 +61,6 @@
         "name": "arcuate fascicle right",
         "type": "fibre",
         "url": "fib_ac_right.json",
-		"display": false,
 		"color": {"r": 0.6, "g": 0.2, "b": 1.0}
     },
     {
@@ -73,7 +68,6 @@
         "name": "anterior thalamic radiation left",
         "type": "fibre",
         "url": "fib_atr_left.json",
-		"display": false,
 		"color": {"r": 1.0, "g": 0.2, "b": 0.6}
     },
 	{
@@ -81,7 +75,6 @@
         "name": "anterior thalamic radiation right",
         "type": "fibre",
         "url": "fib_atr_right.json",
-		"display": false,
 		"color": {"r": 0.6, "g": 1.0, "b": 0.2}
     },
 	{
@@ -89,7 +82,6 @@
         "name": "extreme capsule fibre system left",
         "type": "fibre",
         "url": "fib_ecfs_left.json",
-		"display": false,
 		"color": {"r": 1.0, "g": 0.3, "b": 0.0}
     },
 	{
@@ -97,7 +89,6 @@
         "name": "extreme capsule fibre system right",
         "type": "fibre",
         "url": "fib_ecfs_right.json",
-		"display": false,
 		"color": {"r": 1.0, "g": 0.3, "b": 0.0}
     },
 	{
@@ -105,7 +96,6 @@
         "name": "uncinate fascicle left",
         "type": "fibre",
         "url": "fib_unc_left.json",
-		"display": false,
 		"color": {"r": 0.0, "g": 1.0, "b": 0.0}
     },
 	{
@@ -113,35 +103,6 @@
         "name": "uncinate fascicle right",
         "type": "fibre",
         "url": "fib_unc_right.json",
-		"display": false,
 		"color": {"r": 0.0, "g": 1.0, "b": 0.0}
-    },
-    {
-        "id": "control_fibreColor",
-        "name": "fibre color (local dir)",
-        "type": "control",
-        "url": "dummy.json",
-		"display": false
-    },
-    {
-        "id": "control_fibreTubes",
-        "name": "render fibres as tubes",
-        "type": "control",
-        "url": "dummy.json",
-		"display": true
-    },
-    {
-        "id": "control_tooltip",
-        "name": "disable tooltips",
-        "type": "control",
-        "url": "dummy.json",
-		"display": false
-    },
-    {
-        "id": "control_slices",
-        "name": "show slices",
-        "type": "control",
-        "url": "dummy.json",
-		"display": true
     }
 ]
