@@ -176,29 +176,37 @@
         //*  elements tab	
         //*
         //**********************************************************************************************************
-        // ELEMENTS
-        $.each(elements, function(i, el) {
-        	if ( el.type != "texture") {
+        Viewer.bind('loadElementComplete', function(evt, data) {
+            if (config.debug) console.log('FINISHED ELEMENT:', data.id);
+            $('#toggle-' + data.id).removeClass('disabled');
+            $('#toggle-' + data.id).toggleClass('active', data.active);
+        });
+        
+        Viewer.bind('elementDisplayChange', function(evt, data) {
+        	if (config.debug) console.log('ELEMENT DISPLAY CHANGE:', data.id);
+            $('#toggle-' + data.id).toggleClass('active', data.active);
+        });
+        
+        if (config.debug) Viewer.bind('loadElementStart', function(evt, data) {
+        	//if (config.debug) console.log('START ELEMENT:', data.id);
+        	if ( data.type != "texture") {
 	            var $toggle = $('<a />');
 	            $toggle.append('<span/>');
-	            $toggle.append('<label>'+el.name+'</label>');
+	            $toggle.append('<label>'+data.name+'</label>');
 	            $toggle.addClass('toggle');
 	            $toggle.addClass('disabled');
-	            $toggle.attr('href', '#toggle:' + el.id);
-	            $toggle.attr('id', 'toggle-' + el.id);
+	            $toggle.attr('href', '#toggle:' + data.id);
+	            $toggle.attr('id', 'toggle-' + data.id);
 	            $toggle.click(function(e) {
 	                e.preventDefault();
-	                Viewer.toggleElement(el.id);
+	                Viewer.toggleElement(data.id);
 	                return false;
 	            });
-	            if ($.inArray(el.id, config.controlElements) > -1) {
-	            	$('#controls-toggles').append($toggle);
-	            } else {
-	            	$('#elements').append($toggle);
-	            	if ( el.type === 'mesh' ) {
-	            		$('#elementSelect').append($('<option></option>').val(el.id).html(el.name));
-	            	}
-	            }
+	            
+            	$('#elements').append($toggle);
+            	if ( data.type === 'mesh' ) {
+            		$('#elementSelect').append($('<option></option>').val(data.id).html(data.name));
+            	}
         	}
         });
         
@@ -447,31 +455,7 @@
             $('html').addClass('no-webgl');
         });
         
-        Viewer.bind('loadElementComplete', function(evt, data) {
-            if (config.debug) console.log('FINISHED ELEMENT:', data.id);
-            $('#toggle-' + data.id).removeClass('disabled');
-            $('#toggle-' + data.id).toggleClass('active', data.active);
-        });
-        
-        Viewer.bind('elementDisplayChange', function(evt, data) {
-        	if (config.debug) console.log('ELEMENT DISPLAY CHANGE:', data.id);
-            $('#toggle-' + data.id).toggleClass('active', data.active);
-        });
-        
-        
-                
         // SCENES
-        $.each(scenes, function(i, sc) {
-        	var $button = $('<input type="button" />');
-        	$button.attr('id', 'scenebutton-' + sc.id);
-        	$button.attr('value', sc.id);
-        	$button.click(function(e) {
-        		Viewer.activateScene(sc.id);
-        		return false;
-        	});
-        	$('#sceneButtons').append($button);
-        });
-        
         Viewer.bind('activateSceneComplete', function(evt, data) {
             var scene = data.scene,
                 togglesAvailable = [];
@@ -519,17 +503,11 @@
             }
         });
         
-        if (config.debug) Viewer.bind('loadElementStart', function(evt, data) {
-        	//if (config.debug) console.log('START ELEMENT:', data.id);
-        });
-        
         if (config.debug) Viewer.bind('loadElementsComplete', function(evt, data) {
         	$('#status').css('display', 'none');
         	$(Viewer).trigger('resize');
         	if (config.debug) console.log('ALL ELEMENTS LOADED.');
         });
-        
-        
         
         if (config.debug) Viewer.bind('loadActivationComplete', function(evt, data) {
         	//if (config.debug) console.log('FINISHED ACTIVATION:', data.id);

@@ -14,6 +14,7 @@ var Viewer = (function() {
 	var textures = {};
 	var texIds =[];
 	var niftiis = {};
+	var scenes = {};
 	
 	var variables = {};
 	
@@ -66,6 +67,7 @@ var Viewer = (function() {
 	variables.scene.colormap = 1.0;
 	variables.scene.texAlpha2 = 1.0;
 	variables.scene.texInterpolation = true;
+	variables.scene.index = 1; //starting index number for all elements
 			
 	// picking
 	variables.picking = {};
@@ -115,7 +117,6 @@ var Viewer = (function() {
 		$canvas = $(opts.canvas);
 		canvas = $canvas[0];
 		
-		variables.scenes = opts.scenes;
 		variables.config = opts.config;
 		
 		$(Viewer).bind('loadElementsComplete', function(event) {
@@ -124,7 +125,7 @@ var Viewer = (function() {
 			redraw();
 		});
 		
-		// hier sollte der eigentliche WebGL-Viewer initialisiert werden 
+		// hier wird der eigentliche WebGL-Viewer initialisiert 
 		try {
 			initGL(canvas);
 		} catch (e) {
@@ -156,6 +157,8 @@ var Viewer = (function() {
 			loadConnections(opts.connections);
 		}
 
+		loadScenes();
+		
 		canvas.onmousedown = handleMouseDown;
 		canvas.onmouseup = handleMouseUp;
 		canvas.onmousemove = handleMouseMove;
@@ -219,27 +222,31 @@ var Viewer = (function() {
 
 		// alle Elemente durchgehen, 
 		$.each(elementsToLoad, function(i, el) {
+			var id = "id" + variables.scene.index;
+			variables.scene.index++;
 			$(Viewer).trigger('loadElementStart', {
-				'id' : el.id
+				'id' : id,
+				'name' : el.name,
+				'type' : el.type
 			});
 
-			if (el.type == "mesh" || el.type == "fibre" || el.type == "control") {
+			if (el.type == "mesh" || el.type == "fibre") {
 				//  die JSON-Daten von der URL laden, 
 				$.getJSON(settings.DATA_URL + el.url, function(data) {
 					//  in der oben definierten
 					// Eigenschaft elements
 					// speichern, 
-					elements[el.id] = data;
-					if (elements[el.id].correction) {
-						for ( var m = 0; m < elements[el.id].vertices.length / 3; ++m) {
-							elements[el.id].vertices[3 * m] += elements[el.id].correction[0];
-							elements[el.id].vertices[3 * m + 1] += elements[el.id].correction[1];
-							elements[el.id].vertices[3 * m + 2] += elements[el.id].correction[2];
+					elements[id] = data;
+					if (elements[id].correction) {
+						for ( var m = 0; m < elements[id].vertices.length / 3; ++m) {
+							elements[id].vertices[3 * m] += elements[id].correction[0];
+							elements[id].vertices[3 * m + 1] += elements[id].correction[1];
+							elements[id].vertices[3 * m + 2] += elements[id].correction[2];
 						}
 					}
 	
-					if (!elements[el.id].colors) {
-						colorSize = (elements[el.id].indices.length / 3) * 4;
+					if (!elements[id].colors) {
+						colorSize = (elements[id].indices.length / 3) * 4;
 						colors = [];
 	
 						if (el.color) {
@@ -254,47 +261,47 @@ var Viewer = (function() {
 								colors.push(1);
 							}
 						}
-						elements[el.id].colors = colors;
+						elements[id].colors = colors;
 					}
 	
-					elements[el.id].id = el.id;
-					elements[el.id].name = el.name;
-					elements[el.id].type = el.type;
-					elements[el.id].display = el.display;
-					elements[el.id].cutFS = el.cutFS;
-					elements[el.id].cutWhite = el.cutWhite;
-					elements[el.id].transparency = el.transparency;
-					elements[el.id].hasBuffer = false;
+					elements[id].id = id;
+					elements[id].name = el.name;
+					elements[id].type = el.type;
+					elements[id].display = el.display;
+					elements[id].cutFS = el.cutFS;
+					elements[id].cutWhite = el.cutWhite;
+					elements[id].transparency = el.transparency;
+					elements[id].hasBuffer = false;
 					pickColor = createPickColor(variables.picking.pickIndex);
-					variables.picking.pickArray[pickColor.join()] = el.id;
+					variables.picking.pickArray[pickColor.join()] = id;
 					variables.picking.pickIndex++;
 					pc = [];
 					pc[0] = pickColor[0] / 255;
 					pc[1] = pickColor[1] / 255;
 					pc[2] = pickColor[2] / 255;
-					elements[el.id].pickColor = pc;
+					elements[id].pickColor = pc;
 	
 					if (el.type == "fibre") {
 						tubeVertices = [];
 						tubeTexCoords = [];
 						tubeColors = [];
 	
-						for ( var m = 0; m < elements[el.id].vertices.length / 3; ++m) {
-							tubeVertices.push(elements[el.id].vertices[3 * m]);
-							tubeVertices.push(elements[el.id].vertices[3 * m + 1]);
-							tubeVertices.push(elements[el.id].vertices[3 * m + 2]);
-							tubeVertices.push(elements[el.id].vertices[3 * m]);
-							tubeVertices.push(elements[el.id].vertices[3 * m + 1]);
-							tubeVertices.push(elements[el.id].vertices[3 * m + 2]);
+						for ( var m = 0; m < elements[id].vertices.length / 3; ++m) {
+							tubeVertices.push(elements[id].vertices[3 * m]);
+							tubeVertices.push(elements[id].vertices[3 * m + 1]);
+							tubeVertices.push(elements[id].vertices[3 * m + 2]);
+							tubeVertices.push(elements[id].vertices[3 * m]);
+							tubeVertices.push(elements[id].vertices[3 * m + 1]);
+							tubeVertices.push(elements[id].vertices[3 * m + 2]);
 							
-							tubeColors.push(elements[el.id].colors[4 * m]);
-							tubeColors.push(elements[el.id].colors[4 * m + 1]);
-							tubeColors.push(elements[el.id].colors[4 * m + 2]);
-							tubeColors.push(elements[el.id].colors[4 * m + 3]);
-							tubeColors.push(elements[el.id].colors[4 * m]);
-							tubeColors.push(elements[el.id].colors[4 * m + 1]);
-							tubeColors.push(elements[el.id].colors[4 * m + 2]);
-							tubeColors.push(elements[el.id].colors[4 * m + 3]);
+							tubeColors.push(elements[id].colors[4 * m]);
+							tubeColors.push(elements[id].colors[4 * m + 1]);
+							tubeColors.push(elements[id].colors[4 * m + 2]);
+							tubeColors.push(elements[id].colors[4 * m + 3]);
+							tubeColors.push(elements[id].colors[4 * m]);
+							tubeColors.push(elements[id].colors[4 * m + 1]);
+							tubeColors.push(elements[id].colors[4 * m + 2]);
+							tubeColors.push(elements[id].colors[4 * m + 3]);
 							
 							
 	
@@ -304,16 +311,16 @@ var Viewer = (function() {
 							tubeTexCoords.push(1.0);
 						}
 	
-						elements[el.id].tubeVertices = tubeVertices;
-						elements[el.id].tubeTexCoords = tubeTexCoords;
-						elements[el.id].tubeColors = tubeColors;
-						calcTubeNormals(elements[el.id]);
+						elements[id].tubeVertices = tubeVertices;
+						elements[id].tubeTexCoords = tubeTexCoords;
+						elements[id].tubeColors = tubeColors;
+						calcTubeNormals(elements[id]);
 	
-						elements[el.id].color = el.color;
+						elements[id].color = el.color;
 					}
 	
 					$(Viewer).trigger('loadElementComplete', {
-						'id' : el.id,
+						'id' : id,
 						'active' : el.display
 					});
 					redraw();
@@ -322,28 +329,21 @@ var Viewer = (function() {
 			else if (el.type == "texture") {
 				var niftii  = new Niftii();
 				niftii.load( settings.DATA_URL + el.url );
-				niftiis[el.id] = niftii;
-				niftiis[el.id].id = el.id;
-				niftiis[el.id].name = el.name;
-				textures[el.id] = {};
+				niftiis[id] = niftii;
+				niftiis[id].id = id;
+				niftiis[id].name = el.name;
+				textures[id] = {};
 				$(Viewer).trigger('loadTexture', {
-					'id' : el.id,
-					'name' : niftiis[el.id].name
+					'id' : id,
+					'name' : niftiis[id].name
 				});
-		        texIds.push(el.id);
-			}
-			//  das verarbeitete Element aus dem elementsToLoad-Array loeschen und 
-			elementsToLoad = $.grep(elementsToLoad, function(val) {
-				return val != el;
-			});
-
-			//  den loadElementsComplete-Event feuern, wenn alle Elemente geladen sind.
-			if (!elementsToLoad.length) {
-				$(Viewer).trigger('loadElementsComplete');
-				variables.scene.tex1 = texIds[0];
-				redraw();
+		        texIds.push(id);
 			}
 		});
+		//  den loadElementsComplete-Event feuern, wenn alle Elemente geladen sind.
+		$(Viewer).trigger('loadElementsComplete');
+		variables.scene.tex1 = texIds[0];
+		redraw();
 	}
 
 	function loadActivations(activationsToLoad) {
@@ -404,17 +404,43 @@ var Viewer = (function() {
 
 		$(Viewer).trigger('loadConnectionssComplete');
 	}
+	
+	function loadScenes() {
+        
+	$(Viewer).trigger('loadScenesStart');
+	$.getJSON(settings.DATA_URL + 'scenes.json', function(data) {
+		$.each(data, function(i, sc) {
+			scenes[sc.id] = {};
+			scenes[sc.id].cameraPosition = sc.cameraPosition;
+			scenes[sc.id].cameraTranslation = sc.cameraTranslation;
+			scenes[sc.id].cameraZoom = sc.cameraZoom;
+			scenes[sc.id].elementsAvailable = sc.elementsAvailable;
+			scenes[sc.id].elementsActive = sc.elementsActive;
+			scenes[sc.id].activationsAvailable = sc.activationsAvailable;
+			scenes[sc.id].activationsActive = sc.activationsActive;
+			scenes[sc.id].slices = sc.slices;
+			scenes[sc.id].texture1 = sc.texture1;
+			scenes[sc.id].texture2 = sc.texture2;
 
-	//***************************************************************************************************
+			$(Viewer).trigger('loadSceneComplete', {
+				'id' : sc.id
+			});
+		});
+		$(Viewer).trigger('loadScenesComplete');
+	});
+}
+
+
+	// ***************************************************************************************************
 	//
-	//	functions for smooth transitions between scenes
+	// functions for smooth transitions between scenes
 	//
-	//***************************************************************************************************/
+	// ***************************************************************************************************/
 	function activateScene(id) {
 		if (variables.transition.rotateInterval)
 			clearInterval(variables.transition.rotateInterval);
 
-		if (!(id in variables.scenes)) {
+		if (!(id in scenes)) {
 			$(Viewer).trigger('sceneUnknown');
 			return false;
 		}
@@ -423,16 +449,16 @@ var Viewer = (function() {
 
 		variables.transition.nextRot = mat4.create();
 		mat4.identity(variables.transition.nextRot);
-		mat4.rotateX(variables.transition.nextRot, variables.scenes[id].cameraPosition[0]);
-		mat4.rotateY(variables.transition.nextRot, variables.scenes[id].cameraPosition[1]);
-		mat4.rotateZ(variables.transition.nextRot, variables.scenes[id].cameraPosition[2]);
+		mat4.rotateX(variables.transition.nextRot, scenes[id].cameraPosition[0]);
+		mat4.rotateY(variables.transition.nextRot, scenes[id].cameraPosition[1]);
+		mat4.rotateZ(variables.transition.nextRot, scenes[id].cameraPosition[2]);
 
 		variables.transition.quatOldRot = mat4toQuat(variables.webgl.thisRot);
 		variables.transition.quatNextRot = mat4toQuat(variables.transition.nextRot);
 
-		variables.transition.screenMoveXNext = variables.scenes[id].cameraTranslation[0];
-		variables.transition.screenMoveYNext = variables.scenes[id].cameraTranslation[1];
-		variables.transition.zoomNext = variables.scenes[id].cameraZoom;
+		variables.transition.screenMoveXNext = scenes[id].cameraTranslation[0];
+		variables.transition.screenMoveYNext = scenes[id].cameraTranslation[1];
+		variables.transition.zoomNext = scenes[id].cameraZoom;
 
 		variables.transition.zoomOld = variables.scene.zoom;
 		variables.mouse.screenMoveXOld = variables.mouse.screenMoveX;
@@ -472,31 +498,31 @@ var Viewer = (function() {
 	function activateScene1(id) {
 		$(Viewer).trigger('activateSceneStart', {
 			'id' : id,
-			'scene' : variables.scenes[id]
+			'scene' : scenes[id]
 		});
 
 		$.each(elements, function(id, element) {
 			hideElement(id);
 		});
-		variables.scene.axial = variables.scenes[id].slices[0];
-		variables.scene.coronal = variables.scenes[id].slices[1];
-		variables.scene.sagittal = variables.scenes[id].slices[2];
+		variables.scene.axial = scenes[id].slices[0];
+		variables.scene.coronal = scenes[id].slices[1];
+		variables.scene.sagittal = scenes[id].slices[2];
 
-		changeTexture(variables.scenes[id].texture1);
-		changeTexture2(variables.scenes[id].texture2);
+		changeTexture(scenes[id].texture1);
+		changeTexture2(scenes[id].texture2);
 		
-		$.each(variables.scenes[id].elementsActive, function(index, value) {
+		$.each(scenes[id].elementsActive, function(index, value) {
 			showElement(value);
 		});
 
-		$.each(variables.scenes[id].activationsActive, function(index, value) {
+		$.each(scenes[id].activationsActive, function(index, value) {
 			showActivation(value);
 		});
 		
 
 		$(Viewer).trigger('activateSceneComplete', {
 			'id' : id,
-			'scene' : variables.scenes[id],
+			'scene' : scenes[id],
 			'tex1' : variables.scene.tex1,
 			'tex2' : variables.scene.tex2
 		});
@@ -508,9 +534,9 @@ var Viewer = (function() {
 			clearInterval(variables.transition.rotateInterval);
 		variables.transition.nextRot = mat4.create();
 		mat4.identity(variables.transition.nextRot);
-		mat4.rotateX(variables.transition.nextRot, variables.scenes[id].cameraPosition[0]);
-		mat4.rotateY(variables.transition.nextRot, variables.scenes[id].cameraPosition[1]);
-		mat4.rotateZ(variables.transition.nextRot, variables.scenes[id].cameraPosition[2]);
+		mat4.rotateX(variables.transition.nextRot, scenes[id].cameraPosition[0]);
+		mat4.rotateY(variables.transition.nextRot, scenes[id].cameraPosition[1]);
+		mat4.rotateZ(variables.transition.nextRot, scenes[id].cameraPosition[2]);
 
 		variables.transition.quatOldRot = mat4toQuat(variables.webgl.thisRot);
 		variables.transition.quatNextRot = mat4toQuat(variables.transition.nextRot);
@@ -1705,25 +1731,7 @@ var Viewer = (function() {
 			console.warn('Element "' + id + '" is unknown.');
 			return false;
 		}
-		switch (id) {
-			case "control_tex":
-				variables.scene.colTex = !variables.scene.colTex;
-				break;
-			case "control_fibreColor":
-				variables.scene.localFibreColor = !variables.scene.localFibreColor;
-				break;
-			case "control_fibreTubes":
-				variables.scene.renderTubes = !variables.scene.renderTubes;
-				break;				
-			case "control_tooltip":
-				variables.picking.showTooltips = !variables.picking.showTooltips;
-				break;
-			case "control_slices":
-				variables.scene.showSlices = !variables.scene.showSlices;
-				break;
-			default:
-		}
-
+		
 		elements[id].display = !elements[id].display;
 		if (elements[id].display  && elements[id].type == "mesh") {
 			variables.scene.lastActivated = id;
@@ -2555,6 +2563,26 @@ var Viewer = (function() {
 		}
 		redraw();
 	}
+
+	function controlToggle(id) {
+		switch (id) {
+		case "fibreColor":
+			variables.scene.localFibreColor = !variables.scene.localFibreColor;
+			break;
+		case "fibreTubes":
+			variables.scene.renderTubes = !variables.scene.renderTubes;
+			break;				
+		case "tooltips":
+			variables.picking.showTooltips = !variables.picking.showTooltips;
+			break;
+		case "slices":
+			variables.scene.showSlices = !variables.scene.showSlices;
+			break;
+		default:
+		}
+		redraw();
+}
+	
 	
 	// Im Viewer-Singleton werden nur die im folgenden aufgefhrten
 	// Methoden/Eigenschaften nach
@@ -2605,6 +2633,7 @@ var Viewer = (function() {
 		'setAlpha2' : setAlpha2,
 		'toggleInterpolation' : toggleInterpolation,
 		'getElementAlpha' : getElementAlpha,
-		'setElementAlpha' : setElementAlpha
+		'setElementAlpha' : setElementAlpha,
+		'controlToggle' : controlToggle
 	};
 })();
