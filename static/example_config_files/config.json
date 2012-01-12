@@ -1,0 +1,5 @@
+{
+    "backgroundColor": [0.99,0.99,0.98,1],
+    "debug": true,
+    "controlElements": ["control_fibreColor", "control_fibreTubes", "control_tooltip", "control_slices"]
+}
