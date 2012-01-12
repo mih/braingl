@@ -9,7 +9,6 @@ var Viewer = (function() {
 	var gl = {}; // stores the webgl context
 	
 	var elements = {}; // set of loaded triangle meshes and fiber bundles
-	var scenes = {}; // set of scenes
 	var shaders = {}; // set storing the shaders
 	var shaderPrograms = {}; // array storing the loaded shader programs
 	var textures = {};
@@ -106,8 +105,6 @@ var Viewer = (function() {
 	variables.connectom.timestep = 0;
 	variables.connectom.animate = false;
 	variables.connectom.animationInterval;
-
-	var config = {};
 	
 	//***************************************************************************************************
 	//
@@ -115,9 +112,11 @@ var Viewer = (function() {
 	//
 	//***************************************************************************************************/
 	function init(opts) {
-		config = $.getSyncJSON(settings.DATA_URL + 'config.json');
 		$canvas = $(opts.canvas);
 		canvas = $canvas[0];
+		
+		variables.scenes = opts.scenes;
+		variables.config = opts.config;
 		
 		$(Viewer).bind('loadElementsComplete', function(event) {
 			// wenn alle Elemente geladen wurden, soll der ready-Event gefeuert werden.
@@ -156,9 +155,6 @@ var Viewer = (function() {
 		if ('connections' in opts && opts.connections.length) {
 			loadConnections(opts.connections);
 		}
-
-		
-		loadScenes();
 
 		canvas.onmousedown = handleMouseDown;
 		canvas.onmouseup = handleMouseUp;
@@ -409,31 +405,6 @@ var Viewer = (function() {
 		$(Viewer).trigger('loadConnectionssComplete');
 	}
 
-	function loadScenes() {
-		
-		$(Viewer).trigger('loadScenesStart');
-		$.getJSON(settings.DATA_URL + 'scenes.json', function(data) {
-			$.each(data, function(i, sc) {
-				scenes[sc.id] = {};
-				scenes[sc.id].cameraPosition = sc.cameraPosition;
-				scenes[sc.id].cameraTranslation = sc.cameraTranslation;
-				scenes[sc.id].cameraZoom = sc.cameraZoom;
-				scenes[sc.id].elementsAvailable = sc.elementsAvailable;
-				scenes[sc.id].elementsActive = sc.elementsActive;
-				scenes[sc.id].activationsAvailable = sc.activationsAvailable;
-				scenes[sc.id].activationsActive = sc.activationsActive;
-				scenes[sc.id].slices = sc.slices;
-				scenes[sc.id].texture1 = sc.texture1;
-				scenes[sc.id].texture2 = sc.texture2;
-				
-				$(Viewer).trigger('loadSceneComplete', {
-					'id' : sc.id
-				});
-			});
-			$(Viewer).trigger('loadScenesComplete');
-		});
-	}
-
 	//***************************************************************************************************
 	//
 	//	functions for smooth transitions between scenes
@@ -443,7 +414,7 @@ var Viewer = (function() {
 		if (variables.transition.rotateInterval)
 			clearInterval(variables.transition.rotateInterval);
 
-		if (!(id in scenes)) {
+		if (!(id in variables.scenes)) {
 			$(Viewer).trigger('sceneUnknown');
 			return false;
 		}
@@ -452,16 +423,16 @@ var Viewer = (function() {
 
 		variables.transition.nextRot = mat4.create();
 		mat4.identity(variables.transition.nextRot);
-		mat4.rotateX(variables.transition.nextRot, scenes[id].cameraPosition[0]);
-		mat4.rotateY(variables.transition.nextRot, scenes[id].cameraPosition[1]);
-		mat4.rotateZ(variables.transition.nextRot, scenes[id].cameraPosition[2]);
+		mat4.rotateX(variables.transition.nextRot, variables.scenes[id].cameraPosition[0]);
+		mat4.rotateY(variables.transition.nextRot, variables.scenes[id].cameraPosition[1]);
+		mat4.rotateZ(variables.transition.nextRot, variables.scenes[id].cameraPosition[2]);
 
 		variables.transition.quatOldRot = mat4toQuat(variables.webgl.thisRot);
 		variables.transition.quatNextRot = mat4toQuat(variables.transition.nextRot);
 
-		variables.transition.screenMoveXNext = scenes[id].cameraTranslation[0];
-		variables.transition.screenMoveYNext = scenes[id].cameraTranslation[1];
-		variables.transition.zoomNext = scenes[id].cameraZoom;
+		variables.transition.screenMoveXNext = variables.scenes[id].cameraTranslation[0];
+		variables.transition.screenMoveYNext = variables.scenes[id].cameraTranslation[1];
+		variables.transition.zoomNext = variables.scenes[id].cameraZoom;
 
 		variables.transition.zoomOld = variables.scene.zoom;
 		variables.mouse.screenMoveXOld = variables.mouse.screenMoveX;
@@ -501,31 +472,31 @@ var Viewer = (function() {
 	function activateScene1(id) {
 		$(Viewer).trigger('activateSceneStart', {
 			'id' : id,
-			'scene' : scenes[id]
+			'scene' : variables.scenes[id]
 		});
 
 		$.each(elements, function(id, element) {
 			hideElement(id);
 		});
-		variables.scene.axial = scenes[id].slices[0];
-		variables.scene.coronal = scenes[id].slices[1];
-		variables.scene.sagittal = scenes[id].slices[2];
+		variables.scene.axial = variables.scenes[id].slices[0];
+		variables.scene.coronal = variables.scenes[id].slices[1];
+		variables.scene.sagittal = variables.scenes[id].slices[2];
 
-		changeTexture(scenes[id].texture1);
-		changeTexture2(scenes[id].texture2);
+		changeTexture(variables.scenes[id].texture1);
+		changeTexture2(variables.scenes[id].texture2);
 		
-		$.each(scenes[id].elementsActive, function(index, value) {
+		$.each(variables.scenes[id].elementsActive, function(index, value) {
 			showElement(value);
 		});
 
-		$.each(scenes[id].activationsActive, function(index, value) {
+		$.each(variables.scenes[id].activationsActive, function(index, value) {
 			showActivation(value);
 		});
 		
 
 		$(Viewer).trigger('activateSceneComplete', {
 			'id' : id,
-			'scene' : scenes[id],
+			'scene' : variables.scenes[id],
 			'tex1' : variables.scene.tex1,
 			'tex2' : variables.scene.tex2
 		});
@@ -535,12 +506,11 @@ var Viewer = (function() {
 	function activateView(id) {
 		if (variables.transition.rotateInterval)
 			clearInterval(variables.transition.rotateInterval);
-
 		variables.transition.nextRot = mat4.create();
 		mat4.identity(variables.transition.nextRot);
-		mat4.rotateX(variables.transition.nextRot, scenes[id].cameraPosition[0]);
-		mat4.rotateY(variables.transition.nextRot, scenes[id].cameraPosition[1]);
-		mat4.rotateZ(variables.transition.nextRot, scenes[id].cameraPosition[2]);
+		mat4.rotateX(variables.transition.nextRot, variables.scenes[id].cameraPosition[0]);
+		mat4.rotateY(variables.transition.nextRot, variables.scenes[id].cameraPosition[1]);
+		mat4.rotateZ(variables.transition.nextRot, variables.scenes[id].cameraPosition[2]);
 
 		variables.transition.quatOldRot = mat4toQuat(variables.webgl.thisRot);
 		variables.transition.quatNextRot = mat4toQuat(variables.transition.nextRot);

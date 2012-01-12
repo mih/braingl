@@ -10,16 +10,19 @@
             elements = $.getSyncJSON(settings.DATA_URL + 'elements.json'),
             activations = $.getSyncJSON(settings.DATA_URL + 'coordinates.json'),
             connections = $.getSyncJSON(settings.DATA_URL + 'connections.json'),
-            loadingDiv = $('<div class="loading" />'),
-            $elementsTogglesContainer = $('#elements'),
-            $activationsTogglesContainer = $('#activations'),
-            $controlsTogglesContainer = $('#controls-toggles');
+            scenes = $.getSyncJSON(settings.DATA_URL + 'scenes.json'),
+            loadingDiv = $('<div class="loading" />');
         
         // LOADING
         $('#viewer').append(loadingDiv);
         
+        //**********************************************************************************************************
+        //*
+        //*  tabbed menu left side
+        //*
+        //**********************************************************************************************************
         
-        // CONTROLS
+        // controls tab
         $('a[href="#controls"]').click(function(e) {
             e.preventDefault();
             if( $('#mriTab').css('display') === "block" ) {
@@ -41,6 +44,7 @@
             return false;
         });
         
+        // MRI tab
         $('a[href="#textures"]').click(function(e) {
             e.preventDefault();
             if( $('#controlTab1').css('display') === "block" ) {
@@ -62,6 +66,7 @@
             return false;
         });
         
+        // elements tab
         $('a[href="#elements"]').click(function(e) {
             e.preventDefault();
             if( $('#controlTab1').css('display') === "block" ) {
@@ -83,6 +88,7 @@
             return false;
         });
         
+        // activation tab
         $('a[href="#activations"]').click(function(e) {
             e.preventDefault();
             if( $('#controlTab1').css('display') === "block" ) {
@@ -104,6 +110,11 @@
             return false;
         });
         
+        //**********************************************************************************************************
+        //*
+        //* mri tab  
+        //*
+        //**********************************************************************************************************
         // SLICES
         var sliderChangeHandler = function(method) {
             return function(e) {
@@ -159,6 +170,12 @@
         	$('#textureSelect').append($('<option></option>').val(data.id).html(data.name));
         	$('#textureSelect2').append($('<option></option>').val(data.id).html(data.name));
         });
+
+        //**********************************************************************************************************
+        //*
+        //*  elements tab	
+        //*
+        //**********************************************************************************************************
         // ELEMENTS
         $.each(elements, function(i, el) {
         	if ( el.type != "texture") {
@@ -175,10 +192,12 @@
 	                return false;
 	            });
 	            if ($.inArray(el.id, config.controlElements) > -1) {
-	            	$controlsTogglesContainer.append($toggle);
+	            	$('#controls-toggles').append($toggle);
 	            } else {
-	            	$elementsTogglesContainer.append($toggle);
-	            	$('#elementSelect').append($('<option></option>').val(el.id).html(el.name));
+	            	$('#elements').append($toggle);
+	            	if ( el.type === 'mesh' ) {
+	            		$('#elementSelect').append($('<option></option>').val(el.id).html(el.name));
+	            	}
 	            }
         	}
         });
@@ -195,44 +214,13 @@
         
         $('#elementAlpha').bind('change', elementAlphaHandler() ).trigger('change');
         
-        Viewer.bind('webglNotSupported', function(evt, data) {
-            webglNotSupported = true;
-            $('#viewer-canvas').replaceWith($('#viewer-canvas').children());
-            $('#viewer .loading').remove();
-            $('html').addClass('no-webgl');
-        });
         
-        Viewer.bind('loadElementComplete', function(evt, data) {
-            if (config.debug) console.log('FINISHED ELEMENT:', data.id);
-            $('#toggle-' + data.id).removeClass('disabled');
-            $('#toggle-' + data.id).toggleClass('active', data.active);
-        });
-        
-        Viewer.bind('elementDisplayChange', function(evt, data) {
-        	if (config.debug) console.log('ELEMENT DISPLAY CHANGE:', data.id);
-            $('#toggle-' + data.id).toggleClass('active', data.active);
-        });
-        
-        
+        //**********************************************************************************************************
+        //*
+        //*  activations tab
+        //*
+        //**********************************************************************************************************
         // ACTIVATIONS
-        /*
-        $.each(activations, function(i, ac) {
-            var $toggle = $('<a />');
-            $toggle.append('<span/>');
-            var $label = $('<label>'+ac.name+'</label>');
-            $toggle.append($label);
-            $label.attr('id', 'label-' + ac.id);
-            $toggle.addClass('toggle');
-            $toggle.attr('href', '#toggle:' + ac.id);
-            $toggle.attr('id', 'toggle-' + ac.id);
-            $toggle.click(function(e) {
-                e.preventDefault();
-                Viewer.toggleActivation(ac.id);
-                return false;
-            });
-            $activationsTogglesContainer.append($toggle);
-        });
-        */
         Viewer.bind('activationDisplayChange', function(evt, data) {
             $('#toggle-' + data.id).toggleClass('active', data.active);
         });
@@ -400,8 +388,90 @@
             
             $('#editConnectionSelect').append($('<option></option>').val(data.id).html(data.name));
         });
+
         
+        
+        //**********************************************************************************************************
+        //*
+        //*  controls tab
+        //*
+        //**********************************************************************************************************
+
+        $('#rotate').bind('click',function() {
+        	Viewer.autoRotate(parseInt($('#animX').val()), parseInt($('#animY').val()), parseInt($('#animT').val()), parseInt($('#animF').val()) );
+        });
+        
+        $('#save').bind('click',function() {
+        	$('#textInput').val( Viewer.saveScene() );
+    		
+    		var mydomstorage=window.localStorage || (window.globalStorage? globalStorage[location.hostname] : null);
+    		if (mydomstorage){
+    			mydomstorage.conviewSave = $('#textInput').val();
+    		}
+    		else{
+    		    // Your browser doesn't support DOM Storage unfortunately.
+    		}
+        });
+        
+        $('#load').bind('click',function() {
+        	$('#activations').empty();
+        	$('#connections').empty();
+        	var mydomstorage=window.localStorage || (window.globalStorage? globalStorage[location.hostname] : null);
+    		if (mydomstorage && mydomstorage.conviewSave && $("#saveLoc").attr("checked") ) {
+    			console.log("load from browser storage");
+    			Viewer.loadScene(mydomstorage.conviewSave);
+    		}
+    		else {
+    			Viewer.loadScene($('#textInput').val());
+    		}
+        });
+        
+        $('#screenshot').bind('click',function() { Viewer.screenshot(); });
+        $('#recordbutton').bind('click',function() { Viewer.toggleRecoding(); });
+        $('#playbutton').bind('click',function() { Viewer.playRecording(); });
+        
+        
+        
+        //**********************************************************************************************************
+        //*
+        //*  controls tab
+        //*
+        //**********************************************************************************************************
+
+        
+        
+        Viewer.bind('webglNotSupported', function(evt, data) {
+            webglNotSupported = true;
+            $('#viewer-canvas').replaceWith($('#viewer-canvas').children());
+            $('#viewer .loading').remove();
+            $('html').addClass('no-webgl');
+        });
+        
+        Viewer.bind('loadElementComplete', function(evt, data) {
+            if (config.debug) console.log('FINISHED ELEMENT:', data.id);
+            $('#toggle-' + data.id).removeClass('disabled');
+            $('#toggle-' + data.id).toggleClass('active', data.active);
+        });
+        
+        Viewer.bind('elementDisplayChange', function(evt, data) {
+        	if (config.debug) console.log('ELEMENT DISPLAY CHANGE:', data.id);
+            $('#toggle-' + data.id).toggleClass('active', data.active);
+        });
+        
+        
+                
         // SCENES
+        $.each(scenes, function(i, sc) {
+        	var $button = $('<input type="button" />');
+        	$button.attr('id', 'scenebutton-' + sc.id);
+        	$button.attr('value', sc.id);
+        	$button.click(function(e) {
+        		Viewer.activateScene(sc.id);
+        		return false;
+        	});
+        	$('#sceneButtons').append($button);
+        });
+        
         Viewer.bind('activateSceneComplete', function(evt, data) {
             var scene = data.scene,
                 togglesAvailable = [];
@@ -435,35 +505,6 @@
         	});
         	$('#sceneButtons').append($button);
         });
-
-        $('#rotate').bind('click',function() {
-        	Viewer.autoRotate(parseInt($('#animX').val()), parseInt($('#animY').val()), parseInt($('#animT').val()), parseInt($('#animF').val()) );
-        });
-        
-        $('#save').bind('click',function() {
-        	$('#textInput').val( Viewer.saveScene() );
-    		
-    		var mydomstorage=window.localStorage || (window.globalStorage? globalStorage[location.hostname] : null);
-    		if (mydomstorage){
-    			mydomstorage.conviewSave = $('#textInput').val();
-    		}
-    		else{
-    		    // Your browser doesn't support DOM Storage unfortunately.
-    		}
-        });
-        
-        $('#load').bind('click',function() {
-        	$('#activations').empty();
-        	$('#connections').empty();
-        	var mydomstorage=window.localStorage || (window.globalStorage? globalStorage[location.hostname] : null);
-    		if (mydomstorage && mydomstorage.conviewSave && $("#saveLoc").attr("checked") ) {
-    			console.log("load from browser storage");
-    			Viewer.loadScene(mydomstorage.conviewSave);
-    		}
-    		else {
-    			Viewer.loadScene($('#textInput').val());
-    		}
-        });
         
         // LOADING
         Viewer.bind('ready', function(evt) {
@@ -478,15 +519,17 @@
             }
         });
         
+        if (config.debug) Viewer.bind('loadElementStart', function(evt, data) {
+        	//if (config.debug) console.log('START ELEMENT:', data.id);
+        });
+        
         if (config.debug) Viewer.bind('loadElementsComplete', function(evt, data) {
         	$('#status').css('display', 'none');
         	$(Viewer).trigger('resize');
         	if (config.debug) console.log('ALL ELEMENTS LOADED.');
         });
         
-        if (config.debug) Viewer.bind('loadElementStart', function(evt, data) {
-        	//if (config.debug) console.log('START ELEMENT:', data.id);
-        });
+        
         
         if (config.debug) Viewer.bind('loadActivationComplete', function(evt, data) {
         	//if (config.debug) console.log('FINISHED ACTIVATION:', data.id);
@@ -532,7 +575,7 @@
                 'activations': activations,
                 'connections': connections,
                 'backgroundColor': config.backgroundColor,
-                'scenes': config.scenes
+                'scenes': scenes
             });
         }, 200);
         
@@ -635,7 +678,7 @@
     
     
     // Methode zum synchronen Abruf von JSON-Daten.
-    // (��$.getJSON�� funktioniert asynchron.)
+    // ($.getJSON funktioniert asynchron.)
     $.getSyncJSON = function(url, callback) {
         return $.parseJSON(jQuery.ajax({
             'type': 'GET',
