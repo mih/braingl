@@ -67,6 +67,7 @@ var Viewer = (function() {
 	variables.scene.colormap = 1.0;
 	variables.scene.texAlpha2 = 1.0;
 	variables.scene.texInterpolation = true;
+	variables.scene.videoRecordingInterval;
 			
 	// picking
 	variables.picking = {};
@@ -1883,7 +1884,7 @@ var Viewer = (function() {
         });
         variables.scene.activ = activs;
 		variables.connectom.animate = false;
-
+		
 		return JSON.stringify(variables);
 	}
 	
@@ -2353,11 +2354,6 @@ var Viewer = (function() {
 			return 0;
 	}
 	
-	function screenshot() {
-		var img = canvas.toDataURL("image/png");
-		document.location.href = img.replace("image/png", "image/octet-stream");
-	}
-	
 	var rotation = false;
 	var centerX = 0;
 	var centerY = 0;
@@ -2540,6 +2536,45 @@ var Viewer = (function() {
 		}
 		redraw();
 	}
+	
+	function screenshot() {
+		var img = canvas.toDataURL("image/png");
+		document.location.href = img.replace("image/png", "image/octet-stream");
+	}
+	
+	var isVideoRecording = false;
+	var frameCount = 0;
+	function toggleVideoRecording() {
+		if ( !isVideoRecording ) {
+			frameCount = 0;
+			variables.scene.videoRecordingInterval = setInterval(recordVideo, 50);
+			isVideoRecording = true;
+		}
+		else {
+			clearInterval( variables.scene.videoRecordingInterval );
+			isVideoRecording = false;
+		}
+	}
+	
+	function recordVideo() {
+		var data = canvas.toDataURL();
+		
+		var request = $.ajax({
+		  url: "http://127.0.0.1:8080",
+		  type: "POST",
+		  data: "data=" + data + '&frame=' + frameCount,
+		  dataType: "image/png"
+		});
+
+		request.done(function(msg) {
+		  console.log( msg );
+		});
+
+		request.fail(function(jqXHR, textStatus) {
+		  console.log( "Request failed: " + textStatus );
+		});
+		++frameCount;
+	}
 
 	function control(id) {
 		switch (id) {
@@ -2582,6 +2617,9 @@ var Viewer = (function() {
 			break;
 		case "updateSize" :
 			updateSize();
+			break;
+		case "video" :
+			toggleVideoRecording();
 			break;
 		default:
 		}

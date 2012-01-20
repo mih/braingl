@@ -37,6 +37,10 @@
             	$('#activationTab').slideToggle();
             	$('a[href="#activations"]').css('font-weight', 'normal');
             }
+            if( $('#infoTab').css('display') === "block" ) {
+            	$('#infoTab').slideToggle();
+            	$('a[href="#info"]').css('font-weight', 'normal');
+            }
             if( $('#controlTab1').css('display') != "block" ) {
             	$('#controlTab1').slideToggle();
             	$('a[href="#controls"]').css('font-weight', 'bold');
@@ -58,6 +62,10 @@
             if( $('#activationTab').css('display') === "block" ) {
             	$('#activationTab').slideToggle();
             	$('a[href="#activations"]').css('font-weight', 'normal');
+            }
+            if( $('#infoTab').css('display') === "block" ) {
+            	$('#infoTab').slideToggle();
+            	$('a[href="#info"]').css('font-weight', 'normal');
             }
             if( $('#mriTab').css('display') != "block" ) {
             	$('#mriTab').slideToggle();
@@ -81,6 +89,10 @@
             	$('#activationTab').slideToggle();
             	$('a[href="#activations"]').css('font-weight', 'normal');
             }
+            if( $('#infoTab').css('display') === "block" ) {
+            	$('#infoTab').slideToggle();
+            	$('a[href="#info"]').css('font-weight', 'normal');
+            }
             if( $('#elementTab').css('display') != "block" ) {
             	$('#elementTab').slideToggle();
             	$('a[href="#elements"]').css('font-weight', 'bold');
@@ -103,9 +115,39 @@
             	$('#elementTab').slideToggle();
             	$('a[href="#elements"]').css('font-weight', 'normal');
             }
+            if( $('#infoTab').css('display') === "block" ) {
+            	$('#infoTab').slideToggle();
+            	$('a[href="#info"]').css('font-weight', 'normal');
+            }
             if( $('#activationTab').css('display') != "block" ) {
             	$('#activationTab').slideToggle();
             	$('a[href="#activations"]').css('font-weight', 'bold');
+            }
+            return false;
+        });
+        
+     // info tab
+        $('a[href="#info"]').click(function(e) {
+            e.preventDefault();
+            if( $('#controlTab1').css('display') === "block" ) {
+            	$('#controlTab1').slideToggle();
+            	$('a[href="#controls"]').css('font-weight', 'normal');
+            }
+            if( $('#mriTab').css('display') === "block" ) {
+            	$('#mriTab').slideToggle();
+            	$('a[href="#textures"]').css('font-weight', 'normal');
+            }
+            if( $('#elementTab').css('display') === "block" ) {
+            	$('#elementTab').slideToggle();
+            	$('a[href="#elements"]').css('font-weight', 'normal');
+            }
+            if( $('#activationTab').css('display') === "block" ) {
+            	$('#activationTab').slideToggle();
+            	$('a[href="#activations"]').css('font-weight', 'bold');
+            }
+            if( $('#infoTab').css('display') != "block" ) {
+            	$('#infoTab').slideToggle();
+            	$('a[href="#info"]').css('font-weight', 'bold');
             }
             return false;
         });
@@ -435,6 +477,7 @@
         });
         
         $('#button_screenshot').bind('click',function() { Viewer.control('screenshot'); });
+        $('#button_video').bind('click',function() { Viewer.control('video'); });
         $('#button_rotate').bind('click',function() { Viewer.control('autoRotate'); });
         $('#button_record').bind('click',function() { Viewer.control('toggleRecording'); });
         $('#button_play').bind('click',function() { Viewer.control('playRecording'); });
@@ -451,6 +494,8 @@
         $('#button_left').bind('click',function() { Viewer.control('setViewLeft'); });
         $('#button_axial').bind('click',function() { Viewer.control('setViewAxial'); });
         $('#button_coronal').bind('click',function() { Viewer.control('setViewCoronal'); });
+        
+        $('#interpolate').bind('click',function() { Viewer.control('interpolation'); });
         
         //**********************************************************************************************************
         //*

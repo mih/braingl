@@ -11,6 +11,27 @@
     		<a href="#elements">Elements&nbsp&nbsp&nbsp</a>
     		<a href="#activations">Activations&nbsp&nbsp&nbsp</a>
     		<a href="#controls">Controls&nbsp&nbsp&nbsp</a>
+    		<a href="#info">Info&nbsp&nbsp&nbsp</a>
+    	</div>
+    	<div class="controlTab" id="infoTab" style="display:none">
+    		<section id="info1">
+    			Experimental connectome viewer. 
+    			<br>
+    			Due the experimental nature of this site some features may be broken or may not
+    			work as intended. If you notice any bugs please don't hesitate to report them to me.
+    		</section>
+    		<section>
+    			<br>
+    			This project is open source under the GNU lesser GPL. The source
+    			code is available at <a href="http://code.google.com/p/conview/">google code.</a>
+    			<br>
+    		</section>
+    		<section>
+    			<br>
+    			For any questions or feedback contact schurade(at)cbs.mpg.de
+    			<br> 
+    		</section>
+    		<br><br>
     	</div>
     	<div class="controlTab" id="controlTab1" style="display:none">
 			<section id="controls">	
@@ -29,10 +50,20 @@
 				<input type="button" id="button_clear" value="Clear" onclick="document.getElementById('textInput').value =''">
 				<br><input type="checkbox" id="saveLoc">use browser storage<br>
 				<br>
-				<input type="button" id="button_screenshot" value="Screenshot">
+				Record and play user input.
 				<br>
 				<input type="button" id="button_record" value="Record">
 				<input type="button" id="button_play" value="Play">
+				<br>
+				<input type="button" id="button_screenshot" value="Screenshot">
+				<br>
+				<br>
+				Starts video recording by sending frames to a webserver.
+				<br> 
+				<input type="button" id="button_video" value="Video">
+				<br>
+				
+				
 			</section>
 			<section id="animation">
 				<table>
@@ -129,7 +160,7 @@
 				</select>
 				<table>
 					<tr>
-						<th>Name</td>
+						<th>Name</th>
 						<th>X</th>
 						<th>Y</th>
 						<th>Z</th>
@@ -141,7 +172,7 @@
 						<td><input type="text" size="6" id="acZ" value=0></td>
 					</tr>
 					<tr>
-						<th>Size</td>
+						<th>Size</th>
 						<th>R</th>
 						<th>G</th>
 						<th>B</th>
@@ -187,7 +218,7 @@
 					</tr>
 					<tr>
 						<td></td>
-						<th>Strength</td>
+						<th>Strength</th>
 						<th>Size</th>
 						<th>Distance</th>
 						<th>Speed</th>
