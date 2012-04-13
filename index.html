@@ -150,98 +150,16 @@
 			</select>
 			<br />
 			<input type="range" min="0" max="100" id="elementAlpha" value="0" step="1" />
+			
+			<input type="file" id="files" name="files[]" multiple />
+			<output id="list"></output>
 		</div>
 		
 		<div class="controlTab" id="activationTab" style="display:none">
 			<section id="activations"></section>
 			<!--<a href="#inputActivations">Input activations</a><br>-->
-			<section id="inputActivations">
-				<select id="editActivationSelect">
-				</select>
-				<table>
-					<tr>
-						<th>Name</th>
-						<th>X</th>
-						<th>Y</th>
-						<th>Z</th>
-					</tr>
-					<tr>
-						<td><input type="text" size="10" id="acName" name="name" value='activ1'></td>
-						<td><input type="text" size="6" id="acX" value=-3></td>
-						<td><input type="text" size="6" id="acY" value=0></td>
-						<td><input type="text" size="6" id="acZ" value=0></td>
-					</tr>
-					<tr>
-						<th>Size</th>
-						<th>R</th>
-						<th>G</th>
-						<th>B</th>
-					</tr>
-					<tr>
-						<td><input type="text" size="10" id="acSize" value=3></td>
-						<td><input type="text" size="6" id="acR" value=1></td>
-						<td><input type="text" size="6" id="acG" value=0></td>
-						<td><input type="text" size="6" id="acB" value=0></td>
-					</tr>
-				</table>
-				<input type="button" value="New" id="button_newActivation">
-				<!-- <input type="button" value="Select Fibres" id="button_recalcFibers">
-				<input type="button" value="Reset Fibres" id="button_resetFibers">  -->
-			</section>
 			<section id="connections"></section>
-			<section id="inputConnections">
-				<select id="editConnectionSelect">
-				</select>
-				<br>
-				<select id="fromSelect">
-				</select>
-				<select id="toSelect">
-				</select>
-				<table>
-					<tr>
-						<td></td>
-						<th>R</th>
-						<th>G</th>
-						<th>B</th>
-					</tr>
-					<tr>
-						<td></td>
-						<td><input type="text" size="6" id="coR" value=0></td>
-						<td><input type="text" size="6" id="coG" value=1></td>
-						<td><input type="text" size="6" id="coB" value=0></td>
-					</tr>
-					<tr>
-						<td></td>
-						<td><input type="text" size="6" id="coR2" value=0></td>
-						<td><input type="text" size="6" id="coG2" value=0></td>
-						<td><input type="text" size="6" id="coB2" value=1></td>
-					</tr>
-					<tr>
-						<td></td>
-						<th>Strength</th>
-						<th>Size</th>
-						<th>Distance</th>
-						<th>Speed</th>
-					</tr>
-					<tr>
-						<td></td>
-						<td><input type="number" min=0.5 max=20 value=2 step=0.1 id="coStrength"></td>
-						<td><input type="number" min=0.5 max=20 value=5 step=0.1 id="coSize"></td>
-						<td><input type="number" min=0.5 max=20 value=20 step=0.1 id="coDistance"></td>
-						<td><input type="number" min=0.5 max=20 value=1 step=0.1 id="coSpeed"></td>
-					</tr>
-					<tr>
-						<td></td>
-						<td><input type="number" min=0.5 max=20 value=1 step=0.1 id="coStrength2"></td>
-						<td><input type="number" min=0.5 max=20 value=3 step=0.1 id="coSize2"></td>
-						<td><input type="number" min=0.5 max=20 value=10 step=0.1 id="coDistance2"></td>
-						<td><input type="number" min=0.5 max=20 value=2 step=0.1 id="coSpeed2"></td>
-					</tr>
-				</table>
-				<input type="button" name="Submit" value="New" id="button_newConnection">
-				<br>
-				<input type="button" id="button_animate" value="Animate">
-			</section>
+			<input type="button" id="button_animate" value="Animate">
 		</div>
 		
 		<div class="controlTab" id="status">
@@ -262,6 +180,7 @@
 		<script>window.settings = {'DATA_URL': '/data/'};</script>
 		<script src="static/javascripts/jquery-1.7.1.min.js"></script>
 		<script src="static/javascripts/ui.js"></script>
+		<script src="static/javascripts/io.js"></script>
 		<script src="static/javascripts/html5slider.js"></script>
 		<script src="static/javascripts/webgl-debug.js"></script>
 		<script src="static/javascripts/glMatrix-0.9.5.min.js"></script>

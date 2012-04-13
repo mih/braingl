@@ -287,7 +287,7 @@ function sortMeshIndices( elem, mvMat, pMat )
 		v3[0] = elem.vertices[elem.indices[ii]*3];
 		v3[1] = elem.vertices[elem.indices[ii]*3+1];
 		v3[2] = elem.vertices[elem.indices[ii]*3+2];
-		mat4.multiplyVec3(pMat, v3);
+		//mat4.multiplyVec3(pMat, v3);
 		mat4.multiplyVec3(mvMat, v3);
 		
 		triMean.push( ( v1[2] + v2[2] + v3[2] ) / -3.0 );
@@ -351,6 +351,91 @@ function sortMeshIndices( elem, mvMat, pMat )
 		return i;
 	}
 }
+
+function sortLineMeans( elem, mvMat, pMat )
+{
+	var numLines = elem.indices.length;
+	var sortedLines = [numLines];
+	for ( var l = 0; l < numLines; ++l )
+	{
+		sortedLines[l] = l;
+	}
+	
+	var v1 = vec3.create();
+	var v2 = vec3.create();
+	
+	var lineMean = [];
+	for ( var ii = 0; ii < elem.indices.length; ++ii)
+	{
+		var firstPoint = elem.lineStarts[ii] * 3;
+		var lastPoint = firstPoint + ( ( elem.indices[ii] - 1 ) * 3 );
+		
+		v1[0] = elem.vertices[firstPoint];
+		v1[1] = elem.vertices[firstPoint+1];
+		v1[2] = elem.vertices[firstPoint+2];
+		mat4.multiplyVec3(mvMat, v1);
+		
+		v2[0] = elem.vertices[lastPoint];
+		v2[1] = elem.vertices[lastPoint+1];
+		v2[2] = elem.vertices[lastPoint+2];
+		mat4.multiplyVec3(mvMat, v2);
+		
+		lineMean.push( ( v1[2] + v2[2] ) / 2.0 );
+		
+	}
+	
+	quicksort(0, numLines -1 );
+	
+	elem.sortedLines = sortedLines;
+	
+	function quicksort( left, right )
+	{
+		if ( left < right )
+		{
+			div = divide( left, right );
+			
+			quicksort( left, div -1 );
+			quicksort( div + 1, right );
+		}
+	}
+	
+	function divide( left, right )
+	{
+		var i = left;
+		var j = right - 1;
+
+		var pivot = lineMean[sortedLines[right]];
+		
+		do 
+		{
+			while ( ( lineMean[sortedLines[i]] <= pivot ) && ( i < right ) )
+			{
+				++i;
+			}
+			while ( ( lineMean[sortedLines[j]] > pivot ) && ( j > left ) )
+			{
+				--j;
+			}
+			if ( i < j )
+			{
+				var tmp = sortedLines[i];
+				sortedLines[i] = sortedLines[j];
+				sortedLines[j] = tmp;
+			}
+			
+		} while ( i < j );
+		
+		if ( lineMean[sortedLines[i]] > pivot )
+		{
+			var tmp = sortedLines[i];
+			sortedLines[i] = sortedLines[right];
+			sortedLines[right] = tmp;
+		}
+		
+		return i;
+	}
+}
+
 
 function createPickColor(index) {
 	hash = [];

@@ -246,7 +246,7 @@
 	            });
 	            
             	$('#elements').append($toggle);
-            	if ( data.type === 'mesh' ) {
+            	if ( data.type === 'mesh' || data.type === 'fibre' ) {
             		$('#elementSelect').append($('<option></option>').val(data.id).html(data.name));
             	}
         	}
@@ -264,6 +264,21 @@
         
         $('#elementAlpha').bind('change', elementAlphaHandler() ).trigger('change');
         
+        function handleFileSelect(evt) {
+		    var files = evt.target.files; // FileList object
+		
+		    // files is a FileList of File objects. List some properties.
+		    var output = [];
+		    for (var i = 0, f; f = files[i]; i++) {
+		      output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+		                  f.size, ' bytes, last modified: ',
+		                  f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+		                  '</li>');
+		    }
+		    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+		  }
+		
+		  document.getElementById('files').addEventListener('change', handleFileSelect, false);
         
         //**********************************************************************************************************
         //*
@@ -273,50 +288,6 @@
         // ACTIVATIONS
         Viewer.bind('activationDisplayChange', function(evt, data) {
             $('#toggle-' + data.id).toggleClass('active', data.active);
-        });
-        
-        var activationChangeHandler = function(method) {
-            return function(e) {
-            	var value = $(this).val();
-            	var name = $(this).attr('id');
-            	var id = $('#editActivationSelect').val();
-            	Viewer[method](id, name, value);
-            	$('#editActivationSelect option[value=' + id + ']' ).text($('#acName').val());
-        		$('#fromSelect option[value=' + id + ']').text($('#acName').val());
-        		$('#toSelect option[value=' + id + ']').text($('#acName').val());
-        		$("#label-"+id).html( $('#acName').val() );
-            };
-        };
-        $('#acName').bind('change', activationChangeHandler('changeActivationAttrib'));
-        $('#acX').bind('change', activationChangeHandler('changeActivationAttrib'));
-        $('#acY').bind('change', activationChangeHandler('changeActivationAttrib'));
-        $('#acZ').bind('change', activationChangeHandler('changeActivationAttrib'));
-        $('#acSize').bind('change', activationChangeHandler('changeActivationAttrib'));
-        $('#acR').bind('change', activationChangeHandler('changeActivationAttrib'));
-        $('#acG').bind('change', activationChangeHandler('changeActivationAttrib'));
-        $('#acB').bind('change', activationChangeHandler('changeActivationAttrib'));
-
-        $('#button_newActivation').bind('click',function() {
-        	  Viewer.addActivation($('#acName').val(), 
-						parseFloat($('#acX').val()), 
-						parseFloat($('#acY').val()), 
-						parseFloat($('#acZ').val()), 
-						parseFloat($('#acSize').val()), 
-						parseFloat($('#acR').val()), 
-						parseFloat($('#acG').val()), 
-						parseFloat($('#acB').val()));
-        });
-        
-        $('#editActivationSelect').bind('click',function() {
-        	var el = Viewer.getActivation( $('#editActivationSelect').val() );
-        	$('#acName').val( el.name );
-    		$('#acX').val( el.coordinates[0] );
-    		$('#acY').val( el.coordinates[1] );
-    		$('#acZ').val( el.coordinates[2] );
-    		$('#acSize').val( el.size );
-    		$('#acR').val( el.rgb.r );
-    		$('#acG').val( el.rgb.g );
-    		$('#acB').val( el.rgb.b );
         });
         
         Viewer.bind('newActivation', function(evt, data) {
@@ -340,85 +311,6 @@
             $('#toSelect').append($('<option></option>').val(data.id).html(data.name));
         });
         
-        // CONNECTIONS
-        $('#button_newConnection').bind('click',function() {
-        	var color = {"r": parseFloat($('#coR').val()), "g": parseFloat($('#coG').val()), "b": parseFloat($('#coB').val())};
-    		var strength = parseFloat($('#coStrength').val());
-    		var size = parseFloat($('#coSize').val());
-    		var distance = parseFloat($('#coDistance').val());
-    		var speed = parseFloat($('#coSpeed').val());
-    		var color2 = {"r": parseFloat($('#coR2').val()), "g": parseFloat($('#coG2').val()), "b": parseFloat($('#coB2').val())};
-    		var strength2 = parseFloat($('#coStrength2').val());
-    		var size2 = parseFloat($('#coSize2').val());
-    		var distance2 = parseFloat($('#coDistance2').val());
-    		var speed2 = parseFloat($('#coSpeed2').val());
-        	Viewer.addConnection( $('#fromSelect').val(),
-        						  $('#toSelect').val(),
-        						  color, strength, size, distance, speed, 
-        						  color2, strength2, size2, distance2, speed2, true
-        	);
-        });
-        
-        $('#editConnectionSelect').bind('click',function() {
-        	var co = Viewer.getConnection( $('#editConnectionSelect').val() );
-    		$('#coR').val( co.color.r );
-    		$('#coG').val( co.color.g );
-    		$('#coB').val( co.color.b );
-    		$('#coStrength').val(  co.strength );
-    		$('#coSize').val(  co.size );
-    		$('#coDistance').val(  co.distance );
-    		$('#coSpeed').val(  co.speed );
-    		
-    		$('#fromSelect option[value='+ co.fromId + ']').attr('selected', true);
-    		$('#toSelect option[value='+ co.toId + ']').attr('selected', true);
-    		
-    		var co2 = Viewer.getConnection( co.coId );
-    		$('#coR2').val( co2.color.r );
-    		$('#coG2').val( co2.color.g );
-    		$('#coB2').val( co2.color.b );
-    		$('#coStrength2').val( co2.strength );
-    		$('#coSize2').val(  co2.size );
-    		$('#coDistance2').val( co2.distance );
-    		$('#coSpeed2').val( co2.speed );
-        });
-        
-        var connectionChangeHandler = function(method) {
-            return function(e) {
-            	var value = $(this).val();
-            	var name = $(this).attr('id');
-            	var id = $('#editConnectionSelect').val();
-            	Viewer[method](id, name, value);
-            };
-        };
-        $('#coR').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coG').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coB').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coR2').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coG2').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coB2').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coStrength').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coSize').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coDistance').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coSpeed').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coStrength2').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coSize2').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coDistance2').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        $('#coSpeed2').bind('change', connectionChangeHandler('changeConnectionAttrib'));
-        
-        $('#fromSelect').bind('click',function() {
-        	Viewer.changeConnectionAttrib( $('#editConnectionSelect').val(), 'fromId', $('#fromSelect').val() );
-        });
-
-        $('#toSelect').bind('click',function() {
-        	Viewer.changeConnectionAttrib( $('#editConnectionSelect').val(), 'toId', $('#toSelect').val() );
-        });
-
-        Viewer.bind('updateConnection', function(evt, data) {
-        	$('#editConnectionSelect option[value=' + data.id + ']' ).text(data.name);
-    		$("#label-"+ data.id).html( data.name );
-    		$('#editConnectionSelect option[value=' + data.id2 + ']' ).text(data.name2);
-    		$("#label-"+ data.id2).html( data.name2 );
-        });
         
         Viewer.bind('newConnection', function(evt, data) {
         	var $toggle = $('<a />');

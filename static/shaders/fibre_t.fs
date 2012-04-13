@@ -2,6 +2,8 @@
 precision highp float;
 #endif
 
+uniform float uAlpha;
+
 uniform vec3 uFibreColor;
 uniform bool uFibreColorMode;
 
@@ -68,6 +70,6 @@ void main(void)
 	    gl_FragColor.rgb = clamp(view_dot_normal * (color + 0.15 * pow( view_dot_normal, 10.) *
 							pow(tangent_dot_view, 10.) ), 0., 1.); //< set the color of this fragment (i.e. pixel)
 					
-		gl_FragColor.a = 1.0;
+		gl_FragColor.a = uAlpha;
 	}	
 }
