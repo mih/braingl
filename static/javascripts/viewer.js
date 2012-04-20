@@ -575,6 +575,8 @@ function initShader(name) {
 	
 	if (name == "mesh") {
 		shaderPrograms[name].cutWhiteUniform = gl.getUniformLocation(shaderPrograms[name], "uCutWhite");	
+		shaderPrograms[name].coordUniform = gl.getUniformLocation(shaderPrograms[name], "uCoord");
+		shaderPrograms[name].sizeUniform = gl.getUniformLocation(shaderPrograms[name], "uSize");
 	}
 	
 	if (name == "fibre_t" || name == "fibre_l") {
@@ -892,6 +894,15 @@ function drawMesh(elem) {
 	gl.disable(gl.BLEND);
 	gl.enable(gl.DEPTH_TEST);
 
+	if ( elem.co ) {
+		gl.uniform3f(shaderPrograms['mesh'].coordUniform, elem.co[0], elem.co[1], elem.co[2]);
+		gl.uniform1f(shaderPrograms['mesh'].sizeUniform, elem.size );
+	}
+	else {
+		gl.uniform3f(shaderPrograms['mesh'].coordUniform, 0, 0, 0 );
+		gl.uniform1f(shaderPrograms['mesh'].sizeUniform, 1.0 );
+	}
+	
 	if (elem.transparency < 1.0) {
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		gl.enable(gl.BLEND);
@@ -907,7 +918,7 @@ function drawMesh(elem) {
 function drawFibers(elem) {
 
 	if (!variables.mouse.leftDown && !variables.mouse.middleDown && !variables.transition.transitionOngoing ) {
-		if ( !elem.sortedLines || elem.dirty ) {
+		if ( ( !elem.sortedLines || elem.dirty ) && elem.type == 'fibre' ) {
 			sortLineMeans(elem, variables.webgl.mvMatrix, variables.webgl.pMatrix);
 			elem.dirty = false;
 			elem.hasBuffer = false;
@@ -963,16 +974,27 @@ function drawFibers(elem) {
 			gl.enable(gl.BLEND);
 		}
 		gl.uniform1f(shaderPrograms['fibre_t'].alphaUniform, elem.transparency);
-		for ( var i = 0; i < elem.indices.length; ++i) {
-			if ( elem.activFibres ) {
-				if ( elem.activFibres[elem.sortedLines[i]] ) {
+		
+		if ( elem.type == 'fibre' ) {
+			for ( var i = 0; i < elem.indices.length; ++i) {
+				if ( elem.activFibres ) {
+					if ( elem.activFibres[elem.sortedLines[i]] ) {
+						gl.drawArrays(gl.TRIANGLE_STRIP, elem.lineStarts[elem.sortedLines[i]]*2, elem.indices[elem.sortedLines[i]] * 2);
+					}
+				}
+				else {
 					gl.drawArrays(gl.TRIANGLE_STRIP, elem.lineStarts[elem.sortedLines[i]]*2, elem.indices[elem.sortedLines[i]] * 2);
 				}
 			}
-			else {
-				gl.drawArrays(gl.TRIANGLE_STRIP, elem.lineStarts[elem.sortedLines[i]]*2, elem.indices[elem.sortedLines[i]] * 2);
+		}
+		else {
+			var lineStart = 0;
+			for ( var i = 0; i < elem.indices.length; ++i) {
+				gl.drawArrays(gl.TRIANGLE_STRIP, lineStart, elem.indices[i] * 2);
+				lineStart += elem.indices[i] * 2;
 			}
 		}
+			
 	}
 	else {
 		setFibreLineUniforms();
@@ -1934,7 +1956,7 @@ function loadScene( saveString ) {
 function createActivation( id, name, x, y, z, size, r, g, b )
 {
 	var cof = tal2pixel(x, y, z);
-	newActiv = createSphere(cof[0], cof[1], cof[2], size, {"r": r, "g": g, "b": b});
+	newActiv = createSphere( 1.0, {"r": r, "g": g, "b": b} );
 	newActiv.name = name;
 	newActiv.co = cof;
 	newActiv.type = 'activation';
@@ -2291,6 +2313,7 @@ function recalcFibres() {
 							var zd = co[2] - this.vertices[j*3+2];
 							if ( Math.sqrt( xd*xd + yd*yd + zd*zd) < size ) {
 								this.activFibres[i] = true;
+								break;
 							}
 						}
 						lineStart += this.indices[i];
@@ -2310,6 +2333,32 @@ function resetFibres() {
 		}
 	});
 }
+
+function setActivationCoord(id, value) {
+	if ( elements.activations[id] ) {
+		elements.activations[id].co = value;
+		redraw();
+	}
+}
+
+function getActivationCoord(id) {
+	if ( elements.activations[id] )
+		return elements.activations[id].co;
+}
+
+function setActivationSize(id, value) {
+	if ( elements.activations[id] ) {
+		elements.activations[id].size = value;
+		redraw();
+	}
+}
+
+function getActivationSize(id) {
+	if ( elements.activations[id] ) {
+		return elements.activations[id].size;
+	}
+}
+
 
 function setAlpha2(value) {
 	variables.scene.texAlpha2 = value;
@@ -2449,6 +2498,12 @@ return {
 	
 	'getActivation' : getActivation,
 	'getConnection' : getConnection,
+	
+	'setActivationCoord' : setActivationCoord,
+	'getActivationCoord' : getActivationCoord,
+	'setActivationSize' : setActivationSize,
+	'getActivationSize' : getActivationSize,
+	
 	
 	'changeTexture' : changeTexture,
 	'changeTexture2' : changeTexture2,

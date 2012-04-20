@@ -151,12 +151,21 @@
 			<br />
 			<input type="range" min="0" max="100" id="elementAlpha" value="0" step="1" />
 			
-			<input type="file" id="files" name="files[]" multiple />
-			<output id="list"></output>
+			<!-- <input type="file" id="files" name="files[]" multiple />
+			<output id="list"></output> -->
 		</div>
 		
 		<div class="controlTab" id="activationTab" style="display:none">
 			<section id="activations"></section>
+			
+			<select id="activationSelect">
+			</select>
+			<br />
+			<input type="range" min="0" max="160" id="activationCoordX" value="0" step="1" />
+			<input type="range" min="0" max="200" id="activationCoordY" value="0" step="1" />
+			<input type="range" min="0" max="160" id="activationCoordZ" value="0" step="1" />
+			<input type="range" min="1" max="25" id="activationSize" value="0" step="1" />
+			
 			<!--<a href="#inputActivations">Input activations</a><br>-->
 			<section id="connections"></section>
 			<input type="button" id="button_animate" value="Animate">

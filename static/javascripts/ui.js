@@ -278,7 +278,7 @@
 		    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
 		  }
 		
-		  document.getElementById('files').addEventListener('change', handleFileSelect, false);
+		  //document.getElementById('files').addEventListener('change', handleFileSelect, false);
         
         //**********************************************************************************************************
         //*
@@ -306,6 +306,7 @@
             });
             $('#activations').append($toggle);
             
+            $('#activationSelect').append($('<option></option>').val(data.id).html(data.name));
             $('#editActivationSelect').append($('<option></option>').val(data.id).html(data.name));
             $('#fromSelect').append($('<option></option>').val(data.id).html(data.name));
             $('#toSelect').append($('<option></option>').val(data.id).html(data.name));
@@ -331,7 +332,35 @@
             $('#editConnectionSelect').append($('<option></option>').val(data.id).html(data.name));
         });
 
+        $('#activationSelect').change( function() { 
+        	var co = Viewer.getActivationCoord( $('#activationSelect option:selected').val() );
+        	$('#activationCoordX').val( co[0] );
+        	$('#activationCoordY').val( co[1] );
+        	$('#activationCoordZ').val( co[2] );
+        	$('#activationSize').val( Viewer.getActivationSize( $('#activationSelect option:selected').val() ) );
+        });
         
+        
+        var activationCoordHandler = function() {
+            return function(e) {
+            	var co = new Array(3);
+            	co[0] = $('#activationCoordX').val();
+            	co[1] = $('#activationCoordY').val();
+            	co[2] = $('#activationCoordZ').val();
+            	Viewer.setActivationCoord( $('#activationSelect option:selected').val(), co );
+            };
+        };
+        
+        var activationSizeHandler = function() {
+            return function(e) {
+            	Viewer.setActivationSize( $('#activationSelect option:selected').val(), $('#activationSize').val() );
+            };
+        };
+        
+        $('#activationCoordX').bind('change', activationCoordHandler() ).trigger('change');
+        $('#activationCoordY').bind('change', activationCoordHandler() ).trigger('change');
+        $('#activationCoordZ').bind('change', activationCoordHandler() ).trigger('change');
+        $('#activationSize').bind('change', activationSizeHandler() ).trigger('change');
         
         //**********************************************************************************************************
         //*

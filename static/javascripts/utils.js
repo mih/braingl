@@ -56,7 +56,7 @@ function pixel2tal(x, y, z)
 	return returnCoord;
 }
 
-function createSphere( posX, posY, posZ, rad, color )
+function createSphere( rad, color )
 {
 	sphere = {};
 	sphere.vertices = [];
@@ -102,7 +102,7 @@ function createSphere( posX, posY, posZ, rad, color )
 				uz = sinTheta * sinPhi,
 				r = radius(ux, uy, uz, u, v);
 
-				sphere.vertices.push(r * ux + posX, r * uy + posY, r * uz + posZ);
+				sphere.vertices.push(r * ux, r * uy, r * uz);
 				sphere.normals.push(-ux, -uy, -uz);
 				//texCoords.push(u, v);
 		}
