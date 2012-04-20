@@ -9,9 +9,9 @@ function loadMesh(el) {
 		
 		if (element.correction) {
 			for ( var m = 0; m < element.vertices.length / 3; ++m) {
-				element.vertices[3 * m] += element.correction[0];
-				element.vertices[3 * m + 1] += element.correction[1];
-				element.vertices[3 * m + 2] += element.correction[2];
+				element.vertices[3 * m] += data.correction[0];
+				element.vertices[3 * m + 1] += data.correction[1];
+				element.vertices[3 * m + 2] += data.correction[2];
 			}
 		}
 		
@@ -65,9 +65,9 @@ function loadFibre(el) {
 		
 		if (element.correction) {
 			for ( var m = 0; m < element.vertices.length / 3; ++m) {
-				element.vertices[3 * m] += element.correction[0];
-				element.vertices[3 * m + 1] += element.correction[1];
-				element.vertices[3 * m + 2] += element.correction[2];
+				element.vertices[3 * m] += data.correction[0];
+				element.vertices[3 * m + 1] += data.correction[1];
+				element.vertices[3 * m + 2] += data.correction[2];
 			}
 		}
 		

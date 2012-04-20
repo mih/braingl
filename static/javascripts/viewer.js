@@ -290,9 +290,6 @@ function loadConnections(connectionsToLoad) {
 	$.each(connectionsToLoad, function(i, con) {
 		var fromId = con.fromId;
 		var toId = con.toId;
-		
-		var cofp = elements.activations[fromId].coordinates;
-		var cotp = elements.activations[toId].coordinates;
 		var color = con.color;
 		var strength = con.strength;
 		var size = con.size;
@@ -964,12 +961,11 @@ function drawFibers(elem) {
 		if (elem.transparency < 1.0) {
 			gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 			gl.enable(gl.BLEND);
-			gl.uniform1f(shaderPrograms['fibre_t'].alphaUniform, elem.transparency);
 		}
-
+		gl.uniform1f(shaderPrograms['fibre_t'].alphaUniform, elem.transparency);
 		for ( var i = 0; i < elem.indices.length; ++i) {
 			if ( elem.activFibres ) {
-				if ( elem.activFibres[i] ) {
+				if ( elem.activFibres[elem.sortedLines[i]] ) {
 					gl.drawArrays(gl.TRIANGLE_STRIP, elem.lineStarts[elem.sortedLines[i]]*2, elem.indices[elem.sortedLines[i]] * 2);
 				}
 			}
@@ -1008,12 +1004,11 @@ function drawFibers(elem) {
 		if (elem.transparency < 1.0) {
 			gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 			gl.enable(gl.BLEND);
-			gl.uniform1f(shaderPrograms['fibre_l'].alphaUniform, elem.transparency);
 		}
-		
+		gl.uniform1f(shaderPrograms['fibre_l'].alphaUniform, elem.transparency);		
 		for ( var i = 0; i < elem.indices.length; ++i) {
 			if ( elem.activFibres ) {
-				if ( elem.activFibres[i] ) {
+				if ( elem.activFibres[elem.sortedLines[i]] ) {
 					gl.drawArrays(gl.LINE_STRIP, elem.lineStarts[elem.sortedLines[i]], elem.indices[elem.sortedLines[i]]);
 				}
 			}
@@ -2272,24 +2267,22 @@ function setThreshold2(value) {
 
 function recalcFibres() {
 	
-	$.each(elements, function() {
-		if (this.type == 'fibre' && this.display) {
+	$.each(elements.fibres, function() {
+		if ( this.display ) {
 			this.activFibres = new Array( this.indices.length );
 			for (var i = 0; i < this.activFibres.length; ++i ) {
 				this.activFibres[i] = false;
 			}
 		}
 	});
-	
-	$.each(elements, function() {
-		if (this.type == 'activation' && this.display) {
+	//TODO
+	$.each(elements.activations, function() {
+		if ( this.display ) {
 			var co = this.co;
-			var size = this.size / 2;
+			var size = this.size;
 			
-			$.each(elements, function() {
-				if (this.type == 'fibre' && this.display) {
-											
-					
+			$.each(elements.fibres, function() {
+				if ( this.display ) {
 					lineStart = 0;
 					for ( var i = 0; i < this.indices.length; ++i) {
 						for(var j = lineStart; j < lineStart+ this.indices[i]; ++j) {
@@ -2310,12 +2303,10 @@ function recalcFibres() {
 }
 
 function resetFibres() {
-	$.each(elements, function() {
-		if (this.type == 'fibre') {
-			this.activFibres = new Array( this.indices.length );
-			for (var i = 0; i < this.activFibres.length; ++i ) {
-				this.activFibres[i] = true;
-			}
+	$.each(elements.fibres, function() {
+		this.activFibres = new Array( this.indices.length );
+		for (var i = 0; i < this.activFibres.length; ++i ) {
+			this.activFibres[i] = true;
 		}
 	});
 }
