@@ -261,6 +261,7 @@ function getOctant(m)
 
 function sortMeshIndices( elem, mvMat, pMat )
 {
+	if ( !elem.indices ) return;
 	var numTris = elem.indices.length / 3;
 	var sortedTris = [numTris];
 	for ( var l = 0; l < numTris; ++l )

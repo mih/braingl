@@ -411,9 +411,15 @@ function activateScene1(id) {
 		'scene' : scenes[id]
 	});
 
-	$.each(elements, function(id, element) {
+	$.each(elements.meshes, function(id, element) {
 		hideElement(id);
 	});
+	
+	$.each(elements.fibres, function(id, element) {
+		hideElement(id);
+	});
+	
+	
 	variables.scene.axial = scenes[id].slices[0];
 	variables.scene.coronal = scenes[id].slices[1];
 	variables.scene.sagittal = scenes[id].slices[2];
@@ -851,7 +857,7 @@ function drawPickScene() {
 }
 
 function drawMesh(elem) {
-	if (!elem || !elem.display)
+	if (!elem || !elem.display || !elem.indices )
 		return;
 	
 	setMeshUniforms();
@@ -1757,29 +1763,48 @@ function toggleRecording() {
 
 
 function showElement(id) {
-	if (!(id in elements)) {
+	if (id in elements.meshes) {
+		elements.meshes[id].display = true;
+		$(Viewer).trigger('elementDisplayChange', {
+			'id' : id,
+			'active' : true
+		});
+	}
+	else if (id in elements.fibres) {
+		elements.fibres[id].display = true;
+		$(Viewer).trigger('elementDisplayChange', {
+			'id' : id,
+			'active' : true
+		});
+	}
+	else {
 		console.warn('Element "' + id + '" is unknown.');
 		return false;
 	}
-	elements[id].display = true;
-	$(Viewer).trigger('elementDisplayChange', {
-		'id' : id,
-		'active' : true
-	});
+	
 	recordCommand("element", "show", id);
 	redraw();
 }
 
 function hideElement(id) {
-	if (!(id in elements)) {
+	if (id in elements.meshes) {
+		elements.meshes[id].display = false;
+		$(Viewer).trigger('elementDisplayChange', {
+			'id' : id,
+			'active' : false
+		});
+	}
+	else if (id in elements.fibres) {
+		elements.fibres[id].display = false;
+		$(Viewer).trigger('elementDisplayChange', {
+			'id' : id,
+			'active' : false
+		});
+	}
+	else {
 		console.warn('Element "' + id + '" is unknown.');
 		return false;
 	}
-	elements[id].display = false;
-	$(Viewer).trigger('elementDisplayChange', {
-		'id' : id,
-		'active' : false
-	});
 	recordCommand("element", "hide", id);
 	redraw();
 }
