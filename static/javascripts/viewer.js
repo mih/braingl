@@ -265,27 +265,24 @@ function initShader(name) {
 		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
 		shaderPrograms[name].textureCoordAttribute = gl.getAttribLocation(shaderPrograms[name], "aTextureCoord");
 	}
+
 	if (name == "mesh") {
 
 		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
 		shaderPrograms[name].vertexNormalAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexNormal");
 		shaderPrograms[name].vertexColorAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexColor");
-		
 	}
 	
 	if ( name == "fibre_t" ) { 
 		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
 		shaderPrograms[name].textureCoordAttribute = gl.getAttribLocation(shaderPrograms[name], "aTextureCoord");
 		shaderPrograms[name].vertexNormalAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexNormal");
-		shaderPrograms[name].vertexColorAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexColor");
-		
 	}
 	
 	if ( name == "fibre_l" ) { 
 		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
 		shaderPrograms[name].vertexNormalAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexNormal");
 		shaderPrograms[name].vertexColorAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexColor");
-		
 	}
 
 	shaderPrograms[name].pMatrixUniform  = gl.getUniformLocation(shaderPrograms[name], "uPMatrix");
@@ -600,15 +597,13 @@ function drawFibers(elem) {
 		gl.enableVertexAttribArray(shaderPrograms['fibre_t'].vertexPositionAttribute);
 		gl.enableVertexAttribArray(shaderPrograms['fibre_t'].textureCoordAttribute);
 		gl.enableVertexAttribArray(shaderPrograms['fibre_t'].vertexNormalAttribute);
-		gl.enableVertexAttribArray(shaderPrograms['fibre_t'].vertexColorAttribute);
 		
 		gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexPositionBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, elem.vertexPositionBuffer.data, gl.STATIC_DRAW);
 		
-		gl.vertexAttribPointer(shaderPrograms['fibre_t'].vertexPositionAttribute, 3, gl.FLOAT, false, 48, 0);
-		gl.vertexAttribPointer(shaderPrograms['fibre_t'].vertexNormalAttribute, 3, gl.FLOAT, false, 48, 12);
-		gl.vertexAttribPointer(shaderPrograms['fibre_t'].vertexColorAttribute, 4, gl.FLOAT, false, 48, 24);
-		gl.vertexAttribPointer(shaderPrograms['fibre_t'].textureCoordAttribute, 2, gl.FLOAT, false, 48, 40);
+		gl.vertexAttribPointer(shaderPrograms['fibre_t'].vertexPositionAttribute, 3, gl.FLOAT, false, 32, 0);
+		gl.vertexAttribPointer(shaderPrograms['fibre_t'].vertexNormalAttribute, 3, gl.FLOAT, false, 32, 12);
+		gl.vertexAttribPointer(shaderPrograms['fibre_t'].textureCoordAttribute, 2, gl.FLOAT, false, 32, 24);
 	
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer);
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
@@ -617,17 +612,6 @@ function drawFibers(elem) {
 		gl.uniform3f(shaderPrograms['fibre_t'].pickColorUniform, elem.pickColor[0], elem.pickColor[1], elem.pickColor[2]);
 		gl.uniform1f(shaderPrograms['fibre_t'].thicknessUniform, 0.6);
 		gl.uniform1f(shaderPrograms['fibre_t'].barShiftUniform, 0.0);
-		
-		if (elem.strength) {
-			gl.uniform1f(shaderPrograms['fibre_t'].thicknessUniform, elem.strength);
-			gl.uniform1i(shaderPrograms['fibre_t'].animateUniform, variables.connectom.animate);
-			gl.uniform1i(shaderPrograms['fibre_t'].timestepUniform, variables.connectom.timestep);
-			gl.uniform1f(shaderPrograms['fibre_t'].blobsizeUniform, elem.size);
-			gl.uniform1f(shaderPrograms['fibre_t'].distanceUniform, elem.distance);
-			gl.uniform1f(shaderPrograms['fibre_t'].speedUniform, elem.speed);
-			gl.uniform1f(shaderPrograms['fibre_t'].lengthUniform, elem.length);
-			gl.uniform1f(shaderPrograms['fibre_t'].barShiftUniform, elem.barShift);
-		}
 
 		gl.disable(gl.BLEND);
 		gl.enable(gl.DEPTH_TEST);
@@ -647,14 +631,12 @@ function drawFibers(elem) {
 		setFibreLineUniforms();
 		gl.enableVertexAttribArray(shaderPrograms['fibre_l'].vertexPositionAttribute);
 		gl.enableVertexAttribArray(shaderPrograms['fibre_l'].vertexNormalAttribute);
-		gl.enableVertexAttribArray(shaderPrograms['fibre_l'].vertexColorAttribute);
 		
 		gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexPositionBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, elem.vertexPositionBuffer.data, gl.STATIC_DRAW);
 		
-		gl.vertexAttribPointer(shaderPrograms['fibre_l'].vertexPositionAttribute, 3, gl.FLOAT, false, 96, 0);
-		gl.vertexAttribPointer(shaderPrograms['fibre_l'].vertexNormalAttribute, 3, gl.FLOAT, false, 96, 12);
-		gl.vertexAttribPointer(shaderPrograms['fibre_l'].vertexColorAttribute, 4, gl.FLOAT, false, 96, 24);
+		gl.vertexAttribPointer(shaderPrograms['fibre_l'].vertexPositionAttribute, 3, gl.FLOAT, false, 64, 0);
+		gl.vertexAttribPointer(shaderPrograms['fibre_l'].vertexNormalAttribute, 3, gl.FLOAT, false, 64, 12);
 		
 		gl.disable(gl.BLEND);
 		gl.enable(gl.DEPTH_TEST);
@@ -663,6 +645,7 @@ function drawFibers(elem) {
 			gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 			gl.enable(gl.BLEND);
 		}
+		gl.uniform3f(shaderPrograms['fibre_l'].fibreColorUniform, elem.color.r, elem.color.g, elem.color.b);
 		gl.uniform1f(shaderPrograms['fibre_l'].alphaUniform, elem.transparency);		
 		for ( var i = 0; i < elem.indices.length; ++i) {
 			gl.drawArrays(gl.LINE_STRIP, elem.lineStarts[i], elem.indices[i]);

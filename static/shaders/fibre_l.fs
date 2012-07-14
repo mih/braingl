@@ -3,7 +3,6 @@ precision highp float;
 #endif
 
 uniform float uAlpha;
-uniform bool uCutWhite;
 uniform bool uPicking;
 uniform vec3 uPickColor;
 
@@ -12,7 +11,7 @@ uniform bool uFibreColorMode;
 
 varying vec4 vPosition;
 varying vec3 vLightPos;
-varying vec3 normal;
+varying vec3 vNormal;
 varying vec4 vColor;
 
 void main(void) 
@@ -31,17 +30,17 @@ void main(void)
 		vec3 color;
 		if ( uFibreColorMode )
 		{
-			color = abs(normal);
+			color = abs(vNormal);
 		}
 		else
 		{
-			color = vColor.rgb;
+			color = uFibreColor;
 		}
 		vec4 fragmentColor = vec4(color, uAlpha);
 	
 		vec3 lightWeighting;
 	
-		float diffuseLightWeighting = max(dot(normal, lightDirection), 0.0);
+		float diffuseLightWeighting = max(dot(vNormal, lightDirection), 0.0);
 			
 		lightWeighting = uAmbientColor + uPointLightingDiffuseColor * diffuseLightWeighting;
 	

@@ -83,26 +83,26 @@ function loadFibre(el) {
 			}
 		}
 		
-		var colors = [];
-		if (!data.colors) {
-			colorSize = (data.vertices.length / 3) * 4;
-			
-			if (el.color) {
-				for ( var k = 0; k < colorSize / 4; ++k) {
-					colors.push(el.color.r);
-					colors.push(el.color.g);
-					colors.push(el.color.b);
-					colors.push(1);
-				}
-			} else {
-				for ( var k = 0; k < colorSize; ++k) {
-					colors.push(1);
-				}
-			}
-		}
-		else {
-			colors = data.colors;
-		}
+//		var colors = [];
+//		if (!data.colors) {
+//			colorSize = (data.vertices.length / 3) * 4;
+//			
+//			if (el.color) {
+//				for ( var k = 0; k < colorSize / 4; ++k) {
+//					colors.push(el.color.r);
+//					colors.push(el.color.g);
+//					colors.push(el.color.b);
+//					colors.push(1);
+//				}
+//			} else {
+//				for ( var k = 0; k < colorSize; ++k) {
+//					colors.push(1);
+//				}
+//			}
+//		}
+//		else {
+//			colors = data.colors;
+//		}
 		
 		element.transparency = el.transparency;
 		element.hasBuffer = false;
@@ -129,14 +129,14 @@ function loadFibre(el) {
 			tubeVertices.push(vertices[3 * m + 1]);
 			tubeVertices.push(vertices[3 * m + 2]);
 			
-			tubeColors.push(colors[4 * m]);
-			tubeColors.push(colors[4 * m + 1]);
-			tubeColors.push(colors[4 * m + 2]);
-			tubeColors.push(colors[4 * m + 3]);
-			tubeColors.push(colors[4 * m]);
-			tubeColors.push(colors[4 * m + 1]);
-			tubeColors.push(colors[4 * m + 2]);
-			tubeColors.push(colors[4 * m + 3]);
+//			tubeColors.push(colors[4 * m]);
+//			tubeColors.push(colors[4 * m + 1]);
+//			tubeColors.push(colors[4 * m + 2]);
+//			tubeColors.push(colors[4 * m + 3]);
+//			tubeColors.push(colors[4 * m]);
+//			tubeColors.push(colors[4 * m + 1]);
+//			tubeColors.push(colors[4 * m + 2]);
+//			tubeColors.push(colors[4 * m + 3]);
 			
 			tubeTexCoords.push(1.0);
 			tubeTexCoords.push(1.0);
@@ -154,10 +154,10 @@ function loadFibre(el) {
 			element.tubeVertices.push( tubeNormals[ i * 3 ]);
 			element.tubeVertices.push( tubeNormals[ i * 3 + 1 ]);
 			element.tubeVertices.push( tubeNormals[ i * 3 + 2 ]);
-			element.tubeVertices.push( tubeColors[ i * 4 ]);
-			element.tubeVertices.push( tubeColors[ i * 4 + 1 ]);
-			element.tubeVertices.push( tubeColors[ i * 4 + 2 ]);
-			element.tubeVertices.push( tubeColors[ i * 4 + 3 ]);
+//			element.tubeVertices.push( tubeColors[ i * 4 ]);
+//			element.tubeVertices.push( tubeColors[ i * 4 + 1 ]);
+//			element.tubeVertices.push( tubeColors[ i * 4 + 2 ]);
+//			element.tubeVertices.push( tubeColors[ i * 4 + 3 ]);
 			element.tubeVertices.push( tubeTexCoords[ i * 2 ]);
 			element.tubeVertices.push( tubeTexCoords[ i * 2 + 1 ]);
 		}

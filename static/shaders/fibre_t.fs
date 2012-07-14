@@ -10,14 +10,12 @@ uniform bool uFibreColorMode;
 uniform bool uPicking;
 uniform vec3 uPickColor;
 
-varying vec3 normal;
+varying vec3 vNormal;
 varying vec4 vPosition;
 
 varying vec3 tangentR3; // Tangent vector in world space
 varying float s_param; // s parameter of texture [-1..1]
 varying float tangent_dot_view;
-
-varying vec3 cl;
 
 void main(void) 
 {
