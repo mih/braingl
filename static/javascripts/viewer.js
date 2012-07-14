@@ -1,3 +1,14 @@
+var elements = {}; // set of loaded triangle meshes and fiber bundles
+
+elements.fibres = {};
+elements.meshes = {};
+elements.niftiis = {};
+elements.textures = {};
+elements.texIds = [];
+
+var scenes = {};
+var variables = {};
+
 var Viewer = (function() {
 //***************************************************************************************************
 //
@@ -10,18 +21,6 @@ var gl = {}; // stores the webgl context
 
 var shaders = {}; // set storing the shaders
 var shaderPrograms = {}; // array storing the loaded shader programs
-var scenes = {};
-var elements = {}; // set of loaded triangle meshes and fiber bundles
-
-elements.fibres = {};
-elements.meshes = {};
-elements.activations = {};
-elements.connections = {};
-elements.niftiis = {};
-elements.textures = {};
-elements.texIds = [];
-
-var variables = {};
 
 // webgl
 variables.webgl = {};
@@ -71,7 +70,6 @@ variables.scene.texThreshold2 = 1.0;
 variables.scene.colormap = 1.0;
 variables.scene.texAlpha2 = 1.0;
 variables.scene.texInterpolation = true;
-variables.scene.videoRecordingInterval;
 		
 // picking
 variables.picking = {};
@@ -93,24 +91,6 @@ variables.transition.zoomNext;
 variables.transition.screenMoveXNext;
 variables.transition.screenMoveYNext;
 variables.transition.transitionOngoing = false;
-
-// recording control
-variables.recording = {};
-variables.recording.record = {};
-variables.recording.startTime;
-variables.recording.recordSaving = false;
-variables.recording.recordPlaying = false;
-variables.recording.playStep = 0;
-
-// connectom
-variables.connectom = {};
-variables.connectom.activationIndex = 0; // index of connectom activations, used to enumerate
-variables.connectom.connectionIndex = 0; // index of connectom connections, used to enumerate
-variables.connectom.activations = {};
-variables.connectom.connections = {};
-variables.connectom.timestep = 0;
-variables.connectom.animate = false;
-variables.connectom.animationInterval;
 
 //***************************************************************************************************
 //
@@ -151,14 +131,6 @@ function init(opts) {
 
 	if ('elements' in opts && opts.elements.length) {
 		loadElements(opts.elements);
-	}
-
-	if ('activations' in opts && opts.activations.length) {
-		loadActivations(opts.activations);
-	}
-
-	if ('connections' in opts && opts.connections.length) {
-		loadConnections(opts.connections);
 	}
 
 	loadScenes();
@@ -216,129 +188,6 @@ function initTextureFramebuffer() {
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
-//***************************************************************************************************
-//
-//	load functions
-//
-//***************************************************************************************************/
-function loadElements(elementsToLoad) {
-	$(Viewer).trigger('loadElementsStart');
-
-	// alle Elemente durchgehen, 
-	$.each(elementsToLoad, function(i, el) {
-		$(Viewer).trigger('loadElementStart', {
-			'id' : el.id,
-			'name' : el.name,
-			'type' : el.type
-		});
-
-		switch( el.type ) {
-		case "mesh" :
-			loadMesh(el);
-			break;
-		case "fibre" :
-			loadFibre(el);
-			break;
-		case "texture" :
-			loadTexture(el);
-			$(Viewer).trigger('loadTexture', {
-				'id' : el.id,
-				'name' : elements.niftiis[el.id].name
-			});
-			break;
-			default:
-		}
-	});
-	//  den loadElementsComplete-Event feuern, wenn alle Elemente geladen sind.
-	$(Viewer).trigger('loadElementsComplete');
-	variables.scene.tex1 = elements.texIds[0];
-	redraw();
-}
-
-function loadActivations(activationsToLoad) {
-	$(Viewer).trigger('loadActivationsStart');
-
-	$.each(activationsToLoad, function(i, ac) {
-		createActivation( ac.id, ac.name, ac.coord.x, ac.coord.y, ac.coord.z, ac.size, ac.color.r, ac.color.g, ac.color.b );
-		elements.activations[ac.id].fromJSON = true;
-
-		$(Viewer).trigger('newActivation', {
-			'id' : ac.id,
-			'name' : ac.name,
-			'active' : true
-		});
-		
-		$(Viewer).trigger('loadActivationComplete', {
-			'id' : ac.id
-		});
-		
-		var saveAct = {};
-        saveAct.id = ac.id;
-        saveAct.name = ac.name;
-        saveAct.co = elements.activations[ac.id].coordinates;
-        saveAct.size = ac.size;
-        saveAct.rgb = elements.activations[ac.id].rgb;
-        variables.connectom.activations[ac.id] = saveAct;
-	});
-	
-	$(Viewer).trigger('loadActivationsComplete');
-}
-
-function loadConnections(connectionsToLoad) {
-	$(Viewer).trigger('loadConnectionsStart');
-
-	$.each(connectionsToLoad, function(i, con) {
-		var fromId = con.fromId;
-		var toId = con.toId;
-		var color = con.color;
-		var strength = con.strength;
-		var size = con.size;
-		var distance = con.distance;
-		var speed = con.speed;
-		var color2 = con.color2;
-		var strength2 = con.strength2;
-		var size2 = con.size2;
-		var distance2 = con.distance2;
-		var speed2 = con.speed2;
-		
-		addConnection( fromId, toId, color, strength, size, distance, speed, color2, strength2, size2, distance2, speed2, false );
-		
-		$(Viewer).trigger('loadConnectionComplete', {
-			'id' : con.id
-		});
-	});
-
-	$(Viewer).trigger('loadConnectionssComplete');
-}
-
-function loadScenes() {
-    
-	$(Viewer).trigger('loadScenesStart');
-	$.getJSON(settings.DATA_URL + 'scenes.json', function(data) {
-		$.each(data, function(i, sc) {
-			scenes[sc.id] = {};
-			scenes[sc.id].cameraPosition = sc.cameraPosition;
-			scenes[sc.id].cameraTranslation = sc.cameraTranslation;
-			scenes[sc.id].cameraZoom = sc.cameraZoom;
-			scenes[sc.id].elementsAvailable = sc.elementsAvailable;
-			scenes[sc.id].elementsActive = sc.elementsActive;
-			scenes[sc.id].activationsAvailable = sc.activationsAvailable;
-			scenes[sc.id].activationsActive = sc.activationsActive;
-			scenes[sc.id].slices = sc.slices;
-			scenes[sc.id].texture1 = sc.texture1;
-			scenes[sc.id].texture2 = sc.texture2;
-			scenes[sc.id].isView = sc.isView;
-			scenes[sc.id].name = sc.name;
-
-			$(Viewer).trigger('loadSceneComplete', {
-				'id' : sc.id,
-				'isView' : sc.isView,
-				'name' : sc.name
-			});
-		});
-		$(Viewer).trigger('loadScenesComplete');
-	});
-}
 
 
 // ***************************************************************************************************
@@ -347,153 +196,14 @@ function loadScenes() {
 //
 // ***************************************************************************************************/
 function activateScene(id) {
-	if (variables.transition.rotateInterval)
-		clearInterval(variables.transition.rotateInterval);
-
-	if (!(id in scenes)) {
-		$(Viewer).trigger('sceneUnknown');
-		return false;
-	}
-
-	nextScene = id;
-
-	variables.transition.nextRot = mat4.create();
-	mat4.identity(variables.transition.nextRot);
-	mat4.rotateX(variables.transition.nextRot, scenes[id].cameraPosition[0]);
-	mat4.rotateY(variables.transition.nextRot, scenes[id].cameraPosition[1]);
-	mat4.rotateZ(variables.transition.nextRot, scenes[id].cameraPosition[2]);
-
-	variables.transition.quatOldRot = mat4toQuat(variables.webgl.thisRot);
-	variables.transition.quatNextRot = mat4toQuat(variables.transition.nextRot);
-
-	variables.transition.screenMoveXNext = scenes[id].cameraTranslation[0];
-	variables.transition.screenMoveYNext = scenes[id].cameraTranslation[1];
-	variables.transition.zoomNext = scenes[id].cameraZoom;
-
-	variables.transition.zoomOld = variables.scene.zoom;
-	variables.mouse.screenMoveXOld = variables.mouse.screenMoveX;
-	variables.mouse.screenMoveYOld = variables.mouse.screenMoveY;
-
-	variables.transition.step = 0;
-	variables.transition.transitionOngoing = true;
-	variables.transition.rotateInterval = setInterval(rotateToNextPosition, 30);
+	
 }
 
-function rotateToNextPosition() {
-	++variables.transition.step;
-	if (variables.transition.step == 20) {
-		clearInterval(variables.transition.rotateInterval);
-		activateScene1(nextScene);
-		variables.transition.transitionOngoing = false;
-	}
-
-	d = Math.log(variables.transition.step) / Math.log(20);
-
-	variables.webgl.lastRot = mat4.create();
-	mat4.identity(variables.webgl.lastRot);
-	variables.webgl.thisRot = mat4.create();
-	mat4.identity(variables.webgl.thisRot);
-
-	q = quat4.create();
-	q = slerp(variables.transition.quatOldRot, variables.transition.quatNextRot, d);
-	quat4.toMat4(q, variables.webgl.thisRot);
-
-	variables.scene.zoom = (1.0 - d) * variables.transition.zoomOld + d * variables.transition.zoomNext;
-	variables.mouse.screenMoveX = (1.0 - d) * variables.mouse.screenMoveXOld + d * variables.transition.screenMoveXNext;
-	variables.mouse.screenMoveY = (1.0 - d) * variables.mouse.screenMoveYOld + d * variables.transition.screenMoveYNext;
-
-	redraw();
-}
-
-function activateScene1(id) {
-	$(Viewer).trigger('activateSceneStart', {
-		'id' : id,
-		'scene' : scenes[id]
-	});
-
-	$.each(elements.meshes, function(id, element) {
-		hideElement(id);
-	});
-	
-	$.each(elements.fibres, function(id, element) {
-		hideElement(id);
-	});
-	
-	
-	variables.scene.axial = scenes[id].slices[0];
-	variables.scene.coronal = scenes[id].slices[1];
-	variables.scene.sagittal = scenes[id].slices[2];
-
-	changeTexture(scenes[id].texture1);
-	changeTexture2(scenes[id].texture2);
-	
-	$.each(scenes[id].elementsActive, function(index, value) {
-		showElement(value);
-	});
-
-	$.each(scenes[id].activationsActive, function(index, value) {
-		showActivation(value);
-	});
-	
-
-	$(Viewer).trigger('activateSceneComplete', {
-		'id' : id,
-		'scene' : scenes[id],
-		'tex1' : variables.scene.tex1,
-		'tex2' : variables.scene.tex2
-	});
-	redraw();
-}
 
 function activateView(id) {
-	if (variables.transition.rotateInterval)
-		clearInterval(variables.transition.rotateInterval);
-	variables.transition.nextRot = mat4.create();
-	mat4.identity(variables.transition.nextRot);
-	mat4.rotateX(variables.transition.nextRot, scenes[id].cameraPosition[0]);
-	mat4.rotateY(variables.transition.nextRot, scenes[id].cameraPosition[1]);
-	mat4.rotateZ(variables.transition.nextRot, scenes[id].cameraPosition[2]);
 
-	variables.transition.quatOldRot = mat4toQuat(variables.webgl.thisRot);
-	variables.transition.quatNextRot = mat4toQuat(variables.transition.nextRot);
-
-	variables.transition.screenMoveXNext = 0;
-	variables.transition.screenMoveYNext = 0;
-	variables.transition.zoomNext = 1.0;
-
-	variables.transition.zoomOld = variables.scene.zoom;
-	variables.mouse.screenMoveXOld = variables.mouse.screenMoveX;
-	variables.mouse.screenMoveYOld = variables.mouse.screenMoveY;
-
-	variables.transition.step = 0;
-	variables.transition.transitionOngoing = true;
-	variables.transition.rotateInterval = setInterval(rotateToNextPosition2, 30);
 }
 
-function rotateToNextPosition2() {
-	++variables.transition.step;
-	if (variables.transition.step == 20) {
-		clearInterval(variables.transition.rotateInterval);
-		variables.transition.transitionOngoing = false;
-	}
-
-	d = Math.log(variables.transition.step) / Math.log(20);
-
-	variables.webgl.lastRot = mat4.create();
-	mat4.identity(variables.webgl.lastRot);
-	variables.webgl.thisRot = mat4.create();
-	mat4.identity(variables.webgl.thisRot);
-
-	q = quat4.create();
-	q = slerp(variables.transition.quatOldRot, variables.transition.quatNextRot, d);
-	quat4.toMat4(q, variables.webgl.thisRot);
-
-	variables.scene.zoom = (1.0 - d) * variables.transition.zoomOld + d * variables.transition.zoomNext;
-	variables.mouse.screenMoveX = (1.0 - d) * variables.mouse.screenMoveXOld + d * variables.transition.screenMoveXNext;
-	variables.mouse.screenMoveY = (1.0 - d) * variables.mouse.screenMoveYOld + d * variables.transition.screenMoveYNext;
-
-	redraw();
-}
 
 //***************************************************************************************************
 //
@@ -580,7 +290,6 @@ function initShader(name) {
 	}
 	
 	if (name == "mesh") {
-		shaderPrograms[name].cutWhiteUniform = gl.getUniformLocation(shaderPrograms[name], "uCutWhite");	
 		shaderPrograms[name].coordUniform = gl.getUniformLocation(shaderPrograms[name], "uCoord");
 		shaderPrograms[name].sizeUniform = gl.getUniformLocation(shaderPrograms[name], "uSize");
 	}
@@ -593,13 +302,6 @@ function initShader(name) {
 	if (name == "fibre_t") {
 		shaderPrograms[name].zoomUniform           = gl.getUniformLocation(shaderPrograms[name], "uZoom");
 		shaderPrograms[name].thicknessUniform      = gl.getUniformLocation(shaderPrograms[name], "uThickness");
-		shaderPrograms[name].animateUniform        = gl.getUniformLocation(shaderPrograms[name], "uAnimate");
-		shaderPrograms[name].lengthUniform         = gl.getUniformLocation(shaderPrograms[name], "uLength");
-		shaderPrograms[name].speedUniform          = gl.getUniformLocation(shaderPrograms[name], "uSpeed");
-		shaderPrograms[name].blobsizeUniform       = gl.getUniformLocation(shaderPrograms[name], "uBlobSize");
-		shaderPrograms[name].distanceUniform       = gl.getUniformLocation(shaderPrograms[name], "uDistance");
-		shaderPrograms[name].timestepUniform       = gl.getUniformLocation(shaderPrograms[name], "uTimestep");
-		shaderPrograms[name].barShiftUniform       = gl.getUniformLocation(shaderPrograms[name], "uBarShift");	
 	}
 
 	if (name == "fibre_t" || name == "mesh" || name == "fibre_l" ) {
@@ -643,14 +345,6 @@ function setFiberTubeUniforms() {
 
 	gl.uniform1i(shaderPrograms['fibre_t'].fibreColorModeUniform, variables.scene.localFibreColor);
 	gl.uniform1i(shaderPrograms['fibre_t'].pickingUniform, variables.picking.pickMode);
-	
-	gl.uniform1i(shaderPrograms['fibre_t'].animateUniform, false);
-	gl.uniform1i(shaderPrograms['fibre_t'].timestepUniform, 0);
-	gl.uniform1f(shaderPrograms['fibre_t'].blobsizeUniform, 0.0);
-	gl.uniform1f(shaderPrograms['fibre_t'].speedUniform, 0.0);
-	gl.uniform1f(shaderPrograms['fibre_t'].lengthUniform, 0.0);
-	gl.uniform1f(shaderPrograms['fibre_t'].distanceUniform, 0.0);
-	gl.uniform1f(shaderPrograms['fibre_t'].barShiftUniform, 0.0);
 }
 
 //***************************************************************************************************
@@ -720,8 +414,6 @@ function redraw() {
 	variables.webgl.needsRedraw = true;
 }
 
-var workaround = false;
-
 function drawScene() {
 	if (!variables.webgl.needsRedraw) {
 		return;
@@ -758,11 +450,6 @@ function drawScene() {
 
 	gl.disable(gl.BLEND);
 	gl.enable(gl.DEPTH_TEST);
-
-	if ( !workaround ) {
-		//initShaders2();
-		workaround = true;
-	}
 	
 	if ( variables.scene.showSlices ) {
 		drawSlices();
@@ -775,19 +462,6 @@ function drawScene() {
 		}
 	});
 	
-	$.each(elements.connections, function() {
-		if (this.display) {
-			drawFibers(this);
-			
-		}
-	});
-	
-	$.each(elements.activations, function() {
-		if (this.display) {
-			drawMesh(this);
-		}
-	});
-
 	$.each(elements.meshes, function() {
 		if (this.display) {
 			if (!(this.id == 'head')) {
@@ -839,17 +513,11 @@ function drawPickScene() {
 		drawSlices();
 	}
 	
-	$.each(elements, function() {
+	$.each(elements.fibres, function() {
 		if (this.display) {
-			if (this.type === 'fibre' || this.type === 'connection') {
+			if (this.type === 'fibre') {
 				drawFibers(this);
 			}
-		}
-	});
-
-	$.each(elements, function() {
-		if (this.type == 'activation' && this.display) {
-			drawMesh(this);
 		}
 	});
 
@@ -895,7 +563,6 @@ function drawMesh(elem) {
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
 
 	gl.uniform3f(shaderPrograms['mesh'].pickColorUniform, elem.pickColor[0], elem.pickColor[1], elem.pickColor[2]);
-	gl.uniform1i(shaderPrograms['mesh'].cutWhiteUniform, elem.cutWhite);
 
 	gl.disable(gl.BLEND);
 	gl.enable(gl.DEPTH_TEST);
@@ -1052,7 +719,7 @@ function drawFibers(elem) {
 }
 
 function bindBuffers(elem) {
-	if (elem.type === 'fibre' || elem.type === 'connection') {
+	if ( elem.type === 'fibre' ) {
 		var vertexPositionBuffer      = gl.createBuffer();
 		vertexPositionBuffer.data     = new Float32Array(elem.vertices);
 		vertexPositionBuffer.tubedata = new Float32Array(elem.tubeVertices);
@@ -1128,9 +795,6 @@ function bindBuffers(elem) {
 
 function drawSlices() {
 	gl.useProgram(shaderPrograms['slice']);
-	
-	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-	gl.enable(gl.BLEND);
 
 	// initialize the secondary texture with an empty one
 	gl.activeTexture(gl.TEXTURE1);
@@ -1348,7 +1012,6 @@ function handleMouseDown(event) {
 		variables.mouse.leftDown = true;
 		mat4.set(variables.webgl.thisRot, variables.webgl.lastRot);
 		Arcball.click(e.fixedX, e.fixedY);
-		recordCommand("mouse", "leftDown", e.fixedX, e.fixedY);
 	} else if (e.which == 2) {
 		variables.mouse.middleDown = true;
 		variables.mouse.screenMoveXold = variables.mouse.screenMoveX;
@@ -1356,7 +1019,6 @@ function handleMouseDown(event) {
 
 		variables.mouse.midClickX = e.fixedX;
 		variables.mouse.midClickY = e.fixedY;
-		recordCommand("mouse", "middleDown", e.fixedX, e.fixedY);
 	}
 	event.preventDefault();
 	redraw();
@@ -1366,10 +1028,8 @@ function handleMouseUp(event) {
 	e = fixupMouse(event);
 	if (e.which == 1) {
 		variables.mouse.leftDown = false;
-		recordCommand("mouse", "leftUp");
 	} else if (e.which == 2) {
 		variables.mouse.middleDown = false;
-		recordCommand("mouse", "middleUp");
 	}
 	event.preventDefault();
 	redraw();
@@ -1377,7 +1037,6 @@ function handleMouseUp(event) {
 
 function handleMouseMove(event) {
 	e = fixupMouse(event);
-	recordCommand("mouse", "move", e.fixedX, e.fixedY);
 	if (variables.picking.showTooltips && !variables.mouse.leftDown && !variables.mouse.middleDown) {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, variables.webgl.rttFrameBuffer);
 		drawPickScene();
@@ -1450,7 +1109,6 @@ function handleMouseWheel(e) {
 		return;
 	}
 	if (wheelData < 0) {
-		recordCommand("mouse", "wheel", -1);
 		if ( variables.scene.zoom <= 1 ) {
 			variables.scene.zoom -= 0.1;
 		}
@@ -1458,7 +1116,6 @@ function handleMouseWheel(e) {
 			variables.scene.zoom -= 0.5;
 		}
 	} else {
-		recordCommand("mouse", "wheel", 0.5);
 		if ( variables.scene.zoom <= 1 ) {
 			variables.scene.zoom += 0.1;
 		}
@@ -1473,260 +1130,7 @@ function handleMouseWheel(e) {
 	redraw();
 }
 
-//***************************************************************************************************
-//
-// functions for recording user input and replaying recordings
-//
-//***************************************************************************************************/
-function initRecording() {
-	variables.recording.recordSaving = true;
-	variables.mouse.leftDown = false;
-	$("#recordButton").val("Stop Recording");
 
-	variables.recording.startTime = new Date();
-	variables.recording.record.startTime = variables.recording.startTime.getTime();
-	console.log("start time: " + variables.recording.record.startTime);
-
-	variables.recording.record.startRot = mat4.create();
-	variables.recording.record.startRot.set(variables.webgl.thisRot);
-
-	variables.recording.record.axial = variables.scene.axial;
-	variables.recording.record.coronal = variables.scene.coronal;
-	variables.recording.record.sagittal = variables.scene.sagittal;
-	variables.recording.record.colorTextures = variables.scene.colTex;
-	variables.recording.record.localFibreColor = variables.scene.localFibreColor;
-
-	variables.recording.record.commands = [];
-
-	variables.recording.record.activeElements = [];
-
-	$.each(elements, function() {
-		if (this.display && this.type != "control") {
-			variables.recording.record.activeElements.push(this.id);
-		}
-	});
-}
-
-function endRecording() {
-	variables.recording.recordSaving = false;
-	variables.mouse.leftDown = false;
-
-	endTime = new Date();
-	variables.recording.record.endTime = endTime.getTime();
-
-	command = {};
-
-	command.time = variables.recording.record.endTime;
-	command.relTime = command.time - variables.recording.record.startTime;
-
-	command.type = "end";
-
-	variables.recording.record.commands.push(command);
-	console.log("end time: " + variables.recording.record.endTime);
-	console.log("recorded time: " + (variables.recording.record.endTime - variables.recording.record.startTime));
-	$("#recordButton").val( "Record" );
-}
-
-function playRecording() {
-	console.log("play recording ");
-	variables.recording.recordPlaying = true;
-	variables.mouse.leftDown = false;
-
-	variables.webgl.lastRot = mat4.create();
-	mat4.identity(variables.webgl.lastRot);
-	variables.webgl.thisRot.set(variables.recording.record.startRot);
-
-	variables.scene.axial = variables.recording.record.axial;
-	variables.scene.coronal = variables.recording.record.coronal;
-	variables.scene.sagittal = variables.recording.record.sagittal;
-	variables.scene.colTex = variables.recording.record.colorTextures;
-	variables.scene.localFibreColor = variables.recording.record.localFibreColor;
-
-	$.each(elements, function(id, element) {
-		hideElement(id);
-	});
-
-	$.each(variables.recording.record.activeElements, function(id, element) {
-		showElement(element);
-	});
-
-	redraw();
-	variables.recording.playStep = 0;
-	playInterval();
-}
-
-function playInterval() {
-	if (variables.recording.playStep >= variables.recording.record.commands.length || variables.recording.record.commands[variables.recording.playStep].type == "end") {
-		console.log("finished playing recording");
-		variables.recording.recordPlaying = false;
-		variables.mouse.leftDown = false;
-		return;
-	}
-
-	var c = variables.recording.record.commands[variables.recording.playStep];
-	console.log(c.relTime + " " + c.type + " " + c.what + " " + c.arg1 + " " + c.arg2);
-
-	switch (c.type) {
-		case "mouse":
-			switch (c.what) {
-				case "leftDown":
-					playMouseDown(1, c.arg1, c.arg2);
-					break;
-				case "middleDown":
-					playMouseDown(2, c.arg1, c.arg2);
-					break;
-				case "leftUp":
-					playMouseUp(1);
-					break;
-				case "middleUp":
-					playMouseUp(2);
-					break;
-				case "move":
-					playMouseMove(c.arg1, c.arg2);
-					break;
-				case "wheel":
-					playMouseWheel(c.arg1);
-				default:
-					break;
-			}
-			break;
-		case "element":
-			switch (c.what) {
-				case "toggle":
-					if (c.arg1 != "control_toggle_recording")
-						toggleElement(c.arg1);
-					break;
-				case "show":
-					showElement(c.arg1);
-					break;
-				case "hide":
-					hideElement(c.arg1);
-					break;
-			}
-			break;
-		case "slice":
-			switch (c.what) {
-				case "axial":
-					setAxial(c.arg1);
-					break;
-				case "coronal":
-					setCoronal(c.arg1);
-					break;
-				case "sagittal":
-					setSagittal(c.arg1);
-					break;
-			}
-			break;
-		case "texture":
-			//setColorTextures(c.arg1)
-			break;
-	}
-	++variables.recording.playStep;
-	setTimeout(playInterval, variables.recording.record.commands[variables.recording.playStep].relTime - c.relTime);
-}
-
-function recordCommand() {
-	if (!variables.recording.recordSaving)
-		return;
-
-	command = {};
-
-	commandTime = new Date();
-	command.time = commandTime.getTime();
-	command.relTime = command.time - variables.recording.record.startTime;
-
-	command.type = arguments[0];
-	command.what = arguments[1];
-	command.arg1 = arguments[2];
-	command.arg2 = arguments[3];
-
-	variables.recording.record.commands.push(command);
-}
-
-function playMouseDown(which, x, y) {
-	if (which == 1) {
-		variables.mouse.leftDown = true;
-		mat4.set(variables.webgl.thisRot, variables.webgl.lastRot);
-		Arcball.click(x, y);
-	} else if (which == 2) {
-		variables.mouse.middleDown = true;
-		variables.mouse.screenMoveXold = variables.mouse.screenMoveX;
-		variables.mouse.screenMoveYold = variables.mouse.screenMoveY;
-
-		variables.mouse.midClickX = x;
-		variables.mouse.midClickY = y;
-	}
-	redraw();
-}
-
-function playMouseUp(which) {
-	if (which == 1)
-		variables.mouse.leftDown = false;
-	else if (which == 2)
-		variables.mouse.middleDown = false;
-	redraw();
-}
-
-function playMouseMove(x, y) {
-	if (variables.picking.showTooltips && !variables.mouse.leftDown && !variables.mouse.middleDown) {
-		gl.bindFramebuffer(gl.FRAMEBUFFER, variables.webgl.rttFrameBuffer);
-		drawPickScene();
-
-		pickX = (variables.webgl.rttFrameBuffer.width / gl.viewportWidth) * x;
-		pickY = (variables.webgl.rttFrameBuffer.height / gl.viewportHeight) * (gl.viewportHeight - y);
-
-		pixel = new Uint8Array(1 * 1 * 4);
-		gl.readPixels(pickX, pickY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-		var pickColor = [ pixel[0], pixel[1], pixel[2] ].join();
-
-		if (variables.picking.pickArray[pickColor]) {
-			if (variables.picking.oldPick != elements[variables.picking.pickArray[pickColor]].id) {
-				//console.log(elements[variables.picking.pickArray[pickColor]].name);
-				$(Viewer).trigger('pickChanged', {
-					'id' : elements[variables.picking.pickArray[pickColor]].id,
-					'name' : elements[variables.picking.pickArray[pickColor]].name,
-					'event' : e
-				});
-				variables.picking.oldPick = elements[variables.picking.pickArray[pickColor]].id;
-			}
-		} else {
-			if (variables.picking.oldPick != "none") {
-				$(Viewer).trigger('pickChanged', {
-					'id' : "none",
-					'name' : "none"
-				});
-				variables.picking.oldPick = "none";
-			}
-		}
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-		return;
-	}
-
-	$(Viewer).trigger('pickChanged', {
-		'id' : "none",
-		'name' : "none"
-	});
-	variables.picking.oldPick = "none";
-
-	if (variables.mouse.leftDown) {
-		Arcball.drag(x, y);
-
-		mat4.set(Arcball.get(), variables.webgl.thisRot);
-		mat4.multiply(variables.webgl.lastRot, variables.webgl.thisRot, variables.webgl.thisRot);
-	} else if (variables.mouse.middleDown) {
-		variables.mouse.screenMoveX = variables.mouse.midClickX - x + variables.mouse.screenMoveXold;
-		variables.mouse.screenMoveY = variables.mouse.midClickY - y + variables.mouse.screenMoveYold;
-	}
-	redraw();
-}
-
-function playMouseWheel(value) {
-	variables.scene.zoom += value;
-	if (variables.scene.zoom < 1)
-		variables.scene.zoom = 1;
-	redraw();
-}
 
 //***************************************************************************************************
 //
@@ -1753,14 +1157,8 @@ function toggleElement(id) {
 		return false;
 	}
 	
-	recordCommand("element", "toggle", id);
 	redraw();
 }
-
-function toggleRecording() {
-	variables.recording.recordSaving ? endRecording() : initRecording();
-}
-
 
 function showElement(id) {
 	if (id in elements.meshes) {
@@ -1782,7 +1180,6 @@ function showElement(id) {
 		return false;
 	}
 	
-	recordCommand("element", "show", id);
 	redraw();
 }
 
@@ -1805,58 +1202,6 @@ function hideElement(id) {
 		console.warn('Element "' + id + '" is unknown.');
 		return false;
 	}
-	recordCommand("element", "hide", id);
-	redraw();
-}
-
-function toggleActivation(id) {
-	if (id in elements.activations) {
-		elements.activations[id].display = !elements.activations[id].display;
-		$(Viewer).trigger('activationDisplayChange', {
-			'id' : id,
-			'active' : elements.activations[id].display
-		});
-	}
-	else if (id in elements.connections) {
-		elements.connections[id].display = !elements.connections[id].display;
-		$(Viewer).trigger('activationDisplayChange', {
-			'id' : id,
-			'active' : elements.connections[id].display
-		});
-	}
-	else {
-		console.warn('Activation "' + id + '" is unknown.');
-		return false;
-	}
-	recordCommand("element", "toggle", id);
-	redraw();
-}
-
-function showActivation(id) {
-	if (!(id in elements)) {
-		console.warn('Activation "' + id + '" is unknown.');
-		return false;
-	}
-	elements[id].display = true;
-	$(Viewer).trigger('activationDisplayChange', {
-		'id' : id,
-		'active' : true
-	});
-	recordCommand("element", "show", id);
-	redraw();
-}
-
-function hideActivation(id) {
-	if (!(id in elements)) {
-		console.warn('Activation "' + id + '" is unknown.');
-		return false;
-	}
-	elements[id].display = false;
-	$(Viewer).trigger('activationDisplayChange', {
-		'id' : id,
-		'active' : false
-	});
-	recordCommand("element", "hide", id);
 	redraw();
 }
 
@@ -1866,7 +1211,6 @@ function setAxial(position) {
 	if (position > 255)
 		position = 255;
 	variables.scene.axial = parseFloat(position);
-	recordCommand("slice", "axial", position);
 	redraw();
 }
 
@@ -1876,7 +1220,6 @@ function setCoronal(position) {
 	if (position > 255)
 		position = 255;
 	variables.scene.coronal = parseFloat(position);
-	recordCommand("slice", "coronal", position);
 	redraw();
 }
 
@@ -1886,7 +1229,6 @@ function setSagittal(position) {
 	if (position > 255)
 		position = 255;
 	variables.scene.sagittal = parseFloat(position);
-	recordCommand("slice", "sagittal", position);
 	redraw();
 }
 
@@ -1978,273 +1320,6 @@ function loadScene( saveString ) {
 	redraw();
 }
 
-function createActivation( id, name, x, y, z, size, r, g, b )
-{
-	var cof = tal2pixel(x, y, z);
-	newActiv = createSphere( 1.0, {"r": r, "g": g, "b": b} );
-	newActiv.name = name;
-	newActiv.co = cof;
-	newActiv.type = 'activation';
-	newActiv.display = false;
-	newActiv.id = id;
-	newActiv.hasBuffer = false;
-	newActiv.fromJSON = false;
-	newActiv.transparency = 1.0;
-	
-	newActiv.coordinates = [x,y,z];
-	newActiv.size = size;
-	newActiv.rgb = {"r": r, "g": g, "b": b};
-	pickColor = createPickColor(variables.picking.pickIndex);
-	variables.picking.pickIndex++;
-	variables.picking.pickArray[pickColor.join()] = id;
-	pc = [];
-	pc[0] = pickColor[0] / 255;
-	pc[1] = pickColor[1] / 255;
-	pc[2] = pickColor[2] / 255;
-	newActiv.pickColor = pc;
-	
-	elements.activations[id] = newActiv;
-}
-
-function addActivation( name, x, y, z, size, r, g, b ) {
-	var id = 'ca' + variables.connectom.activationIndex;
-	++variables.connectom.activationIndex;
-	
-	createActivation( id, name, x, y, z, size, r, g, b );
-	
-	$(Viewer).trigger('newActivation', {
-		'id' : id,
-		'name' : name,
-		'active' : true
-	});
-	
-	var saveAct = {};
-    saveAct.id = id;
-    saveAct.name = name;
-    saveAct.co = elements.activations[id].coordinates;
-    saveAct.size = size;
-    saveAct.rgb = elements.activations[id].rgb;
-    variables.connectom.activations[id] = saveAct;
-    
-    redraw();
-}
-
-function addConnection( fromId, toId, color, strength, size, distance, speed, color2, strength2, size2, distance2, speed2, display )
-{
-	var name = elements.activations[fromId].name + "-" + elements.activations[toId].name;
-	var name2 = elements.activations[toId].name + "-" + elements.activations[fromId].name;
-	var id = 'cc' + variables.connectom.connectionIndex;
-	++variables.connectom.connectionIndex;
-	var id2 = 'cc' + variables.connectom.connectionIndex;
-	++variables.connectom.connectionIndex;
-	var cofp = elements.activations[fromId].coordinates;
-	var cotp = elements.activations[toId].coordinates;
-	var cof = tal2pixel(cofp[0], cofp[1], cofp[2]);
-	var cot = tal2pixel(cotp[0], cotp[1], cotp[2]);
-	
-	elements.connections[id] = {};
-	elements.connections[id].fromId = fromId;
-	elements.connections[id].toId = toId;
-	createConnection(id, name, cof, cot, color, strength, size, distance, speed, -strength, display);
-	elements.connections[id2] = {};
-	elements.connections[id2].fromId = toId;
-	elements.connections[id2].toId = fromId;
-	elements.connections[id2].coId = id;
-	elements.connections[id].coId = id2;
-	createConnection(id2, name2, cot, cof, color2, strength2, size2, distance2, speed2, strength2, display);
-	
-	$(Viewer).trigger('newConnection', {
-		'id' : id,
-		'name' : name,
-		'active' : true
-	});
-	
-	$(Viewer).trigger('newConnection', {
-		'id' : id2,
-		'name' : name2,
-		'active' : true
-	});
-	
-	var saveCon = {};
-    saveCon.id = id;
-    saveCon.name = elements.connections[id].name;
-    saveCon.cof = cof;
-    saveCon.cot = cot;
-    saveCon.strength = strength;
-    saveCon.size = size;
-    saveCon.distance = distance;
-    saveCon.speed = speed;
-    saveCon.color = color;
-    saveCon.fromId = fromId;
-    saveCon.toId = toId;
-    saveCon.barShift = -strength;
-    variables.connectom.connections[id] = saveCon;
-    
-    var saveCon2 = {};
-    saveCon2.id = id2;
-    saveCon2.name = elements.connections[id2].name;
-    saveCon2.cof = cot;
-    saveCon2.cot = cof;
-    saveCon2.strength = strength2;
-    saveCon2.size = size2;
-    saveCon2.distance = distance2;
-    saveCon2.speed = speed2;
-    saveCon2.color = color2;
-    saveCon2.fromId = toId;
-    saveCon2.toId = fromId;
-    saveCon2.barShift = strength2;
-    variables.connectom.connections[id2] = saveCon2;
-    
-    redraw();
-}
-
-function createConnection(id, name, cof, cot, color, strength, size, distance, speed, barShift, display)
-{
-	elements.connections[id].vertices = [cof[0],cof[1],cof[2],cot[0],cot[1],cot[2]];
-	elements.connections[id].indices = [];
-	elements.connections[id].indices.push(2);
-	
-	elements.connections[id].id = id;
-	elements.connections[id].name = name;
-	elements.connections[id].type = 'connection';
-	elements.connections[id].display = display;
-	elements.connections[id].transparency = 1.0;
-	elements.connections[id].hasBuffer = false;
-	pickColor = createPickColor(variables.picking.pickIndex);
-	variables.picking.pickArray[pickColor.join()] = id;
-	variables.picking.pickIndex++;
-	pc = [];
-	pc[0] = pickColor[0] / 255;
-	pc[1] = pickColor[1] / 255;
-	pc[2] = pickColor[2] / 255;
-	elements.connections[id].pickColor = pc;
-
-	
-	tubeVertices = [];
-	tubeTexCoords = [];
-	tubeColors = [];
-
-	for ( var m = 0; m < elements.connections[id].vertices.length / 3; ++m) {
-		tubeVertices.push(elements.connections[id].vertices[3 * m]);
-		tubeVertices.push(elements.connections[id].vertices[3 * m + 1]);
-		tubeVertices.push(elements.connections[id].vertices[3 * m + 2]);
-		tubeVertices.push(elements.connections[id].vertices[3 * m]);
-		tubeVertices.push(elements.connections[id].vertices[3 * m + 1]);
-		tubeVertices.push(elements.connections[id].vertices[3 * m + 2]);
-	}
-	tubeTexCoords.push(1.0);
-	tubeTexCoords.push(0.0);
-	tubeTexCoords.push(-1.0);
-	tubeTexCoords.push(0.0);
-	tubeTexCoords.push(1.0);
-	tubeTexCoords.push(1.0);
-	tubeTexCoords.push(-1.0);
-	tubeTexCoords.push(1.0);
-	
-
-	elements.connections[id].tubeVertices = tubeVertices;
-	elements.connections[id].tubeTexCoords = tubeTexCoords;
-
-	var tubeNormals = [];
-	
-	var x1 = elements.connections[id].vertices[0];
-	var y1 = elements.connections[id].vertices[1];
-	var z1 = elements.connections[id].vertices[2];
-	var x2 = elements.connections[id].vertices[3];
-	var y2 = elements.connections[id].vertices[4];
-	var z2 = elements.connections[id].vertices[5];
-
-	var nx = x1 - x2;
-	var ny = y1 - y2;
-	var nz = z1 - z2;
-
-	for (var i=0; i <4; ++i) {
-		tubeNormals.push(nx);
-		tubeNormals.push(ny);
-		tubeNormals.push(nz);
-	}
-	elements.connections[id].tubeNormals = tubeNormals;
-	elements.connections[id].normals = tubeNormals;
-
-	elements.connections[id].color = color;
-	elements.connections[id].colors = [1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0,1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0];
-	elements.connections[id].tubeColors = [1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0,1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0];
-	elements.connections[id].strength = strength;
-	elements.connections[id].size = size;
-	elements.connections[id].distance = distance;
-	elements.connections[id].speed = speed;
-	elements.connections[id].barShift = barShift;
-	
-	elements.connections[id].length = Math.sqrt( nx*nx + ny*ny + nz*nz);
-}
-
-function toggleAnimation() {
-	if (variables.connectom.animate) {
-		clearInterval(variables.connectom.animationInterval);
-		variables.connectom.animate = false;
-	}
-	else {
-		variables.connectom.animationInterval = setInterval(animateConnections, 30);
-		variables.connectom.animate = true;
-	}
-}
-
-function animateConnections() {
-	++variables.connectom.timestep;
-	redraw();
-}
-
-function getActivation(id) {
-	return elements.activations[id];
-}
-
-function getConnection(id) {
-	return elements.connections[id];
-}
-
-var rotation = false;
-var centerX = 0;
-var centerY = 0;
-var rotFrames = 0;
-var animX = 0;
-var animY = 0;
-function autoRotate(aniX, aniY, steps, frames ) {
-	console.log(aniX+ " " + aniY+ " " +  steps+ " " +  frames );
-	if ( rotation ) {
-		clearInterval(variables.webgl.preloadTextures);
-		rotation = false;
-		variables.transition.transitionOngoing = false;
-		return;
-	}
-	animX = aniX;
-	animY = aniY;
-	centerX = canvas.width /2.0;
-	centerY = canvas.height/2.0;
-	
-	variables.transition.transitionOngoing = true;
-	rotation = true;
-	mat4.set(variables.webgl.thisRot, variables.webgl.lastRot);
-	Arcball.click(centerX, centerY);
-	variables.webgl.preloadTextures = setInterval(autoRotateInterval, steps);
-	rotFrames = frames;
-}
-
-function autoRotateInterval() {
-	if ( rotFrames <= 0 ) {
-		clearInterval(variables.webgl.preloadTextures);
-		rotation = false;
-		variables.transition.transitionOngoing = false;
-		return;
-	}
-	console.log("rotation step");
-	Arcball.drag(centerX+animX, centerY+animY);
-	mat4.set(Arcball.get(), variables.webgl.thisRot);
-	mat4.multiply(variables.webgl.lastRot, variables.webgl.thisRot, variables.webgl.thisRot);
-	redraw();
-	mat4.set(variables.webgl.thisRot, variables.webgl.lastRot);
-	Arcball.click(centerX, centerY);
-	--rotFrames;
-}
 
 function changeTexture(id) {
 	variables.scene.tex1 = id;
@@ -2359,32 +1434,6 @@ function resetFibres() {
 	});
 }
 
-function setActivationCoord(id, value) {
-	if ( elements.activations[id] ) {
-		elements.activations[id].co = value;
-		redraw();
-	}
-}
-
-function getActivationCoord(id) {
-	if ( elements.activations[id] )
-		return elements.activations[id].co;
-}
-
-function setActivationSize(id, value) {
-	if ( elements.activations[id] ) {
-		elements.activations[id].size = value;
-		redraw();
-	}
-}
-
-function getActivationSize(id) {
-	if ( elements.activations[id] ) {
-		return elements.activations[id].size;
-	}
-}
-
-
 function setAlpha2(value) {
 	variables.scene.texAlpha2 = value;
 	redraw();
@@ -2414,40 +1463,6 @@ function screenshot() {
 	document.location.href = img.replace("image/png", "image/octet-stream");
 }
 
-var isVideoRecording = false;
-var frameCount = 0;
-function toggleVideoRecording() {
-	if ( !isVideoRecording ) {
-		frameCount = 0;
-		variables.scene.videoRecordingInterval = setInterval(recordVideo, 50);
-		isVideoRecording = true;
-	}
-	else {
-		clearInterval( variables.scene.videoRecordingInterval );
-		isVideoRecording = false;
-	}
-}
-
-function recordVideo() {
-	var data = canvas.toDataURL();
-	
-	var request = $.ajax({
-	  url: "http://127.0.0.1:8080",
-	  type: "POST",
-	  data: "data=" + data + '&frame=' + frameCount,
-	  dataType: "image/png"
-	});
-
-	request.done(function(msg) {
-	  console.log( msg );
-	});
-
-	request.fail(function(jqXHR, textStatus) {
-	  console.log( "Request failed: " + textStatus );
-	});
-	++frameCount;
-}
-
 function control(id) {
 	switch (id) {
 	case "fibreColor":
@@ -2475,25 +1490,13 @@ function control(id) {
 	case "resetFibers":
 		resetFibres();
 		break;
-	case "animate":
-		toggleAnimation();
-		break;
-	case "toggleRecording" :
-		toggleRecording();
-		break;
-	case "playRecording" :
-		playRecording();
-		break;
 	case "screenshot" :
 		screenshot();
 		break;
 	case "updateSize" :
 		updateSize();
 		break;
-	case "video" :
-			toggleVideoRecording();
-			break;
-		default:
+	default:
 		}
 		redraw();
 }
@@ -2507,7 +1510,6 @@ return {
 	'toggleElement' : toggleElement,
 	'showElement' : showElement,
 	'hideElement' : hideElement,
-	'toggleActivation' : toggleActivation,
 	'activateScene' : activateScene,
 	'activateView' : activateView,
 	'setAxial' : setAxial,
@@ -2516,20 +1518,6 @@ return {
 	'getAxial' : getAxial,
 	'getCoronal' : getCoronal,
 	'getSagittal' : getSagittal,
-	
-	'saveScene' : saveScene,
-	'loadScene' : loadScene,
-	'autoRotate' : autoRotate,
-	
-	'getActivation' : getActivation,
-	'getConnection' : getConnection,
-	
-	'setActivationCoord' : setActivationCoord,
-	'getActivationCoord' : getActivationCoord,
-	'setActivationSize' : setActivationSize,
-	'getActivationSize' : getActivationSize,
-	
-	
 	'changeTexture' : changeTexture,
 	'changeTexture2' : changeTexture2,
 	'changeColormap' : changeColormap,
@@ -2540,7 +1528,8 @@ return {
 	'setElementAlpha' : setElementAlpha,
 	'control' : control,
 	'pickInfo' : variables.picking,
-	'elements' : elements
+	'elements' : elements,
+	'redraw' : redraw
 };
 })();
 

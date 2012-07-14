@@ -3,7 +3,6 @@ precision highp float;
 #endif
 
 uniform float uAlpha;
-uniform bool uCutWhite;
 uniform bool uPicking;
 uniform vec3 uPickColor;
 
@@ -29,12 +28,6 @@ void main(void)
 		{
 			discard;
 		}
-	}
-	
-	if ( uCutWhite && ( ( vColor.r + vColor.g + vColor.b ) != 3.0 ) )
-	{
-		fragmentColor.a = 1.0;
-		if ( length( vTex ) < 0.0 ) discard;
 	}
 
 	if ( uPicking )

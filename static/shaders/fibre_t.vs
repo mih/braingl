@@ -9,7 +9,6 @@ uniform mat3 uNMatrix;
 uniform vec3 uPointLightingLocation;
 uniform float uZoom;
 uniform float uThickness;
-uniform float uBarShift;
 
 varying vec3 normal;
 varying vec4 vPosition;
@@ -41,18 +40,7 @@ void main(void)
 	offset.x *= thickness;
 	offset.y *= thickness;
 	
-	if ( uBarShift < 0. )
-	{
-		if (s_param > 0.)
-			vPosition.xyz = ( 2.0 * offset * s_param ) + vPosition.xyz; //< add offset in y-direction (eye-space)
-	}
-	else if ( uBarShift > 0. )
-	{
-		if (s_param > 0.0)
-			vPosition.xyz = ( 2.0 * offset * s_param ) + vPosition.xyz; //< add offset in y-direction (eye-space)
-	}
-	else
-		vPosition.xyz = ( offset * s_param ) + vPosition.xyz;
+	vPosition.xyz = ( offset * s_param ) + vPosition.xyz;
 
 	gl_Position = vPosition; //< store final position
 }

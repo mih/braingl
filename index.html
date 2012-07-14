@@ -9,7 +9,6 @@
     	<div class="controlTab" id="links">
     		<a href="#textures" style='font-weight:bold'>MRI&nbsp&nbsp&nbsp</a>
     		<a href="#elements">Elements&nbsp&nbsp&nbsp</a>
-    		<a href="#activations">Activations&nbsp&nbsp&nbsp</a>
     		<a href="#controls">Controls&nbsp&nbsp&nbsp</a>
     		<a href="#info">Info&nbsp&nbsp&nbsp</a>
     	</div>
@@ -43,48 +42,6 @@
 				</div>
 				<br>
 			</section>
-			<section id="saveload">
-				<input type="button" id="button_save" value="Save" id="save">
-				<input type="button" id="button_load" value="Load" id="load">
-				<input type="text" id="textInput">
-				<input type="button" id="button_clear" value="Clear" onclick="document.getElementById('textInput').value =''">
-				<br><input type="checkbox" id="saveLoc">use browser storage<br>
-				<br>
-				Record and play user input.
-				<br>
-				<input type="button" id="button_record" value="Record">
-				<input type="button" id="button_play" value="Play">
-				<br>
-				<input type="button" id="button_screenshot" value="Screenshot">
-				<br>
-				<br>
-				Starts video recording by sending frames to a webserver.
-				<br> 
-				<input type="button" id="button_video" value="Video">
-				<br>
-				
-				
-			</section>
-			<section id="animation">
-				<table>
-					<tr>
-						<td></td>
-						<th>time step</th>
-						<th>x step</th>
-						<th>y step</th>
-						<th>frames</th>
-					</tr>
-					<tr>
-						<td><input type="button" name="Test" value="rotate" id="button_rotate"></td>
-						<td><input type="text" size="6" id="animT" value=50></td>
-						<td><input type="text" size="6" id="animX" value=30></td>
-						<td><input type="text" size="6" id="animY" value=0></td>
-						<td><input type="text" size="6" id="animF" value=50></td>
-					</tr>
-				</table>
-				<br>
-			</section>
-			
 		</div>
 		<div class="controlTab" id="mriTab" style="display:block">
 			<section id="textures">
@@ -150,18 +107,8 @@
 			</select>
 			<br />
 			<input type="range" min="0" max="100" id="elementAlpha" value="0" step="1" />
-			
-			<input type="file" id="files" name="files[]" multiple />
-			<output id="list"></output>
 		</div>
-		
-		<div class="controlTab" id="activationTab" style="display:none">
-			<section id="activations"></section>
-			<!--<a href="#inputActivations">Input activations</a><br>-->
-			<section id="connections"></section>
-			<input type="button" id="button_animate" value="Animate">
-		</div>
-		
+	
 		<div class="controlTab" id="status">
 			Loading...Please wait.
 		</div>
@@ -177,18 +124,18 @@
 		</div>
 		<div id="status"></div>
 
-		<script>window.settings = {'DATA_URL': '/data/'};</script>
-		<script src="static/javascripts/jquery-1.7.1.min.js"></script>
-		<script src="static/javascripts/ui.js"></script>
-		<script src="static/javascripts/io.js"></script>
+		<script>window.settings = {'DATA_URL': '/braingl/data/'};</script>
+		<script src="static/javascripts/jquery-1.7.2.min.js"></script>
 		<script src="static/javascripts/html5slider.js"></script>
-		<script src="static/javascripts/webgl-debug.js"></script>
 		<script src="static/javascripts/glMatrix-0.9.5.min.js"></script>
 		<script src="static/javascripts/webgl-utils.js"></script>
+		<script src="static/javascripts/webgl-debug.js"></script>
+		<script src="static/javascripts/pnglib.js"></script>
 		<script src="static/javascripts/arcball.js"></script>
 		<script src="static/javascripts/utils.js"></script>
-		<script src="static/javascripts/pnglib.js"></script>
 		<script src="static/javascripts/niftii.js"></script>
+		<script src="static/javascripts/io.js"></script>
+		<script src="static/javascripts/ui.js"></script>
 		<script src="static/javascripts/viewer.js"></script>
     </body>
 </html>

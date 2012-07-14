@@ -17,14 +17,6 @@ varying vec3 tangentR3; // Tangent vector in world space
 varying float s_param; // s parameter of texture [-1..1]
 varying float tangent_dot_view;
 
-// variables for blob animation
-uniform bool uAnimate;
-uniform float uSpeed;
-uniform float uBlobSize;
-uniform float uDistance;
-uniform float uLength;
-uniform int uTimestep;
-varying float vLocation;
 varying vec3 cl;
 
 void main(void) 
@@ -46,24 +38,7 @@ void main(void)
 			color = uFibreColor;
 		}
 		
-		color *= min(1.0, vLocation + 0.3);
-		
-		if (uAnimate)
-		{
-			float pix = uLength * vLocation;
-		
-			float blobStep = (uLength + uBlobSize) / 100.0 * uSpeed;
-			float blobBegin = uBlobSize;
-			float blobEnd = blobBegin - uBlobSize;
-			float pixModulo = mod(pix - float(uTimestep) * blobStep, blobBegin + uDistance);
-			
-			if (  pixModulo >= blobEnd && pixModulo < blobBegin )
-			{
-				color = vec3(1.0);
-			}
-			if ( length(cl) < 0.0 ) discard;		
-		}
-		
+	
 		vec3 view = vec3(0., 0., -1.);
 	    float view_dot_normal = sqrt(1. - s_param * s_param) + .1;
 	

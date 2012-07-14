@@ -8,8 +8,6 @@
         // die Konfigurationsdaten und die Elemente per AJAX laden.
         var config = $.getSyncJSON(settings.DATA_URL + 'config.json'),
             elements = $.getSyncJSON(settings.DATA_URL + 'elements.json'),
-            activations = $.getSyncJSON(settings.DATA_URL + 'coordinates.json'),
-            connections = $.getSyncJSON(settings.DATA_URL + 'connections.json'),
             scenes = $.getSyncJSON(settings.DATA_URL + 'scenes.json'),
             loadingDiv = $('<div class="loading" />');
         
@@ -33,10 +31,6 @@
             	$('#elementTab').slideToggle();
             	$('a[href="#elements"]').css('font-weight', 'normal');
             }
-            if( $('#activationTab').css('display') === "block" ) {
-            	$('#activationTab').slideToggle();
-            	$('a[href="#activations"]').css('font-weight', 'normal');
-            }
             if( $('#infoTab').css('display') === "block" ) {
             	$('#infoTab').slideToggle();
             	$('a[href="#info"]').css('font-weight', 'normal');
@@ -59,10 +53,6 @@
             	$('#elementTab').slideToggle();
             	$('a[href="#elements"]').css('font-weight', 'normal');
             }
-            if( $('#activationTab').css('display') === "block" ) {
-            	$('#activationTab').slideToggle();
-            	$('a[href="#activations"]').css('font-weight', 'normal');
-            }
             if( $('#infoTab').css('display') === "block" ) {
             	$('#infoTab').slideToggle();
             	$('a[href="#info"]').css('font-weight', 'normal');
@@ -84,10 +74,6 @@
             if( $('#mriTab').css('display') === "block" ) {
             	$('#mriTab').slideToggle();
             	$('a[href="#textures"]').css('font-weight', 'normal');
-            }
-            if( $('#activationTab').css('display') === "block" ) {
-            	$('#activationTab').slideToggle();
-            	$('a[href="#activations"]').css('font-weight', 'normal');
             }
             if( $('#infoTab').css('display') === "block" ) {
             	$('#infoTab').slideToggle();
@@ -119,10 +105,6 @@
             	$('#infoTab').slideToggle();
             	$('a[href="#info"]').css('font-weight', 'normal');
             }
-            if( $('#activationTab').css('display') != "block" ) {
-            	$('#activationTab').slideToggle();
-            	$('a[href="#activations"]').css('font-weight', 'bold');
-            }
             return false;
         });
         
@@ -140,10 +122,6 @@
             if( $('#elementTab').css('display') === "block" ) {
             	$('#elementTab').slideToggle();
             	$('a[href="#elements"]').css('font-weight', 'normal');
-            }
-            if( $('#activationTab').css('display') === "block" ) {
-            	$('#activationTab').slideToggle();
-            	$('a[href="#activations"]').css('font-weight', 'bold');
             }
             if( $('#infoTab').css('display') != "block" ) {
             	$('#infoTab').slideToggle();
@@ -264,153 +242,16 @@
         
         $('#elementAlpha').bind('change', elementAlphaHandler() ).trigger('change');
         
-        function handleFileSelect(evt) {
-		    var files = evt.target.files; // FileList object
-		
-		    // files is a FileList of File objects. List some properties.
-		    var output = [];
-		    for (var i = 0, f; f = files[i]; i++) {
-		      output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
-		                  f.size, ' bytes, last modified: ',
-		                  f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
-		                  '</li>');
-		    }
-		    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
-		  }
-		
-		  //document.getElementById('files').addEventListener('change', handleFileSelect, false);
-        
-        //**********************************************************************************************************
-        //*
-        //*  activations tab
-        //*
-        //**********************************************************************************************************
-        // ACTIVATIONS
-        Viewer.bind('activationDisplayChange', function(evt, data) {
-            $('#toggle-' + data.id).toggleClass('active', data.active);
-        });
-        
-        Viewer.bind('newActivation', function(evt, data) {
-        	var $toggle = $('<a />');
-            $toggle.append('<span/>');
-            var $label = $('<label>'+data.name+'</label>');
-            $toggle.append($label);
-            $label.attr('id', 'label-' + data.id);
-            $toggle.addClass('toggle');
-            $toggle.attr('href', '#toggle:' +data.id);
-            $toggle.attr('id', 'toggle-' + data.id);
-            $toggle.click(function(e) {
-                e.preventDefault();
-                Viewer.toggleActivation(data.id);
-                return false;
-            });
-            $('#activations').append($toggle);
-            
-            $('#activationSelect').append($('<option></option>').val(data.id).html(data.name));
-            $('#editActivationSelect').append($('<option></option>').val(data.id).html(data.name));
-            $('#fromSelect').append($('<option></option>').val(data.id).html(data.name));
-            $('#toSelect').append($('<option></option>').val(data.id).html(data.name));
-        });
-        
-        
-        Viewer.bind('newConnection', function(evt, data) {
-        	var $toggle = $('<a />');
-            $toggle.append('<span/>');
-            var $label = $('<label>'+data.name+'</label>');
-            $toggle.append($label);
-            $label.attr('id', 'label-' + data.id);
-            $toggle.addClass('toggle');
-            $toggle.attr('href', '#toggle:' +data.id);
-            $toggle.attr('id', 'toggle-' + data.id);
-            $toggle.click(function(e) {
-                e.preventDefault();
-                Viewer.toggleActivation(data.id);
-                return false;
-            });
-            $('#connections').append($toggle);
-            
-            $('#editConnectionSelect').append($('<option></option>').val(data.id).html(data.name));
-        });
-
-        $('#activationSelect').change( function() { 
-        	var co = Viewer.getActivationCoord( $('#activationSelect option:selected').val() );
-        	$('#activationCoordX').val( co[0] );
-        	$('#activationCoordY').val( co[1] );
-        	$('#activationCoordZ').val( co[2] );
-        	$('#activationSize').val( Viewer.getActivationSize( $('#activationSelect option:selected').val() ) );
-        });
-        
-        
-        var activationCoordHandler = function() {
-            return function(e) {
-            	var co = new Array(3);
-            	co[0] = $('#activationCoordX').val();
-            	co[1] = $('#activationCoordY').val();
-            	co[2] = $('#activationCoordZ').val();
-            	Viewer.setActivationCoord( $('#activationSelect option:selected').val(), co );
-            };
-        };
-        
-        var activationSizeHandler = function() {
-            return function(e) {
-            	Viewer.setActivationSize( $('#activationSelect option:selected').val(), $('#activationSize').val() );
-            };
-        };
-        
-        $('#activationCoordX').bind('change', activationCoordHandler() ).trigger('change');
-        $('#activationCoordY').bind('change', activationCoordHandler() ).trigger('change');
-        $('#activationCoordZ').bind('change', activationCoordHandler() ).trigger('change');
-        $('#activationSize').bind('change', activationSizeHandler() ).trigger('change');
-        
         //**********************************************************************************************************
         //*
         //*  controls tab
         //*
-        //**********************************************************************************************************
-
-        $('#button_rotate').bind('click',function() {
-        	Viewer.autoRotate(parseInt($('#animX').val()), parseInt($('#animY').val()), parseInt($('#animT').val()), parseInt($('#animF').val()) );
-        });
-        
-        $('#button_save').bind('click',function() {
-        	$('#textInput').val( Viewer.saveScene() );
-    		
-    		var mydomstorage=window.localStorage || (window.globalStorage? globalStorage[location.hostname] : null);
-    		if (mydomstorage){
-    			mydomstorage.conviewSave = $('#textInput').val();
-    		}
-    		else{
-    		    // Your browser doesn't support DOM Storage unfortunately.
-    		}
-        });
-        
-        $('#button_load').bind('click',function() {
-        	$('#activations').empty();
-        	$('#connections').empty();
-        	var mydomstorage=window.localStorage || (window.globalStorage? globalStorage[location.hostname] : null);
-    		if (mydomstorage && mydomstorage.conviewSave && $("#saveLoc").attr("checked") ) {
-    			console.log("load from browser storage");
-    			Viewer.loadScene(mydomstorage.conviewSave);
-    		}
-    		else {
-    			Viewer.loadScene($('#textInput').val());
-    		}
-        });
-        
-        $('#button_screenshot').bind('click',function() { Viewer.control('screenshot'); });
-        $('#button_video').bind('click',function() { Viewer.control('video'); });
-        $('#button_rotate').bind('click',function() { Viewer.control('autoRotate'); });
-        $('#button_record').bind('click',function() { Viewer.control('toggleRecording'); });
-        $('#button_play').bind('click',function() { Viewer.control('playRecording'); });
         
         $('#button_localFiberColor').bind('click',function() { Viewer.control('fibreColor'); });
         $('#button_textureInterpolation').bind('click',function() { Viewer.control('fibreTubes'); });
         $('#button_toggleSlices').bind('click',function() { Viewer.control('slices'); });
         $('#button_toggleTooltips').bind('click',function() { Viewer.control('tooltips'); });
         $('#button_interpolate').bind('click',function() { Viewer.control('interpolation'); });
-        $('#button_recalcFibers').bind('click',function() { Viewer.control('recalcFibers'); });
-        $('#button_resetFibers').bind('click',function() { Viewer.control('resetFibers'); });
-        $('#button_animate').bind('click',function() { Viewer.control('animate'); });
         
         $('#button_left').bind('click',function() { Viewer.control('setViewLeft'); });
         $('#button_axial').bind('click',function() { Viewer.control('setViewAxial'); });
@@ -537,8 +378,6 @@
                 'container': '#viewer',
                 'canvas': '#viewer-canvas',
                 'elements': elements,
-                'activations': activations,
-                'connections': connections,
                 'backgroundColor': config.backgroundColor,
                 'scenes': scenes
             });
