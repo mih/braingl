@@ -14,7 +14,6 @@ varying vec4 vPosition;
 varying vec3 vLightPos;
 varying vec3 normal;
 varying vec4 vColor;
-varying vec2 vTex;
 
 void main(void) 
 {
@@ -36,7 +35,7 @@ void main(void)
 		}
 		else
 		{
-			color = uFibreColor;
+			color = vColor.rgb;
 		}
 		vec4 fragmentColor = vec4(color, uAlpha);
 	

@@ -2,15 +2,15 @@
 precision highp float;
 #endif
 
+
 uniform float uAlpha;
 uniform bool uPicking;
 uniform vec3 uPickColor;
 
 varying vec4 vPosition;
 varying vec3 vLightPos;
-varying vec3 normal;
+varying vec3 vNormal;
 varying vec4 vColor;
-varying vec2 vTex;
 
 void main(void) 
 {
@@ -23,7 +23,7 @@ void main(void)
 	
 	if ( fragmentColor.a < 1.0 )
 	{
-		float dir = dot(normal, lightDirection);
+		float dir = dot(vNormal, lightDirection);
 		if ( dir < 0.0 )
 		{
 			discard;
@@ -38,7 +38,7 @@ void main(void)
 	{
 		vec3 lightWeighting;
 	
-		float diffuseLightWeighting = max(dot(normal, lightDirection), 0.0);
+		float diffuseLightWeighting = max(dot(vNormal, lightDirection), 0.0);
 			
 		lightWeighting = uAmbientColor + uPointLightingDiffuseColor * diffuseLightWeighting;
 	

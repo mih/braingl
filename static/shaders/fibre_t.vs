@@ -26,8 +26,7 @@ void main(void)
 	cl = normalize(aVertexColor.rgb);
 
 	s_param = aTextureCoord.x; //< store texture coordinate for shader
-	vLocation = aTextureCoord.y;
-
+	
 	tangentR3 = normal;
 	vec3 tangent;
 	tangent = (uPMatrix * uMVMatrix * vec4(normal,0.)).xyz; //< transform our tangent vector
