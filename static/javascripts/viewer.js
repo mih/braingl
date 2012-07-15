@@ -284,84 +284,42 @@ function initShader(name) {
 
 	gl.useProgram(shaderPrograms[name]);
 	
-	if (name == "merge") {
-		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
-		shaderPrograms[name].canvasSizeUniform   = gl.getUniformLocation(shaderPrograms[name], "uCanvasSize");
-		shaderPrograms[name].c0Uniform    = gl.getUniformLocation(shaderPrograms[name], "C0");
-		shaderPrograms[name].c1Uniform    = gl.getUniformLocation(shaderPrograms[name], "C1");
-		shaderPrograms[name].c2Uniform    = gl.getUniformLocation(shaderPrograms[name], "C2");
-		shaderPrograms[name].c3Uniform    = gl.getUniformLocation(shaderPrograms[name], "C3");
-		shaderPrograms[name].d2Uniform    = gl.getUniformLocation(shaderPrograms[name], "D2");
-	}
+	shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
+	shaderPrograms[name].vertexNormalAttribute   = gl.getAttribLocation(shaderPrograms[name], "aVertexNormal");
+	shaderPrograms[name].vertexColorAttribute    = gl.getAttribLocation(shaderPrograms[name], "aVertexColor");
+	shaderPrograms[name].textureCoordAttribute   = gl.getAttribLocation(shaderPrograms[name], "aTextureCoord");
 	
-	if (name == "mesh_transp") {
-		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
-		shaderPrograms[name].canvasSizeUniform   = gl.getUniformLocation(shaderPrograms[name], "uCanvasSize");
-		shaderPrograms[name].d0Uniform    = gl.getUniformLocation(shaderPrograms[name], "D0");
-		shaderPrograms[name].d1Uniform    = gl.getUniformLocation(shaderPrograms[name], "D1");
-		shaderPrograms[name].d2Uniform    = gl.getUniformLocation(shaderPrograms[name], "D2");
-	}
-
+	shaderPrograms[name].minorModeUniform        = gl.getUniformLocation(shaderPrograms[name], "uMinorMode");
+	shaderPrograms[name].canvasSizeUniform       = gl.getUniformLocation(shaderPrograms[name], "uCanvasSize");
 	
-	if (name == "slice") {
-		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
-		shaderPrograms[name].textureCoordAttribute = gl.getAttribLocation(shaderPrograms[name], "aTextureCoord");
-	}
-
-	if (name == "mesh") {
-
-		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
-		shaderPrograms[name].vertexNormalAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexNormal");
-		shaderPrograms[name].vertexColorAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexColor");
-		shaderPrograms[name].canvasSizeUniform   = gl.getUniformLocation(shaderPrograms[name], "uCanvasSize");
-		shaderPrograms[name].d0Uniform    = gl.getUniformLocation(shaderPrograms[name], "D0");
-		shaderPrograms[name].d1Uniform    = gl.getUniformLocation(shaderPrograms[name], "D1");
-		shaderPrograms[name].d2Uniform    = gl.getUniformLocation(shaderPrograms[name], "D2");
-	}
+	shaderPrograms[name].c0Uniform               = gl.getUniformLocation(shaderPrograms[name], "C0");
+	shaderPrograms[name].c1Uniform               = gl.getUniformLocation(shaderPrograms[name], "C1");
+	shaderPrograms[name].c2Uniform               = gl.getUniformLocation(shaderPrograms[name], "C2");
+	shaderPrograms[name].c3Uniform               = gl.getUniformLocation(shaderPrograms[name], "C3");
+	shaderPrograms[name].d0Uniform               = gl.getUniformLocation(shaderPrograms[name], "D0");
+	shaderPrograms[name].d1Uniform               = gl.getUniformLocation(shaderPrograms[name], "D1");
+	shaderPrograms[name].d2Uniform               = gl.getUniformLocation(shaderPrograms[name], "D2");
+	shaderPrograms[name].samplerUniform          = gl.getUniformLocation(shaderPrograms[name], "uSampler");
+	shaderPrograms[name].samplerUniform1         = gl.getUniformLocation(shaderPrograms[name], "uSampler1");
 	
-	if ( name == "fibre_t" ) { 
-		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
-		shaderPrograms[name].textureCoordAttribute = gl.getAttribLocation(shaderPrograms[name], "aTextureCoord");
-		shaderPrograms[name].vertexNormalAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexNormal");
-	}
+	shaderPrograms[name].colorMapUniform         = gl.getUniformLocation(shaderPrograms[name], "uColorMap");
+	shaderPrograms[name].minUniform              = gl.getUniformLocation(shaderPrograms[name], "uMin");
+	shaderPrograms[name].maxUniform              = gl.getUniformLocation(shaderPrograms[name], "uMax");
+	shaderPrograms[name].threshold1Uniform       = gl.getUniformLocation(shaderPrograms[name], "uThreshold1");
+	shaderPrograms[name].threshold2Uniform       = gl.getUniformLocation(shaderPrograms[name], "uThreshold2");
+	shaderPrograms[name].alphaUniform            = gl.getUniformLocation(shaderPrograms[name], "uAlpha");
+	shaderPrograms[name].alpha2Uniform           = gl.getUniformLocation(shaderPrograms[name], "uAlpha2");
 	
-	if ( name == "fibre_l" ) { 
-		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
-		shaderPrograms[name].vertexNormalAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexNormal");
-		shaderPrograms[name].vertexColorAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexColor");
-	}
-
-	shaderPrograms[name].pMatrixUniform  = gl.getUniformLocation(shaderPrograms[name], "uPMatrix");
-	shaderPrograms[name].mvMatrixUniform = gl.getUniformLocation(shaderPrograms[name], "uMVMatrix");
-	shaderPrograms[name].nMatrixUniform  = gl.getUniformLocation(shaderPrograms[name], "uNMatrix");
-	shaderPrograms[name].pointLightingLocationUniform = gl.getUniformLocation(shaderPrograms[name], "uPointLightingLocation");
-	shaderPrograms[name].minorModeUniform  = gl.getUniformLocation(shaderPrograms[name], "uMinorMode");
+	shaderPrograms[name].pMatrixUniform          = gl.getUniformLocation(shaderPrograms[name], "uPMatrix");
+	shaderPrograms[name].mvMatrixUniform         = gl.getUniformLocation(shaderPrograms[name], "uMVMatrix");
+	shaderPrograms[name].nMatrixUniform          = gl.getUniformLocation(shaderPrograms[name], "uNMatrix");
+	shaderPrograms[name].lightLocationUniform    = gl.getUniformLocation(shaderPrograms[name], "uLightLocation");
 	
-	if (name == "slice") {
-		shaderPrograms[name].colorMapUniform   = gl.getUniformLocation(shaderPrograms[name], "uColorMap");
-		shaderPrograms[name].samplerUniform    = gl.getUniformLocation(shaderPrograms[name], "uSampler");
-		shaderPrograms[name].samplerUniform1   = gl.getUniformLocation(shaderPrograms[name], "uSampler1");
-		shaderPrograms[name].minUniform        = gl.getUniformLocation(shaderPrograms[name], "uMin");
-		shaderPrograms[name].maxUniform        = gl.getUniformLocation(shaderPrograms[name], "uMax");
-		shaderPrograms[name].threshold1Uniform = gl.getUniformLocation(shaderPrograms[name], "uThreshold1");
-		shaderPrograms[name].threshold2Uniform = gl.getUniformLocation(shaderPrograms[name], "uThreshold2");
-		shaderPrograms[name].alpha2Uniform     = gl.getUniformLocation(shaderPrograms[name], "uAlpha2");
-	}
 	
-	if (name == "fibre_t" || name == "fibre_l") {
-		shaderPrograms[name].fibreColorUniform     = gl.getUniformLocation(shaderPrograms[name], "uFibreColor");
-		shaderPrograms[name].fibreColorModeUniform = gl.getUniformLocation(shaderPrograms[name], "uFibreColorMode");
-	}
-
-	if (name == "fibre_t") {
-		shaderPrograms[name].zoomUniform           = gl.getUniformLocation(shaderPrograms[name], "uZoom");
-		shaderPrograms[name].thicknessUniform      = gl.getUniformLocation(shaderPrograms[name], "uThickness");
-	}
-
-	if (name == "fibre_t" || name == "mesh" || name == "fibre_l" ) {
-		shaderPrograms[name].alphaUniform    = gl.getUniformLocation(shaderPrograms[name], "uAlpha");
-	}
-	
+	shaderPrograms[name].fibreColorUniform       = gl.getUniformLocation(shaderPrograms[name], "uFibreColor");
+	shaderPrograms[name].fibreColorModeUniform   = gl.getUniformLocation(shaderPrograms[name], "uFibreColorMode");
+	shaderPrograms[name].zoomUniform             = gl.getUniformLocation(shaderPrograms[name], "uZoom");
+	shaderPrograms[name].thicknessUniform        = gl.getUniformLocation(shaderPrograms[name], "uThickness");
 }
 
 function setMeshUniforms() {
@@ -370,7 +328,7 @@ function setMeshUniforms() {
 	gl.uniformMatrix4fv(shaderPrograms['mesh'].mvMatrixUniform, false, variables.webgl.mvMatrix);
 	gl.uniformMatrix3fv(shaderPrograms['mesh'].nMatrixUniform, false, variables.webgl.nMatrix);
 	gl.uniform1f(shaderPrograms['mesh'].alphaUniform, 1.0);
-	gl.uniform3f(shaderPrograms['mesh'].pointLightingLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
+	gl.uniform3f(shaderPrograms['mesh'].lightLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
 }
 
 function setFibreLineUniforms() {
@@ -379,7 +337,7 @@ function setFibreLineUniforms() {
 	gl.uniformMatrix4fv(shaderPrograms['fibre_l'].mvMatrixUniform, false, variables.webgl.mvMatrix);
 	gl.uniformMatrix3fv(shaderPrograms['fibre_l'].nMatrixUniform, false, variables.webgl.nMatrix);
 	gl.uniform1f(shaderPrograms['fibre_l'].alphaUniform, 1.0);
-	gl.uniform3f(shaderPrograms['fibre_l'].pointLightingLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
+	gl.uniform3f(shaderPrograms['fibre_l'].lightLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
 	gl.uniform1i(shaderPrograms['fibre_l'].fibreColorModeUniform, variables.scene.localFibreColor);
 }
 
@@ -390,7 +348,7 @@ function setFiberTubeUniforms() {
 	gl.uniformMatrix4fv(shaderPrograms['fibre_t'].mvMatrixUniform, false, variables.webgl.mvMatrix);
 	gl.uniformMatrix3fv(shaderPrograms['fibre_t'].nMatrixUniform, false, variables.webgl.nMatrix);
 
-	gl.uniform3f(shaderPrograms['fibre_t'].pointLightingLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
+	gl.uniform3f(shaderPrograms['fibre_t'].lightLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
 	gl.uniform1f(shaderPrograms['fibre_t'].zoomUniform, variables.scene.zoom);
 
 	gl.uniform1i(shaderPrograms['fibre_t'].fibreColorModeUniform, variables.scene.localFibreColor);

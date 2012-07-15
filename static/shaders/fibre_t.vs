@@ -5,7 +5,7 @@ attribute vec2 aTextureCoord;
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
 uniform mat3 uNMatrix;
-uniform vec3 uPointLightingLocation;
+
 uniform float uZoom;
 uniform float uThickness;
 
