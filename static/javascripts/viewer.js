@@ -329,35 +329,6 @@ function initShader(name) {
 	shaderPrograms[name].thicknessUniform        = gl.getUniformLocation(shaderPrograms[name], "uThickness");
 }
 
-function setMeshUniforms() {
-	gl.useProgram(shaderPrograms['mesh']);
-	gl.uniformMatrix4fv(shaderPrograms['mesh'].pMatrixUniform, false, variables.webgl.pMatrix);
-	gl.uniformMatrix4fv(shaderPrograms['mesh'].mvMatrixUniform, false, variables.webgl.mvMatrix);
-	gl.uniformMatrix3fv(shaderPrograms['mesh'].nMatrixUniform, false, variables.webgl.nMatrix);
-	gl.uniform1f(shaderPrograms['mesh'].alphaUniform, 1.0);
-	gl.uniform3f(shaderPrograms['mesh'].lightLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
-}
-
-function setFibreLineUniforms() {
-	gl.useProgram(shaderPrograms['fibre_l']);
-	gl.uniformMatrix4fv(shaderPrograms['fibre_l'].pMatrixUniform, false, variables.webgl.pMatrix);
-	gl.uniformMatrix4fv(shaderPrograms['fibre_l'].mvMatrixUniform, false, variables.webgl.mvMatrix);
-	gl.uniformMatrix3fv(shaderPrograms['fibre_l'].nMatrixUniform, false, variables.webgl.nMatrix);
-	gl.uniform1f(shaderPrograms['fibre_l'].alphaUniform, 1.0);
-	gl.uniform3f(shaderPrograms['fibre_l'].lightLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
-	gl.uniform1i(shaderPrograms['fibre_l'].fibreColorModeUniform, variables.scene.localFibreColor);
-}
-
-
-function setFiberTubeUniforms() {
-	gl.useProgram(shaderPrograms['fibre_t']);
-	gl.uniformMatrix4fv(shaderPrograms['fibre_t'].pMatrixUniform, false, variables.webgl.pMatrix);
-	gl.uniformMatrix4fv(shaderPrograms['fibre_t'].mvMatrixUniform, false, variables.webgl.mvMatrix);
-	gl.uniformMatrix3fv(shaderPrograms['fibre_t'].nMatrixUniform, false, variables.webgl.nMatrix);
-	gl.uniform1f(shaderPrograms['fibre_t'].zoomUniform, variables.scene.zoom);
-	gl.uniform1i(shaderPrograms['fibre_t'].fibreColorModeUniform, variables.scene.localFibreColor);
-}
-
 
 //***************************************************************************************************
 //
@@ -470,9 +441,12 @@ function drawScene() {
 	gl.enable(gl.DEPTH_TEST);
 	gl.depthFunc(gl.LEQUAL);
     gl.clearDepth(1);
-    gl.clearColor(1.0, 1.0, 1.0, 0);
 	
-	// draw opaque objects
+    //***************************************************************************************************
+    //
+    // Pass 1 - draw opaque objects
+    //
+    //***************************************************************************************************/
 	variables.webgl.minorMode = 4;
 	// set render target to C0
 	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
@@ -482,22 +456,17 @@ function drawScene() {
     if ( variables.scene.showSlices ) {
 		drawSlices();
 	}
-	
 	$.each(elements.meshes, function() {
 		if (this.display && this.transparency == 1.0 ) {
 			drawMesh(this);
 		}
 	});
-	
 	$.each(elements.fibres, function() {
 		if (this.display && this.transparency == 1.0 ) {
 			drawFibers(this);
 		}
 	});
-
-	
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
 
 	variables.webgl.minorMode = 5;
 	// set render target to D0
@@ -522,6 +491,11 @@ function drawScene() {
 	});
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	
+	//***************************************************************************************************
+    //
+    // Pass 2
+    //
+    //***************************************************************************************************/
 	variables.webgl.minorMode = 9;
 	// set render target to C1
 	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
@@ -559,6 +533,11 @@ function drawScene() {
 	});
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	
+	//***************************************************************************************************
+    //
+    // Pass 3
+    //
+    //***************************************************************************************************/
 	variables.webgl.minorMode = 10;
 	// set render target to C2
 	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
@@ -595,6 +574,11 @@ function drawScene() {
 	});
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	
+	//***************************************************************************************************
+    //
+    // Pass 4
+    //
+    //***************************************************************************************************/
 	variables.webgl.minorMode = 11;
 	// set render target to C3
 	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
@@ -631,6 +615,11 @@ function drawScene() {
 	});
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	
+	//***************************************************************************************************
+    //
+    // Pass 5
+    //
+    //***************************************************************************************************/
 	variables.webgl.minorMode = 12;
 	// set render target to C3
 	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
@@ -650,9 +639,11 @@ function drawScene() {
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	
 	
-	//************************************************************************************************************************
-	
-	// render quad with C0
+	//***************************************************************************************************
+    //
+    // Pass 6 - merge previous results and render on quad
+    //
+    //***************************************************************************************************/	
 	gl.useProgram(shaderPrograms['merge']);
 	gl.enableVertexAttribArray(shaderPrograms['merge'].vertexPositionAttribute);
 	
@@ -697,6 +688,30 @@ function drawScene() {
 	gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 }
 
+function setPeelUniforms( shader ) {
+	gl.uniform2f(shaderPrograms[shader].canvasSizeUniform, gl.viewportWidth, gl.viewportHeight);
+	gl.uniform1i(shaderPrograms[shader].minorModeUniform, variables.webgl.minorMode );
+	gl.activeTexture( gl.TEXTURE3 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['D0'] );
+	gl.uniform1i(shaderPrograms[shader].d0Uniform, 3);
+	gl.activeTexture( gl.TEXTURE4 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['D1'] );
+	gl.uniform1i(shaderPrograms[shader].d1Uniform, 4);
+	gl.activeTexture( gl.TEXTURE5 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['D2'] );
+	gl.uniform1i(shaderPrograms[shader].d2Uniform, 5);
+}
+
+function setMeshUniforms() {
+	gl.useProgram(shaderPrograms['mesh']);
+	gl.uniformMatrix4fv(shaderPrograms['mesh'].pMatrixUniform, false, variables.webgl.pMatrix);
+	gl.uniformMatrix4fv(shaderPrograms['mesh'].mvMatrixUniform, false, variables.webgl.mvMatrix);
+	gl.uniformMatrix3fv(shaderPrograms['mesh'].nMatrixUniform, false, variables.webgl.nMatrix);
+	gl.uniform1f(shaderPrograms['mesh'].alphaUniform, 1.0);
+	gl.uniform3f(shaderPrograms['mesh'].lightLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
+}
+
+
 function drawMesh(elem) {
 	if (!elem || !elem.display || !elem.indices )
 		return;
@@ -717,18 +732,8 @@ function drawMesh(elem) {
 	gl.vertexAttribPointer(shaderPrograms['mesh'].vertexNormalAttribute, 3, gl.FLOAT, false, 36, 12);
 	gl.vertexAttribPointer(shaderPrograms['mesh'].vertexColorAttribute, 3, gl.FLOAT, false, 36, 24);
 	
-	gl.uniform2f(shaderPrograms['mesh'].canvasSizeUniform, gl.viewportWidth, gl.viewportHeight);
-	gl.uniform1i(shaderPrograms['mesh'].minorModeUniform, variables.webgl.minorMode );
-	gl.activeTexture( gl.TEXTURE3 );
-	gl.bindTexture( gl.TEXTURE_2D, peels['D0'] );
-	gl.uniform1i(shaderPrograms['mesh'].d0Uniform, 3);
-	gl.activeTexture( gl.TEXTURE4 );
-	gl.bindTexture( gl.TEXTURE_2D, peels['D1'] );
-	gl.uniform1i(shaderPrograms['mesh'].d1Uniform, 4);
-	gl.activeTexture( gl.TEXTURE5 );
-	gl.bindTexture( gl.TEXTURE_2D, peels['D2'] );
-	gl.uniform1i(shaderPrograms['mesh'].d2Uniform, 5);
-
+	setPeelUniforms( 'mesh' );
+	
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer);
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
 
@@ -756,18 +761,7 @@ function drawMeshTransp(elem) {
 	gl.uniformMatrix4fv(shaderPrograms['mesh_transp'].mvMatrixUniform, false, variables.webgl.mvMatrix);
 	gl.uniformMatrix3fv(shaderPrograms['mesh_transp'].nMatrixUniform, false, variables.webgl.nMatrix);
 	
-	gl.uniform2f(shaderPrograms['mesh_transp'].canvasSizeUniform, gl.viewportWidth, gl.viewportHeight);
-	gl.uniform1i(shaderPrograms['mesh_transp'].minorModeUniform, variables.webgl.minorMode );
-	
-	gl.activeTexture( gl.TEXTURE3 );
-	gl.bindTexture( gl.TEXTURE_2D, peels['D0'] );
-	gl.uniform1i(shaderPrograms['mesh_transp'].d0Uniform, 3);
-	gl.activeTexture( gl.TEXTURE4 );
-	gl.bindTexture( gl.TEXTURE_2D, peels['D1'] );
-	gl.uniform1i(shaderPrograms['mesh_transp'].d1Uniform, 4);
-	gl.activeTexture( gl.TEXTURE5 );
-	gl.bindTexture( gl.TEXTURE_2D, peels['D2'] );
-	gl.uniform1i(shaderPrograms['mesh_transp'].d2Uniform, 5);
+	setPeelUniforms( 'mesh_transp' );
 	
 
 	gl.enableVertexAttribArray(shaderPrograms['mesh_transp'].vertexPositionAttribute);
@@ -797,7 +791,6 @@ function drawMeshTransp(elem) {
 	gl.disable(gl.CULL_FACE);
 }
 
-
 function bindMeshBuffers(elem) {
 	var vertexPositionBuffer = gl.createBuffer();
 	vertexPositionBuffer.data = new Float32Array(elem.vertices);
@@ -810,6 +803,26 @@ function bindMeshBuffers(elem) {
 	elem.vertexPositionBuffer = vertexPositionBuffer;
 	elem.vertexIndexBuffer    = vertexIndexBuffer;
 	elem.hasBuffer = true;
+}
+
+function setFibreLineUniforms() {
+	gl.useProgram(shaderPrograms['fibre_l']);
+	gl.uniformMatrix4fv(shaderPrograms['fibre_l'].pMatrixUniform, false, variables.webgl.pMatrix);
+	gl.uniformMatrix4fv(shaderPrograms['fibre_l'].mvMatrixUniform, false, variables.webgl.mvMatrix);
+	gl.uniformMatrix3fv(shaderPrograms['fibre_l'].nMatrixUniform, false, variables.webgl.nMatrix);
+	gl.uniform1f(shaderPrograms['fibre_l'].alphaUniform, 1.0);
+	gl.uniform3f(shaderPrograms['fibre_l'].lightLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
+	gl.uniform1i(shaderPrograms['fibre_l'].fibreColorModeUniform, variables.scene.localFibreColor);
+}
+
+
+function setFiberTubeUniforms() {
+	gl.useProgram(shaderPrograms['fibre_t']);
+	gl.uniformMatrix4fv(shaderPrograms['fibre_t'].pMatrixUniform, false, variables.webgl.pMatrix);
+	gl.uniformMatrix4fv(shaderPrograms['fibre_t'].mvMatrixUniform, false, variables.webgl.mvMatrix);
+	gl.uniformMatrix3fv(shaderPrograms['fibre_t'].nMatrixUniform, false, variables.webgl.nMatrix);
+	gl.uniform1f(shaderPrograms['fibre_t'].zoomUniform, variables.scene.zoom);
+	gl.uniform1i(shaderPrograms['fibre_t'].fibreColorModeUniform, variables.scene.localFibreColor);
 }
 
 function drawFibers(elem) {
@@ -837,18 +850,7 @@ function drawFibers(elem) {
 		gl.uniform3f(shaderPrograms['fibre_t'].fibreColorUniform, elem.color.r, elem.color.g, elem.color.b);
 		gl.uniform1f(shaderPrograms['fibre_t'].thicknessUniform, 0.6);
 		
-		gl.uniform2f(shaderPrograms['fibre_t'].canvasSizeUniform, gl.viewportWidth, gl.viewportHeight);
-		gl.uniform1i(shaderPrograms['fibre_t'].minorModeUniform, variables.webgl.minorMode );
-		
-		gl.activeTexture( gl.TEXTURE3 );
-		gl.bindTexture( gl.TEXTURE_2D, peels['D0'] );
-		gl.uniform1i(shaderPrograms['fibre_t'].d0Uniform, 3);
-		gl.activeTexture( gl.TEXTURE4 );
-		gl.bindTexture( gl.TEXTURE_2D, peels['D1'] );
-		gl.uniform1i(shaderPrograms['fibre_t'].d1Uniform, 4);
-		gl.activeTexture( gl.TEXTURE5 );
-		gl.bindTexture( gl.TEXTURE_2D, peels['D2'] );
-		gl.uniform1i(shaderPrograms['fibre_t'].d2Uniform, 5);
+		setPeelUniforms( 'fibre_t' );
 
 		gl.uniform1f(shaderPrograms['fibre_t'].alphaUniform, elem.transparency);
 		
@@ -871,18 +873,7 @@ function drawFibers(elem) {
 		gl.uniform3f(shaderPrograms['fibre_l'].fibreColorUniform, elem.color.r, elem.color.g, elem.color.b);
 		gl.uniform1f(shaderPrograms['fibre_l'].alphaUniform, elem.transparency);
 		
-		gl.uniform2f(shaderPrograms['fibre_l'].canvasSizeUniform, gl.viewportWidth, gl.viewportHeight);
-		gl.uniform1i(shaderPrograms['fibre_l'].minorModeUniform, variables.webgl.minorMode );
-		
-		gl.activeTexture( gl.TEXTURE3 );
-		gl.bindTexture( gl.TEXTURE_2D, peels['D0'] );
-		gl.uniform1i(shaderPrograms['fibre_l'].d0Uniform, 3);
-		gl.activeTexture( gl.TEXTURE4 );
-		gl.bindTexture( gl.TEXTURE_2D, peels['D1'] );
-		gl.uniform1i(shaderPrograms['fibre_l'].d1Uniform, 4);
-		gl.activeTexture( gl.TEXTURE5 );
-		gl.bindTexture( gl.TEXTURE_2D, peels['D2'] );
-		gl.uniform1i(shaderPrograms['fibre_l'].d2Uniform, 5);
+		setPeelUniforms( 'fibre_l' );
 		
 		for ( var i = 0; i < elem.indices.length; ++i) {
 			gl.drawArrays(gl.LINE_STRIP, elem.lineStarts[i], elem.indices[i]);
@@ -926,18 +917,7 @@ function drawFibersTransp(elem) {
 
 		gl.uniform1f(shaderPrograms['fibre_t_transp'].alphaUniform, elem.transparency);
 		
-		gl.uniform2f(shaderPrograms['fibre_t_transp'].canvasSizeUniform, gl.viewportWidth, gl.viewportHeight);
-		gl.uniform1i(shaderPrograms['fibre_t_transp'].minorModeUniform, variables.webgl.minorMode );
-		
-		gl.activeTexture( gl.TEXTURE3 );
-		gl.bindTexture( gl.TEXTURE_2D, peels['D0'] );
-		gl.uniform1i(shaderPrograms['fibre_t_transp'].d0Uniform, 3);
-		gl.activeTexture( gl.TEXTURE4 );
-		gl.bindTexture( gl.TEXTURE_2D, peels['D1'] );
-		gl.uniform1i(shaderPrograms['fibre_t_transp'].d1Uniform, 4);
-		gl.activeTexture( gl.TEXTURE5 );
-		gl.bindTexture( gl.TEXTURE_2D, peels['D2'] );
-		gl.uniform1i(shaderPrograms['fibre_t_transp'].d2Uniform, 5);
+		setPeelUniforms( 'fibre_t_transp' );
 		
 		for ( var i = 0; i < elem.indices.length; ++i) {
 			gl.drawArrays(gl.TRIANGLE_STRIP, elem.lineStarts[i]*2, elem.indices[i] * 2);
@@ -965,18 +945,7 @@ function drawFibersTransp(elem) {
 		gl.uniform3f(shaderPrograms['fibre_l_transp'].fibreColorUniform, elem.color.r, elem.color.g, elem.color.b);
 		gl.uniform1f(shaderPrograms['fibre_l_transp'].alphaUniform, elem.transparency);
 		
-		gl.uniform2f(shaderPrograms['fibre_l_transp'].canvasSizeUniform, gl.viewportWidth, gl.viewportHeight);
-		gl.uniform1i(shaderPrograms['fibre_l_transp'].minorModeUniform, variables.webgl.minorMode );
-		
-		gl.activeTexture( gl.TEXTURE3 );
-		gl.bindTexture( gl.TEXTURE_2D, peels['D0'] );
-		gl.uniform1i(shaderPrograms['fibre_l_transp'].d0Uniform, 3);
-		gl.activeTexture( gl.TEXTURE4 );
-		gl.bindTexture( gl.TEXTURE_2D, peels['D1'] );
-		gl.uniform1i(shaderPrograms['fibre_l_transp'].d1Uniform, 4);
-		gl.activeTexture( gl.TEXTURE5 );
-		gl.bindTexture( gl.TEXTURE_2D, peels['D2'] );
-		gl.uniform1i(shaderPrograms['fibre_l_transp'].d2Uniform, 5);
+		setPeelUniforms( 'fibre_l_transp' );
 		
 		for ( var i = 0; i < elem.indices.length; ++i) {
 			gl.drawArrays(gl.LINE_STRIP, elem.lineStarts[i], elem.indices[i]);

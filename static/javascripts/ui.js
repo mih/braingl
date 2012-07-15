@@ -1,9 +1,16 @@
+var settings = {};
+
 (function($) {
     // Sobald wir mit dem DOM arbeiten können,
     $(document).ready(function() {
         if (!window.WebGLRenderingContext) {
             $('html').addClass('no-webgl');
         }
+        
+        var myloc = window.location.href;
+        var locarray = myloc.split("/");
+        delete locarray[(locarray.length-1)];
+        settings.DATA_URL = "/" + locarray[(locarray.length-2)] + "/data/";
         
         // die Konfigurationsdaten und die Elemente per AJAX laden.
         var config = $.getSyncJSON(settings.DATA_URL + 'config.json'),
