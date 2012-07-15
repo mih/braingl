@@ -150,9 +150,9 @@ function loadFibre(el) {
 			element.tubeVertices.push( tubeVertices[ i * 3 ]);
 			element.tubeVertices.push( tubeVertices[ i * 3 + 1 ]);
 			element.tubeVertices.push( tubeVertices[ i * 3 + 2 ]);
-			element.tubeVertices.push( tubeNormals[ i * 3 ]);
-			element.tubeVertices.push( tubeNormals[ i * 3 + 1 ]);
-			element.tubeVertices.push( tubeNormals[ i * 3 + 2 ]);
+			element.tubeVertices.push( tubeNormals[ i * 3 ] );
+			element.tubeVertices.push( tubeNormals[ i * 3 + 1 ] );
+			element.tubeVertices.push( tubeNormals[ i * 3 + 2 ] );
 //			element.tubeVertices.push( tubeColors[ i * 4 ]);
 //			element.tubeVertices.push( tubeColors[ i * 4 + 1 ]);
 //			element.tubeVertices.push( tubeColors[ i * 4 + 2 ]);

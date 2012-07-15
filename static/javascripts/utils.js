@@ -113,13 +113,13 @@ function createSphere( rad, x_, y_, z_, color )
 	{
 		for (y = 0; y < nlong; y++) 
 		{
-			sphere.indices.push(y * numVertsAround + x,
-						 y * numVertsAround + x + 1,
-						(y + 1) * numVertsAround + x);
+			sphere.indices.push( y * numVertsAround + x,
+						 		(y + 1) * numVertsAround + x,
+						 		 y * numVertsAround + x + 1);
 
 			sphere.indices.push((y + 1) * numVertsAround + x,
-						 y * numVertsAround + x + 1,
-						(y + 1) * numVertsAround + x + 1);
+						 (y + 1) * numVertsAround + x + 1,
+						 y * numVertsAround + x + 1);
 		}
 	}
 	for (x = 0; x < ( vertices.length / 3);++x)

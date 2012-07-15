@@ -135,10 +135,10 @@ function init(opts) {
 	loadScenes();
 	
 	addSphere( "s1", "sphere1", 50, 50, 50, 15, 1.0, 0, 0, 1.0 );
-	addSphere( "s2", "sphere2", 50, 70, 50, 20, 0.0, 1.0, 0, 0.4 );
-	addSphere( "s3", "sphere3", 50, 50, 70, 20, 0.0, 0, 1.0, 0.4 );
-	addSphere( "s4", "sphere4", 50, 60, 60, 20, 1.0, 1.0, 0, 0.4 );
-	addSphere( "s5", "sphere5", 50, 70, 70, 20, 1.0, 0, 1.0, 0.4 );
+	addSphere( "s2", "sphere2", 50, 70, 50, 20, 0.0, 1.0, 0, 0.3 );
+	addSphere( "s3", "sphere3", 50, 50, 70, 20, 0.0, 0, 1.0, 0.3 );
+	addSphere( "s4", "sphere4", 50, 60, 60, 20, 1.0, 1.0, 0, 0.3 );
+	addSphere( "s5", "sphere5", 50, 70, 70, 20, 1.0, 0, 1.0, 0.3 );
 	
 	canvas.onmousedown = handleMouseDown;
 	canvas.onmouseup = handleMouseUp;
@@ -478,7 +478,7 @@ function drawScene() {
 	
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+	
 	mat4.ortho(-100 + variables.mouse.screenMoveX, 100 + variables.mouse.screenMoveX, -100 - variables.mouse.screenMoveY, 100 - variables.mouse.screenMoveY, -500, 500, variables.webgl.pMatrix);
 
 	mat4.identity(variables.webgl.mvMatrix);
@@ -730,12 +730,13 @@ function drawMesh(elem) {
 	gl.bindTexture( gl.TEXTURE_2D, peels['D2'] );
 	gl.uniform1i(shaderPrograms['mesh'].d2Uniform, 5);
 
-	
-
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer);
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
 
 	gl.enable(gl.DEPTH_TEST);
+	gl.enable(gl.CULL_FACE);
+	gl.cullFace( gl.BACK );
+	gl.frontFace( gl.CW );
 	
 	gl.uniform1f(shaderPrograms['mesh'].alphaUniform, elem.transparency);
 
@@ -743,6 +744,7 @@ function drawMesh(elem) {
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	gl.disable(gl.CULL_FACE);
 }
 
 function drawMeshTransp(elem) {
@@ -785,11 +787,15 @@ function drawMeshTransp(elem) {
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
 
 	gl.enable(gl.DEPTH_TEST);
+	gl.enable(gl.CULL_FACE);
+	gl.cullFace( gl.BACK );
+	gl.frontFace( gl.CW );
 
 	gl.drawElements(gl.TRIANGLES, elem.vertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	gl.disable(gl.CULL_FACE);
 }
 
 
