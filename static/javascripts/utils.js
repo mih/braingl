@@ -135,9 +135,9 @@ function createSphere( rad, x_, y_, z_, color )
 		sphere.vertices.push( vertices[ i * 3 ] + x_ );
 		sphere.vertices.push( vertices[ i * 3 + 1 ] + y_ );
 		sphere.vertices.push( vertices[ i * 3 + 2 ] + z_);
-		sphere.vertices.push( normals[ i * 3 ]);
-		sphere.vertices.push( normals[ i * 3 + 1 ]);
-		sphere.vertices.push( normals[ i * 3 + 2 ]);
+		sphere.vertices.push( normals[ i * 3 ] );
+		sphere.vertices.push( normals[ i * 3 + 1 ] );
+		sphere.vertices.push( normals[ i * 3 + 2 ] );
 		sphere.vertices.push( colors[ i * 4 ]);
 		sphere.vertices.push( colors[ i * 4 + 1 ]);
 		sphere.vertices.push( colors[ i * 4 + 2 ]);

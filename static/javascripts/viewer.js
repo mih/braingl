@@ -42,6 +42,8 @@ mat4.rotateZ(variables.webgl.thisRot, 0.2);
 variables.webgl.rttFrameBuffer; // framebuffer for offscreen rendering
 variables.webgl.rttTexture; // texture to render into
 variables.webgl.lightPos = vec3.create(); // light position
+variables.webgl.minorMode = 0;
+variables.webgl.peelInitialized = false;
 
 // mouse interaction
 variables.mouse = {};
@@ -120,16 +122,11 @@ function init(opts) {
 	loadShaders();
 
 	if ('backgroundColor' in opts) {
-		gl.clearColor(opts.backgroundColor[0], opts.backgroundColor[1], opts.backgroundColor[2], opts.backgroundColor[3]);
+		gl.clearColor(opts.backgroundColor[0], opts.backgroundColor[1], opts.backgroundColor[2], 0.0);
 	} else {
-		gl.clearColor(1.0, 1.0, 1.0, 1.0);
+		gl.clearColor(1.0, 1.0, 1.0, 0.0);
 	}
 
-	gl.enable(gl.DEPTH_TEST);
-
-	//initTextureFramebuffer();
-	
-	initPeel();
 
 	if ('elements' in opts && opts.elements.length) {
 		loadElements(opts.elements);
@@ -137,11 +134,11 @@ function init(opts) {
 
 	loadScenes();
 	
-	addSphere( "s1", "sphere1", 50, 50, 50, 20, 1.0, 0, 0, 0.6 );
-	addSphere( "s2", "sphere2", 50, 70, 50, 20, 0.0, 1.0, 0, 0.6 );
-	addSphere( "s3", "sphere3", 50, 50, 70, 20, 0.0, 0, 1.0, 0.6 );
-	addSphere( "s4", "sphere4", 50, 60, 60, 20, 1.0, 1.0, 0, 0.6 );
-	addSphere( "s5", "sphere5", 50, 70, 70, 20, 1.0, 0, 1.0, 0.6 );
+	addSphere( "s1", "sphere1", 50, 50, 50, 15, 1.0, 0, 0, 1.0 );
+	addSphere( "s2", "sphere2", 50, 70, 50, 20, 0.0, 1.0, 0, 0.4 );
+	addSphere( "s3", "sphere3", 50, 50, 70, 20, 0.0, 0, 1.0, 0.4 );
+	addSphere( "s4", "sphere4", 50, 60, 60, 20, 1.0, 1.0, 0, 0.4 );
+	addSphere( "s5", "sphere5", 50, 70, 70, 20, 1.0, 0, 1.0, 0.4 );
 	
 	canvas.onmousedown = handleMouseDown;
 	canvas.onmouseup = handleMouseUp;
@@ -168,6 +165,10 @@ var textureN = {C0:gl.TEXTURE2, D0:gl.TEXTURE3, D1:gl.TEXTURE4, D2:gl.TEXTURE5,
                                    C1:gl.TEXTURE6, C2:gl.TEXTURE7, C3:gl.TEXTURE8, 
                                    EXTENT_TEXTURE:gl.TEXTURE9};
 
+var peelFramebuffer = null;
+var peelRenderbuffer = null;
+var sizeMult = 1;
+
 function initGL(canvas) {
 	//gl = WebGLDebugUtils.makeDebugContext(canvas.getContext("experimental-webgl"));
 	gl = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
@@ -180,12 +181,12 @@ function initPeel() {
         makeTexture(T); 
 	}
 	
-	var peelFramebuffer = gl.createFramebuffer();
+	peelFramebuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, peelFramebuffer);
-    
-    var peelRenderbuffer = gl.createRenderbuffer(); // create depth buffer
+
+    peelRenderbuffer = gl.createRenderbuffer(); // create depth buffer
     gl.bindRenderbuffer(gl.RENDERBUFFER, peelRenderbuffer);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, gl.viewportWidth, gl.viewportHeight);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, sizeMult * gl.viewportWidth, sizeMult * gl.viewportHeight);
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, peelRenderbuffer);
     
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
@@ -200,39 +201,9 @@ function makeTexture(T) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.viewportWidth, gl.viewportHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sizeMult * gl.viewportWidth, sizeMult * gl.viewportHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
 }
-
-
-
-function initTextureFramebuffer() {
-	variables.webgl.rttFrameBuffer = gl.createFramebuffer();
-	gl.bindFramebuffer(gl.FRAMEBUFFER, variables.webgl.rttFrameBuffer);
-	variables.webgl.rttFrameBuffer.width = 512;
-	variables.webgl.rttFrameBuffer.height = 512;
-
-	variables.webgl.rttTexture = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, variables.webgl.rttTexture);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-	gl.generateMipmap(gl.TEXTURE_2D);
-
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, variables.webgl.rttFrameBuffer.width, variables.webgl.rttFrameBuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-
-	var renderbuffer = gl.createRenderbuffer();
-	gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
-	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, variables.webgl.rttFrameBuffer.width, variables.webgl.rttFrameBuffer.height);
-
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, variables.webgl.rttTexture, 0);
-	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
-
-	gl.bindTexture(gl.TEXTURE_2D, null);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-}
-
-
 
 // ***************************************************************************************************
 //
@@ -264,8 +235,15 @@ function loadShaders() {
 	getShader('slice', 'vs');
 	getShader('slice', 'fs');
 	
+	getShader('merge', 'vs');
+	getShader('merge', 'fs');
+	getShader('mesh_transp', 'vs');
+	getShader('mesh_transp', 'fs');
+	
+	initShader('merge');
 	initShader('slice');
 	initShader('mesh');
+	initShader('mesh_transp');
 	initShader('fibre_l');
 	initShader('fibre_t');
 }
@@ -306,6 +284,25 @@ function initShader(name) {
 
 	gl.useProgram(shaderPrograms[name]);
 	
+	if (name == "merge") {
+		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
+		shaderPrograms[name].canvasSizeUniform   = gl.getUniformLocation(shaderPrograms[name], "uCanvasSize");
+		shaderPrograms[name].c0Uniform    = gl.getUniformLocation(shaderPrograms[name], "C0");
+		shaderPrograms[name].c1Uniform    = gl.getUniformLocation(shaderPrograms[name], "C1");
+		shaderPrograms[name].c2Uniform    = gl.getUniformLocation(shaderPrograms[name], "C2");
+		shaderPrograms[name].c3Uniform    = gl.getUniformLocation(shaderPrograms[name], "C3");
+		shaderPrograms[name].d2Uniform    = gl.getUniformLocation(shaderPrograms[name], "D2");
+	}
+	
+	if (name == "mesh_transp") {
+		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
+		shaderPrograms[name].canvasSizeUniform   = gl.getUniformLocation(shaderPrograms[name], "uCanvasSize");
+		shaderPrograms[name].d0Uniform    = gl.getUniformLocation(shaderPrograms[name], "D0");
+		shaderPrograms[name].d1Uniform    = gl.getUniformLocation(shaderPrograms[name], "D1");
+		shaderPrograms[name].d2Uniform    = gl.getUniformLocation(shaderPrograms[name], "D2");
+	}
+
+	
 	if (name == "slice") {
 		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
 		shaderPrograms[name].textureCoordAttribute = gl.getAttribLocation(shaderPrograms[name], "aTextureCoord");
@@ -316,6 +313,10 @@ function initShader(name) {
 		shaderPrograms[name].vertexPositionAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexPosition");
 		shaderPrograms[name].vertexNormalAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexNormal");
 		shaderPrograms[name].vertexColorAttribute = gl.getAttribLocation(shaderPrograms[name], "aVertexColor");
+		shaderPrograms[name].canvasSizeUniform   = gl.getUniformLocation(shaderPrograms[name], "uCanvasSize");
+		shaderPrograms[name].d0Uniform    = gl.getUniformLocation(shaderPrograms[name], "D0");
+		shaderPrograms[name].d1Uniform    = gl.getUniformLocation(shaderPrograms[name], "D1");
+		shaderPrograms[name].d2Uniform    = gl.getUniformLocation(shaderPrograms[name], "D2");
 	}
 	
 	if ( name == "fibre_t" ) { 
@@ -334,6 +335,7 @@ function initShader(name) {
 	shaderPrograms[name].mvMatrixUniform = gl.getUniformLocation(shaderPrograms[name], "uMVMatrix");
 	shaderPrograms[name].nMatrixUniform  = gl.getUniformLocation(shaderPrograms[name], "uNMatrix");
 	shaderPrograms[name].pointLightingLocationUniform = gl.getUniformLocation(shaderPrograms[name], "uPointLightingLocation");
+	shaderPrograms[name].minorModeUniform  = gl.getUniformLocation(shaderPrograms[name], "uMinorMode");
 	
 	if (name == "slice") {
 		shaderPrograms[name].colorMapUniform   = gl.getUniformLocation(shaderPrograms[name], "uColorMap");
@@ -466,7 +468,14 @@ function drawScene() {
 		return;
 	}
 	variables.webgl.needsRedraw = false;
-
+	
+	if ( !variables.webgl.peelInitialized )
+	{
+		initPeel();
+		variables.webgl.peelInitialized = true;
+	}
+	
+	
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -495,32 +504,198 @@ function drawScene() {
 
 	mat4.multiplyVec3(variables.webgl.thisRot, variables.webgl.lightPos);
 
-	gl.disable(gl.BLEND);
 	gl.enable(gl.DEPTH_TEST);
+	gl.depthFunc(gl.LEQUAL);
+    gl.clearDepth(1);
+    gl.clearColor(1.0, 1.0, 1.0, 0);
 	
+	// draw opaque objects
+	variables.webgl.minorMode = 4;
+	// set render target to C0
+	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, peels['C0'], 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    if ( variables.scene.showSlices ) {
+		drawSlices();
+	}
+	
+	$.each(elements.meshes, function() {
+		if (this.display && this.transparency == 1.0 ) {
+			drawMesh(this);
+		}
+	});
+	
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+
+	variables.webgl.minorMode = 5;
+	// set render target to D0
+	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, peels['D0'], 0);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
 	if ( variables.scene.showSlices ) {
 		drawSlices();
 	}
 	
-	$.each(elements.fibres, function() {
-		if (this.display) {
-			drawFibers(this);
-			
+	$.each(elements.meshes, function() {
+		if (this.display && this.transparency == 1.0 ) {
+			drawMeshTransp(this);
 		}
 	});
+
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	
+	variables.webgl.minorMode = 9;
+	// set render target to C1
+	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, peels['C1'], 0);
+    gl.clearColor(1.0, 1.0, 1.0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
 	$.each(elements.meshes, function() {
-		if (this.display) {
-			if (!(this.id == 'head')) {
-				drawMesh(this);
-			}
+		if (this.display && this.transparency < 1.0 ) {
+			drawMesh(this);
 		}
 	});
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	
-	if (elements.meshes['head'] && elements.meshes['head'].display) {
-		drawMesh(elements.meshes['head']);
-	}
+	variables.webgl.minorMode = 6;
+	// set render target to D1
+	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, peels['D1'], 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	
+	$.each(elements.meshes, function() {
+		if (this.display && this.transparency < 1.0 ) {
+			drawMeshTransp(this);
+		}
+	});
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	
+	variables.webgl.minorMode = 10;
+	// set render target to C2
+	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, peels['C2'], 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	
+	$.each(elements.meshes, function() {
+		if (this.display && this.transparency < 1.0 ) {
+			drawMesh(this);
+		}
+	});
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	
+	variables.webgl.minorMode = 7;
+	// set render target to D2
+	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, peels['D2'], 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	
+	$.each(elements.meshes, function() {
+		if (this.display && this.transparency < 1.0 ) {
+			drawMeshTransp(this);
+		}
+	});
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	
+	variables.webgl.minorMode = 11;
+	// set render target to C3
+	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, peels['C3'], 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	
+	$.each(elements.meshes, function() {
+		if (this.display && this.transparency < 1.0 ) {
+			drawMesh(this);
+		}
+	});
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	
+	variables.webgl.minorMode = 8;
+	// set render target to D1b
+	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, peels['D1'], 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	
+	$.each(elements.meshes, function() {
+		if (this.display && this.transparency < 1.0 ) {
+			drawMeshTransp(this);
+		}
+	});
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	
+	variables.webgl.minorMode = 12;
+	// set render target to C3
+	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, peels['D2'], 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	
+	$.each(elements.meshes, function() {
+		if (this.display && this.transparency < 1.0 ) {
+			drawMesh(this);
+		}
+	});
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	
+	
+	//************************************************************************************************************************
+	
+	// render quad with C0
+	gl.useProgram(shaderPrograms['merge']);
+	gl.enableVertexAttribArray(shaderPrograms['merge'].vertexPositionAttribute);
+	
+	var posBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+	
+	var vertices = [ -gl.viewportWidth,  -10,   0, 
+	                  gl.viewportWidth,  -10, 0,
+	                  gl.viewportWidth,  gl.viewportHeight, 0,
+	                 -gl.viewportWidth0, gl.viewportHeight, 0 ];
+	
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+	gl.vertexAttribPointer(shaderPrograms['merge'].vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+	gl.uniform2f(shaderPrograms['merge'].canvasSizeUniform, gl.viewportWidth, gl.viewportHeight);
+	
+	gl.activeTexture( gl.TEXTURE2 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['C0'] );
+	gl.uniform1i(shaderPrograms['merge'].c0Uniform, 2);
+	
+	gl.activeTexture( gl.TEXTURE6 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['C1'] );
+	gl.uniform1i(shaderPrograms['merge'].c1Uniform, 6);
+	
+	gl.activeTexture( gl.TEXTURE7 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['C2'] );
+	gl.uniform1i(shaderPrograms['merge'].c2Uniform, 7);
+	
+	gl.activeTexture( gl.TEXTURE8 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['C3'] );
+	gl.uniform1i(shaderPrograms['merge'].c3Uniform, 8);
+	
+	gl.activeTexture( gl.TEXTURE5 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['D2'] );
+	gl.uniform1i(shaderPrograms['merge'].d2Uniform, 5);
+	
+	var vertexIndexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vertexIndexBuffer);
+	var vertexIndices = [ 0, 1, 2, 0, 2, 3 ];
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW);
+
+	gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 }
+
+
+//$.each(elements.fibres, function() {
+//if (this.display && this.transparency == 1.0 ) {
+//	drawFibers(this);
+//	
+//}
+//});
+
 
 
 function drawMesh(elem) {
@@ -543,28 +718,80 @@ function drawMesh(elem) {
 	gl.vertexAttribPointer(shaderPrograms['mesh'].vertexNormalAttribute, 3, gl.FLOAT, false, 36, 12);
 	gl.vertexAttribPointer(shaderPrograms['mesh'].vertexColorAttribute, 3, gl.FLOAT, false, 36, 24);
 	
+	gl.uniform2f(shaderPrograms['mesh'].canvasSizeUniform, gl.viewportWidth, gl.viewportHeight);
+	gl.uniform1i(shaderPrograms['mesh'].minorModeUniform, variables.webgl.minorMode );
+	gl.activeTexture( gl.TEXTURE3 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['D0'] );
+	gl.uniform1i(shaderPrograms['mesh'].d0Uniform, 3);
+	gl.activeTexture( gl.TEXTURE4 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['D1'] );
+	gl.uniform1i(shaderPrograms['mesh'].d1Uniform, 4);
+	gl.activeTexture( gl.TEXTURE5 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['D2'] );
+	gl.uniform1i(shaderPrograms['mesh'].d2Uniform, 5);
+
+	
 
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer);
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
 
-	gl.disable(gl.BLEND);
 	gl.enable(gl.DEPTH_TEST);
-	gl.enable( gl.CULL_FACE );
-	gl.cullFace( gl.FRONT );
 	
-	if (elem.transparency < 1.0) {
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		gl.enable(gl.BLEND);
-		gl.uniform1f(shaderPrograms['mesh'].alphaUniform, elem.transparency);
-	}
+	gl.uniform1f(shaderPrograms['mesh'].alphaUniform, elem.transparency);
 
 	gl.drawElements(gl.TRIANGLES, elem.vertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	
-	gl.disable( gl.CULL_FACE );
 }
+
+function drawMeshTransp(elem) {
+	if (!elem || !elem.display || !elem.indices )
+		return;
+
+	gl.useProgram(shaderPrograms['mesh_transp']);
+	gl.enableVertexAttribArray(shaderPrograms['mesh_transp'].vertexPositionAttribute);
+	gl.uniformMatrix4fv(shaderPrograms['mesh_transp'].pMatrixUniform, false, variables.webgl.pMatrix);
+	gl.uniformMatrix4fv(shaderPrograms['mesh_transp'].mvMatrixUniform, false, variables.webgl.mvMatrix);
+	gl.uniformMatrix3fv(shaderPrograms['mesh_transp'].nMatrixUniform, false, variables.webgl.nMatrix);
+	
+	gl.uniform2f(shaderPrograms['mesh_transp'].canvasSizeUniform, gl.viewportWidth, gl.viewportHeight);
+	gl.uniform1i(shaderPrograms['mesh_transp'].minorModeUniform, variables.webgl.minorMode );
+	
+	gl.activeTexture( gl.TEXTURE3 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['D0'] );
+	gl.uniform1i(shaderPrograms['mesh_transp'].d0Uniform, 3);
+	gl.activeTexture( gl.TEXTURE4 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['D1'] );
+	gl.uniform1i(shaderPrograms['mesh_transp'].d1Uniform, 4);
+	gl.activeTexture( gl.TEXTURE5 );
+	gl.bindTexture( gl.TEXTURE_2D, peels['D2'] );
+	gl.uniform1i(shaderPrograms['mesh_transp'].d2Uniform, 5);
+	
+
+	gl.enableVertexAttribArray(shaderPrograms['mesh_transp'].vertexPositionAttribute);
+		
+	if ( !elem.hasBuffer ) {
+		bindMeshBuffers(elem);
+	}
+	
+	gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexPositionBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, elem.vertexPositionBuffer.data, gl.STATIC_DRAW);
+	
+	gl.vertexAttribPointer(shaderPrograms['mesh_transp'].vertexPositionAttribute, 3, gl.FLOAT, false, 36, 0);
+	
+
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
+
+	gl.enable(gl.DEPTH_TEST);
+
+	gl.drawElements(gl.TRIANGLES, elem.vertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, null);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+}
+
 
 function bindMeshBuffers(elem) {
 	var vertexPositionBuffer = gl.createBuffer();
@@ -647,7 +874,6 @@ function drawFibers(elem) {
 					
 	gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	//TODO
 }
 
 function bindFibreBuffers(elem) {
@@ -702,6 +928,7 @@ function drawSlices() {
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, getTexture(variables.scene.tex1, 'axial', variables.scene.axial));
 	gl.uniform1i(shaderPrograms['slice'].samplerUniform, 0);
+	gl.uniform1i(shaderPrograms['slice'].minorModeUniform, variables.webgl.minorMode );
 
 	if (variables.scene.tex2 != "none") {
 		gl.activeTexture(gl.TEXTURE1);
@@ -1088,27 +1315,6 @@ function loadScene( saveString ) {
 	
 	variables.webgl.thisRot.set(loadData.webgl.thisRot);
 	variables.scene = loadData.scene;
-	
-	variables.connectom = loadData.connectom;
-
-	$.each(loadData.connectom.activations, function() {
-		createActivation(this.id, this.name, this.co[0], this.co[1], this.co[2], this.size, this.rgb.r, this.rgb.g, this.rgb.b );
-		$(Viewer).trigger('newActivation', {
-			'id' : this.id,
-			'name' : this.name,
-			'active' : true
-		});
-	});
-	
-	$.each(loadData.connectom.connections, function() {
-		elements[this.id] = {};
-		createConnection(this.id, this.name, this.cof, this.cot, this.color, this.strength, this.size, this.distance, this.speed, this.barShift);
-		$(Viewer).trigger('newConnection', {
-			'id' : this.id,
-			'name' : this.name,
-			'active' : false
-		});
-	});
 	
 	$.each(elements, function(id, element) {
 		hideElement(id);

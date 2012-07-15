@@ -2,12 +2,13 @@
 precision highp float;
 #endif
 
-
-uniform int uColorMap;
-
 uniform sampler2D uSampler;
 uniform sampler2D uSampler1;
 
+// minormode = 0 render, 1 pick, 2 autoscale, 4 C0, 5 D0, 6 D1, 7 D2, 8 D1b, 9 C1, 10 C2, 11 C3, 12 C4
+uniform int uMinorMode;
+
+uniform int uColorMap;
 uniform float uMin;
 uniform float uMax;
 uniform float uThreshold1;
@@ -16,6 +17,23 @@ uniform float uAlpha2;
 
 varying vec2 vTextureCoord;
 varying vec4 vPosition;
+
+vec4 encode( float k ) 
+{ // assumes k is >= 0
+    if ( k <= 0.0 ) return vec4( 0.0, 0.0, 0.0, 0.0 );
+    return vec4(
+        floor( 256.0 * k) / 255.0,
+        floor( 256.0 * fract( 256.0 * k ) ) / 255.0,
+        floor( 256.0 * fract( 65536.0 * k ) ) / 255.0,
+        0.0);
+}
+
+float decode( vec4 d ) 
+{
+    if ( length( d ) == 0.0 ) return 0.0;
+    return ( 65536.0 * d[0] + 256.0 * d[1] + d[2] ) / 16777216.0;
+}
+
 
 vec3 rainbowColorMap( in float value )
 {
@@ -54,7 +72,9 @@ vec3 blueLightblueColorMap( in float value )
 	return color;
 }
 
-void main(void) {
+void main(void) 
+{
+	vec4 d = encode(1.0-gl_FragCoord.z);
 	
 	vec4 fragmentColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
 	vec4 fragmentColor1 = texture2D(uSampler1, vec2(vTextureCoord.s, vTextureCoord.t));
@@ -119,10 +139,18 @@ void main(void) {
 		}
 	}
 	
-	// color texture, discard zero values
-	if ( length( fragmentColor.rgb ) < 0.001 ) {
+	//color texture, discard zero values
+	if ( length( fragmentColor.rgb ) < 0.001 ) 
+	{
 		discard;
 	}
-	
-	gl_FragColor = vec4(fragmentColor.r, fragmentColor.g, fragmentColor.b, fragmentColor.a);
+	if ( uMinorMode == 5 )
+	{
+		gl_FragColor = d;
+	}
+	else 
+	{
+		gl_FragColor = vec4(fragmentColor.r, fragmentColor.g, fragmentColor.b, fragmentColor.a);
+	}
+
 }
