@@ -56,13 +56,13 @@ function pixel2tal(x, y, z)
 	return returnCoord;
 }
 
-function createSphere( rad, color )
+function createSphere( rad, x_, y_, z_, color )
 {
-	sphere = {};
-	sphere.vertices = [];
-	sphere.normals = [];
+	var sphere = {};
+	var vertices = [];
+	var normals = [];
 	sphere.indices = [];
-	sphere.colors = [];
+	var colors = [];
 	
 	var nlat = 20,
 	   nlong = 20,
@@ -102,8 +102,8 @@ function createSphere( rad, color )
 				uz = sinTheta * sinPhi,
 				r = radius(ux, uy, uz, u, v);
 
-				sphere.vertices.push(r * ux, r * uy, r * uz);
-				sphere.normals.push(-ux, -uy, -uz);
+				vertices.push(r * ux, r * uy, r * uz);
+				normals.push(-ux, -uy, -uz);
 				//texCoords.push(u, v);
 		}
 	}
@@ -122,15 +122,52 @@ function createSphere( rad, color )
 						(y + 1) * numVertsAround + x + 1);
 		}
 	}
-	for (x = 0; x < ( sphere.vertices.length / 3);++x)
+	for (x = 0; x < ( vertices.length / 3);++x)
 	{
-		sphere.colors.push(color.r);
-		sphere.colors.push(color.g);
-		sphere.colors.push(color.b);
-		sphere.colors.push(1);
+		colors.push(color.r);
+		colors.push(color.g);
+		colors.push(color.b);
+		colors.push(1);
+	}
+	
+	sphere.vertices = [];
+	for ( var i = 0; i < vertices.length /3; ++i ) {
+		sphere.vertices.push( vertices[ i * 3 ] + x_ );
+		sphere.vertices.push( vertices[ i * 3 + 1 ] + y_ );
+		sphere.vertices.push( vertices[ i * 3 + 2 ] + z_);
+		sphere.vertices.push( normals[ i * 3 ]);
+		sphere.vertices.push( normals[ i * 3 + 1 ]);
+		sphere.vertices.push( normals[ i * 3 + 2 ]);
+		sphere.vertices.push( colors[ i * 4 ]);
+		sphere.vertices.push( colors[ i * 4 + 1 ]);
+		sphere.vertices.push( colors[ i * 4 + 2 ]);
 	}
 	
 	return sphere;
+}
+
+function addSphere( id, name, x, y, z, size, r, g, b, a )
+{
+        newActiv = createSphere( size, x, y, z, {"r": r, "g": g, "b": b} );
+        newActiv.name = name;
+        newActiv.type = 'mesh';
+        newActiv.display = true;
+        newActiv.id = id;
+        newActiv.hasBuffer = false;
+        newActiv.fromJSON = false;
+        newActiv.transparency = a;
+        
+        newActiv.rgb = {"r": r, "g": g, "b": b};
+        pickColor = createPickColor(variables.picking.pickIndex);
+        variables.picking.pickIndex++;
+        variables.picking.pickArray[pickColor.join()] = id;
+        pc = [];
+        pc[0] = pickColor[0] / 255;
+        pc[1] = pickColor[1] / 255;
+        pc[2] = pickColor[2] / 255;
+        newActiv.pickColor = pc;
+        
+        elements.meshes[id] = newActiv;
 }
 
 function mat4toQuat(m)

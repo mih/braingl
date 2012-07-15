@@ -1,6 +1,6 @@
 attribute vec3 aVertexPosition;
 attribute vec3 aVertexNormal;
-attribute vec4 aVertexColor;
+attribute vec3 aVertexColor;
 
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
@@ -10,7 +10,7 @@ uniform vec3 uPointLightingLocation;
 varying vec4 vPosition;
 varying vec3 vLightPos;
 varying vec3 vNormal;
-varying vec4 vColor;
+varying vec3 vColor;
 
 void main(void) 
 {

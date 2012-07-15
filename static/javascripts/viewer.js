@@ -127,13 +127,21 @@ function init(opts) {
 
 	gl.enable(gl.DEPTH_TEST);
 
-	initTextureFramebuffer();
+	//initTextureFramebuffer();
+	
+	initPeel();
 
 	if ('elements' in opts && opts.elements.length) {
 		loadElements(opts.elements);
 	}
 
 	loadScenes();
+	
+	addSphere( "s1", "sphere1", 50, 50, 50, 20, 1.0, 0, 0, 0.6 );
+	addSphere( "s2", "sphere2", 50, 70, 50, 20, 0.0, 1.0, 0, 0.6 );
+	addSphere( "s3", "sphere3", 50, 50, 70, 20, 0.0, 0, 1.0, 0.6 );
+	addSphere( "s4", "sphere4", 50, 60, 60, 20, 1.0, 1.0, 0, 0.6 );
+	addSphere( "s5", "sphere5", 50, 70, 70, 20, 1.0, 0, 1.0, 0.6 );
 	
 	canvas.onmousedown = handleMouseDown;
 	canvas.onmouseup = handleMouseUp;
@@ -155,12 +163,48 @@ function tick() {
 //	init webgl
 //
 //***************************************************************************************************/
+var peels = {C0:null, D0:null, D1:null, D2:null, C1:null, C2:null, C3:null, EXTENT_TEXTURE:null};
+var textureN = {C0:gl.TEXTURE2, D0:gl.TEXTURE3, D1:gl.TEXTURE4, D2:gl.TEXTURE5,
+                                   C1:gl.TEXTURE6, C2:gl.TEXTURE7, C3:gl.TEXTURE8, 
+                                   EXTENT_TEXTURE:gl.TEXTURE9};
+
 function initGL(canvas) {
 	//gl = WebGLDebugUtils.makeDebugContext(canvas.getContext("experimental-webgl"));
 	gl = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
 	gl.viewportWidth = $canvas.width();
 	gl.viewportHeight = $canvas.height();
 }
+
+function initPeel() {
+	for (var T in peels) {
+        makeTexture(T); 
+	}
+	
+	var peelFramebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, peelFramebuffer);
+    
+    var peelRenderbuffer = gl.createRenderbuffer(); // create depth buffer
+    gl.bindRenderbuffer(gl.RENDERBUFFER, peelRenderbuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, gl.viewportWidth, gl.viewportHeight);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, peelRenderbuffer);
+    
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+
+function makeTexture(T) {
+    peels[T] = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, peels[T]);
+    
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.viewportWidth, gl.viewportHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
+
 
 function initTextureFramebuffer() {
 	variables.webgl.rttFrameBuffer = gl.createFramebuffer();
@@ -219,6 +263,7 @@ function loadShaders() {
 	getShader('fibre_l', 'fs');
 	getShader('slice', 'vs');
 	getShader('slice', 'fs');
+	
 	initShader('slice');
 	initShader('mesh');
 	initShader('fibre_l');
@@ -313,8 +358,6 @@ function initShader(name) {
 
 	if (name == "fibre_t" || name == "mesh" || name == "fibre_l" ) {
 		shaderPrograms[name].alphaUniform    = gl.getUniformLocation(shaderPrograms[name], "uAlpha");
-		shaderPrograms[name].pickingUniform   = gl.getUniformLocation(shaderPrograms[name], "uPicking");
-		shaderPrograms[name].pickColorUniform = gl.getUniformLocation(shaderPrograms[name], "uPickColor");
 	}
 	
 }
@@ -326,7 +369,6 @@ function setMeshUniforms() {
 	gl.uniformMatrix3fv(shaderPrograms['mesh'].nMatrixUniform, false, variables.webgl.nMatrix);
 	gl.uniform1f(shaderPrograms['mesh'].alphaUniform, 1.0);
 	gl.uniform3f(shaderPrograms['mesh'].pointLightingLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
-	gl.uniform1i(shaderPrograms['mesh'].pickingUniform, variables.picking.pickMode);
 }
 
 function setFibreLineUniforms() {
@@ -336,7 +378,6 @@ function setFibreLineUniforms() {
 	gl.uniformMatrix3fv(shaderPrograms['fibre_l'].nMatrixUniform, false, variables.webgl.nMatrix);
 	gl.uniform1f(shaderPrograms['fibre_l'].alphaUniform, 1.0);
 	gl.uniform3f(shaderPrograms['fibre_l'].pointLightingLocationUniform, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
-	gl.uniform1i(shaderPrograms['fibre_l'].pickingUniform, variables.picking.pickMode);
 	gl.uniform1i(shaderPrograms['fibre_l'].fibreColorModeUniform, variables.scene.localFibreColor);
 }
 
@@ -351,7 +392,6 @@ function setFiberTubeUniforms() {
 	gl.uniform1f(shaderPrograms['fibre_t'].zoomUniform, variables.scene.zoom);
 
 	gl.uniform1i(shaderPrograms['fibre_t'].fibreColorModeUniform, variables.scene.localFibreColor);
-	gl.uniform1i(shaderPrograms['fibre_t'].pickingUniform, variables.picking.pickMode);
 }
 
 //***************************************************************************************************
@@ -482,54 +522,6 @@ function drawScene() {
 	}
 }
 
-function drawPickScene() {
-	variables.picking.pickMode = true;
-
-	gl.viewport(0, 0, variables.webgl.rttFrameBuffer.width, variables.webgl.rttFrameBuffer.height);
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-	mat4.ortho(-100 + variables.mouse.screenMoveX, 100 + variables.mouse.screenMoveX, -100 - variables.mouse.screenMoveY, 100 - variables.mouse.screenMoveY, -500, 500, variables.webgl.pMatrix);
-
-	mat4.identity(variables.webgl.mvMatrix);
-	zv = vec3.create();
-	zv[0] = variables.scene.zoom;
-	zv[1] = variables.scene.zoom;
-	zv[2] = variables.scene.zoom;
-	mat4.scale(variables.webgl.mvMatrix, zv);
-
-	variables.webgl.lightPos[0] = 0.0;
-	variables.webgl.lightPos[1] = 0.0;
-	variables.webgl.lightPos[2] = -1.0;
-
-	var dim = elements.niftiis[variables.scene.tex1].getDims();
-	mat4.translate(variables.webgl.mvMatrix, [ dim[0]/-2.0, dim[1]/-2.0, dim[2]/-2.0 ]);
-
-	mat4.inverse(variables.webgl.thisRot);
-	mat4.multiply(variables.webgl.thisRot, variables.webgl.mvMatrix, variables.webgl.mvMatrix);
-	mat4.inverse(variables.webgl.thisRot);
-
-	mat4.toInverseMat3(variables.webgl.mvMatrix, variables.webgl.nMatrix);
-	mat3.transpose(variables.webgl.nMatrix);
-
-	mat4.multiplyVec3(variables.webgl.thisRot, variables.webgl.lightPos);
-
-	gl.disable(gl.BLEND);
-	gl.enable(gl.DEPTH_TEST);
-	
-	if ( variables.scene.showSlices ) {
-		drawSlices();
-	}
-	
-	$.each(elements.fibres, function() {
-		if (this.display) {
-			if (this.type === 'fibre') {
-				drawFibers(this);
-			}
-		}
-	});
-
-	variables.picking.pickMode = false;
-}
 
 function drawMesh(elem) {
 	if (!elem || !elem.display || !elem.indices )
@@ -547,18 +539,18 @@ function drawMesh(elem) {
 	gl.bindBuffer(gl.ARRAY_BUFFER, elem.vertexPositionBuffer);
 	gl.bufferData(gl.ARRAY_BUFFER, elem.vertexPositionBuffer.data, gl.STATIC_DRAW);
 	
-	gl.vertexAttribPointer(shaderPrograms['mesh'].vertexPositionAttribute, 3, gl.FLOAT, false, 40, 0);
-	gl.vertexAttribPointer(shaderPrograms['mesh'].vertexNormalAttribute, 3, gl.FLOAT, false, 40, 12);
-	gl.vertexAttribPointer(shaderPrograms['mesh'].vertexColorAttribute, 4, gl.FLOAT, false, 40, 24);
+	gl.vertexAttribPointer(shaderPrograms['mesh'].vertexPositionAttribute, 3, gl.FLOAT, false, 36, 0);
+	gl.vertexAttribPointer(shaderPrograms['mesh'].vertexNormalAttribute, 3, gl.FLOAT, false, 36, 12);
+	gl.vertexAttribPointer(shaderPrograms['mesh'].vertexColorAttribute, 3, gl.FLOAT, false, 36, 24);
 	
 
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer);
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
 
-	gl.uniform3f(shaderPrograms['mesh'].pickColorUniform, elem.pickColor[0], elem.pickColor[1], elem.pickColor[2]);
-
 	gl.disable(gl.BLEND);
 	gl.enable(gl.DEPTH_TEST);
+	gl.enable( gl.CULL_FACE );
+	gl.cullFace( gl.FRONT );
 	
 	if (elem.transparency < 1.0) {
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -570,6 +562,8 @@ function drawMesh(elem) {
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	
+	gl.disable( gl.CULL_FACE );
 }
 
 function bindMeshBuffers(elem) {
@@ -609,7 +603,6 @@ function drawFibers(elem) {
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elem.vertexIndexBuffer.data, gl.STATIC_DRAW);
 
 		gl.uniform3f(shaderPrograms['fibre_t'].fibreColorUniform, elem.color.r, elem.color.g, elem.color.b);
-		gl.uniform3f(shaderPrograms['fibre_t'].pickColorUniform, elem.pickColor[0], elem.pickColor[1], elem.pickColor[2]);
 		gl.uniform1f(shaderPrograms['fibre_t'].thicknessUniform, 0.6);
 		gl.uniform1f(shaderPrograms['fibre_t'].barShiftUniform, 0.0);
 
@@ -883,46 +876,6 @@ function handleMouseUp(event) {
 
 function handleMouseMove(event) {
 	e = fixupMouse(event);
-	if (variables.picking.showTooltips && !variables.mouse.leftDown && !variables.mouse.middleDown) {
-		gl.bindFramebuffer(gl.FRAMEBUFFER, variables.webgl.rttFrameBuffer);
-		drawPickScene();
-
-		pickX = (variables.webgl.rttFrameBuffer.width / gl.viewportWidth) * e.fixedX;
-		pickY = (variables.webgl.rttFrameBuffer.height / gl.viewportHeight) * (gl.viewportHeight - e.fixedY);
-
-		pixel = new Uint8Array(1 * 1 * 4);
-		gl.readPixels(pickX, pickY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-		var pickColor = [ pixel[0], pixel[1], pixel[2] ].join();
-
-		if (variables.picking.pickArray[pickColor]) {
-			if (variables.picking.oldPick != elements[variables.picking.pickArray[pickColor]].id) {
-				//console.log(elements[variables.picking.pickArray[pickColor]].name);
-				$(Viewer).trigger('pickChanged', {
-					'id' : elements[variables.picking.pickArray[pickColor]].id,
-					'name' : elements[variables.picking.pickArray[pickColor]].name,
-					'event' : e
-				});
-				variables.picking.oldPick = elements[variables.picking.pickArray[pickColor]].id;
-			}
-		} else {
-			if (variables.picking.oldPick != "none") {
-				$(Viewer).trigger('pickChanged', {
-					'id' : "none",
-					'name' : "none"
-				});
-				variables.picking.oldPick = "none";
-			}
-		}
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-		return;
-	}
-
-	$(Viewer).trigger('pickChanged', {
-		'id' : "none",
-		'name' : "none"
-	});
-	variables.picking.oldPick = "none";
 
 	if (variables.mouse.leftDown) {
 		Arcball.drag(e.fixedX, e.fixedY);
@@ -1270,9 +1223,6 @@ function control(id) {
 	case "fibreTubes":
 		variables.scene.renderTubes = !variables.scene.renderTubes;
 		break;				
-	case "tooltips":
-		variables.picking.showTooltips = !variables.picking.showTooltips;
-		break;
 	case "slices":
 		variables.scene.showSlices = !variables.scene.showSlices;
 		break;

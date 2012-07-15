@@ -45,7 +45,6 @@ function loadMesh(el) {
 			element.vertices.push( colors[ i * 4 ]);
 			element.vertices.push( colors[ i * 4 + 1 ]);
 			element.vertices.push( colors[ i * 4 + 2 ]);
-			element.vertices.push( colors[ i * 4 + 3 ]);
 		}
 
 		element.transparency = el.transparency;
