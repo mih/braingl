@@ -134,11 +134,11 @@ function init(opts) {
 
 	loadScenes();
 	
-	addSphere( "s1", "sphere1", 50, 50, 50, 15, 1.0, 0, 0, 1.0 );
-	addSphere( "s2", "sphere2", 50, 70, 50, 20, 0.0, 1.0, 0, 0.3 );
-	addSphere( "s3", "sphere3", 50, 50, 70, 20, 0.0, 0, 1.0, 0.3 );
-	addSphere( "s4", "sphere4", 50, 60, 60, 20, 1.0, 1.0, 0, 0.3 );
-	addSphere( "s5", "sphere5", 50, 70, 70, 20, 1.0, 0, 1.0, 0.3 );
+//	addSphere( "s1", "sphere1", 50, 50, 50, 15, 1.0, 0, 0, 1.0 );
+//	addSphere( "s2", "sphere2", 50, 70, 50, 20, 0.0, 1.0, 0, 0.3 );
+//	addSphere( "s3", "sphere3", 50, 50, 70, 20, 0.0, 0, 1.0, 0.3 );
+//	addSphere( "s4", "sphere4", 50, 60, 60, 20, 1.0, 1.0, 0, 0.3 );
+//	addSphere( "s5", "sphere5", 50, 70, 70, 20, 1.0, 0, 1.0, 0.3 );
 	
 	canvas.onmousedown = handleMouseDown;
 	canvas.onmouseup = handleMouseUp;
