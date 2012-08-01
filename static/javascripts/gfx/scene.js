@@ -16,6 +16,7 @@ variables["threshold2"] = 0.0;
 variables["colormap"] = 0;
 variables["alpha2"] = 1.0;
 variables["interpolate"] = true;
+variables["loadingComplete"] = false;
 
 
 function getValue( name ) {
@@ -82,11 +83,30 @@ function getColormapValues( suggest, callback ) {
 	
 }
 
+function toggleElement(id, callback) {
+	var meshes = io.meshes();
+	var fibres = io.fibres();
+	if (id in meshes) {
+		meshes[id].display = !meshes[id].display;
+		callback( id, meshes[id].display);
+	}
+	else if (id in fibres) {
+		fibres[id].display = !fibres[id].display;
+		callback( id, fibres[id].display);
+	}
+	else {
+		console.warn('Element "' + id + '" is unknown.');
+		return false;
+	}
+}
+
+
 return {
 	setValue : setValue,
 	getValue : getValue,
 	ival : ival,
 	fval : fval,
-	getColormapValues: getColormapValues
+	getColormapValues: getColormapValues,
+	toggleElement : toggleElement
 };
 }));

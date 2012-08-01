@@ -54,13 +54,16 @@ require(['jquery', 'ui', 'io', './gfx/viewer', './gfx/mygl', 'html5slider'],
                 	                	
                 	viewer.init({
                 	    'backgroundColor': [0.99,0.99,0.98,1]
-                	});
+                	}, loadElements);
                 	$(window).trigger('resize');
                 };
             }, 200);
-            
-            io.loadElements( ui.addElementToUI );
-        });      
+        });
+        
+        function loadElements() {
+        	io.loadElements( ui.loadElementStart, ui.elementLoaded, ui.allElementsLoaded );
+        }        
+        
         
         // method for synchronous loading of json files
         // $.getJSON works asynchronous.

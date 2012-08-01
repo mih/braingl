@@ -142,7 +142,7 @@ $('#viewer-canvas').on("mousewheel", function(event, delta, deltaX, deltaY) {
 //
 //***************************************************************************************************/
 $(document).bind('keypress', function(e) {
-    //console.log( "key # " + e.which);
+    console.log( "key # " + e.which);
     switch(e.which) {
         case 32: // Spacebar
             viewer.resetView();
@@ -152,15 +152,53 @@ $(document).bind('keypress', function(e) {
 
 //***************************************************************************************************
 //
-// element loading, create controls
+// callbacks for element loading, create controls
 //
 //***************************************************************************************************/
 function addElementToUI ( el ) {
-	if ( el.type == "tex" ) {
+	console.log( 'start loading ' + el.id );
+	if ( el.type == 'tex' ) {
 		$('#textureSelect').append($('<option></option>').val(el.id).html(el.name));
 		$('#textureSelect2').append($('<option></option>').val(el.id).html(el.name));
 	}
+	else if ( el.type != 'tex') {
+        var $toggle = $('<a />');
+        $toggle.append('<span/>');
+        $toggle.append('<label>'+el.name+'</label>');
+        $toggle.addClass('toggle');
+        $toggle.addClass('disabled');
+        $toggle.attr('href', '#toggle:' + el.id);
+        $toggle.attr('id', 'toggle-' + el.id);
+        $toggle.click(function(e) {
+            e.preventDefault();
+            scene.toggleElement(el.id, toggleCallback );
+            return false;
+        });
+        
+    	$('#elements').append($toggle);
+    	if ( el.type === 'mesh' || el.type === 'fibre' ) {
+    		$('#elementSelect').append($('<option></option>').val(el.id).html(el.name));
+    	}
+	}
 }
+
+function toggleCallback (id, active) {
+	 $('#toggle-' + id).toggleClass('active', active);
+}
+
+function loadElementStart( el ) {
+	addElementToUI( el );
+}
+
+function elementLoaded( el ) {
+	console.log( 'finished loading ' + el.id );
+	$('#toggle-' + el.id).removeClass('disabled');
+    $('#toggle-' + el.id).toggleClass('active', el.display);
+}
+function allElementsLoaded() {
+	console.log( 'all elements loaded' );
+	scene.setValue('loadingComplete', true );
+} 
 
 
 //***************************************************************************************************
@@ -168,6 +206,102 @@ function addElementToUI ( el ) {
 // bind controls
 //
 //***************************************************************************************************/
+//**********************************************************************************************************
+//*
+//*  tabbed menu left side
+//*
+//**********************************************************************************************************
+
+// controls tab
+$('a[href="#controls"]').click(function(e) {
+    e.preventDefault();
+    if( $('#mriTab').css('display') === "block" ) {
+    	$('#mriTab').slideToggle();
+    	$('a[href="#textures"]').css('font-weight', 'normal');
+    }
+    if( $('#elementTab').css('display') === "block" ) {
+    	$('#elementTab').slideToggle();
+    	$('a[href="#elements"]').css('font-weight', 'normal');
+    }
+    if( $('#infoTab').css('display') === "block" ) {
+    	$('#infoTab').slideToggle();
+    	$('a[href="#info"]').css('font-weight', 'normal');
+    }
+    if( $('#controlTab1').css('display') != "block" ) {
+    	$('#controlTab1').slideToggle();
+    	$('a[href="#controls"]').css('font-weight', 'bold');
+    }
+    return false;
+});
+
+// MRI tab
+$('a[href="#textures"]').click(function(e) {
+    e.preventDefault();
+    if( $('#controlTab1').css('display') === "block" ) {
+    	$('#controlTab1').slideToggle();
+    	$('a[href="#controls"]').css('font-weight', 'normal');
+    }
+    if( $('#elementTab').css('display') === "block" ) {
+    	$('#elementTab').slideToggle();
+    	$('a[href="#elements"]').css('font-weight', 'normal');
+    }
+    if( $('#infoTab').css('display') === "block" ) {
+    	$('#infoTab').slideToggle();
+    	$('a[href="#info"]').css('font-weight', 'normal');
+    }
+    if( $('#mriTab').css('display') != "block" ) {
+    	$('#mriTab').slideToggle();
+    	$('a[href="#textures"]').css('font-weight', 'bold');
+    }
+    return false;
+});
+
+// elements tab
+$('a[href="#elements"]').click(function(e) {
+    e.preventDefault();
+    if( $('#controlTab1').css('display') === "block" ) {
+    	$('#controlTab1').slideToggle();
+    	$('a[href="#controls"]').css('font-weight', 'normal');
+    }
+    if( $('#mriTab').css('display') === "block" ) {
+    	$('#mriTab').slideToggle();
+    	$('a[href="#textures"]').css('font-weight', 'normal');
+    }
+    if( $('#infoTab').css('display') === "block" ) {
+    	$('#infoTab').slideToggle();
+    	$('a[href="#info"]').css('font-weight', 'normal');
+    }
+    if( $('#elementTab').css('display') != "block" ) {
+    	$('#elementTab').slideToggle();
+    	$('a[href="#elements"]').css('font-weight', 'bold');
+    }
+    return false;
+});
+
+// info tab
+$('a[href="#info"]').click(function(e) {
+    e.preventDefault();
+    if( $('#controlTab1').css('display') === "block" ) {
+    	$('#controlTab1').slideToggle();
+    	$('a[href="#controls"]').css('font-weight', 'normal');
+    }
+    if( $('#mriTab').css('display') === "block" ) {
+    	$('#mriTab').slideToggle();
+    	$('a[href="#textures"]').css('font-weight', 'normal');
+    }
+    if( $('#elementTab').css('display') === "block" ) {
+    	$('#elementTab').slideToggle();
+    	$('a[href="#elements"]').css('font-weight', 'normal');
+    }
+    if( $('#infoTab').css('display') != "block" ) {
+    	$('#infoTab').slideToggle();
+    	$('a[href="#info"]').css('font-weight', 'bold');
+    }
+    return false;
+});
+
+
+
 //**********************************************************************************************************
 //*
 //* mri tab  
@@ -238,7 +372,9 @@ $('#interpolate').bind('click',function() { io.setTexInterpolation( $('#textureS
 //*
 //**********************************************************************************************************
 return {
-	addElementToUI: addElementToUI
+	loadElementStart: loadElementStart,
+	elementLoaded : elementLoaded, 
+	allElementsLoaded : allElementsLoaded 
 };
 
 

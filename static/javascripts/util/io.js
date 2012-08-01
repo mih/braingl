@@ -1,15 +1,63 @@
-define( ["jquery", './niftii', './gfx/mygl'], (function($, niftii, mygl) { 
+define( ["jquery", './utils', './niftii', './gfx/mygl'], (function($, utils, niftii, mygl) { 
 
 var niftiis = {};
 var textures =  {};
-var texIds = [];
 var interpolate = true;
 
 var meshes = {};
 var fibres = {};
 
+//picking
+picking = {};
+picking.pickIndex = 1; // starting index for pick colors
+picking.pickArray = {};
+picking.pickMode = false;
+picking.oldPick = "none";
+picking.showTooltips = false;
 
-function loadMesh(el) {
+//***************************************************************************************************
+//
+//	load functions
+//
+//***************************************************************************************************/
+function loadElements( addToUI, elementLoaded, allElementsLoaded ) {
+	console.log( 'start loading elements' );
+	
+	 $.getJSON(settings.DATA_URL + "elements.json", function(data) {
+     // alle Elemente durchgehen, 
+    	$.each(data, function(i, el) {
+//    		$(viewer).trigger('loadElementStart', {
+//    			'id' : el.id,
+//    			'name' : el.name,
+//    			'type' : el.type
+//    		});
+
+    		switch( el.type ) {
+    		case "mesh" :
+    			addToUI( {'id' : el.id, 'name' : el.name, 'type' : 'mesh'} );
+    			loadMesh( el, elementLoaded );
+    			break;
+    		case "fibre" :
+    			addToUI( {'id' : el.id, 'name' : el.name, 'type' : 'fibre'} );
+    			loadFibre(el, elementLoaded);
+    			break;
+    		case "texture" :
+    			addToUI( {'id' : el.id, 'name' : el.name, 'type' : 'tex'} );
+    			loadTexture( el, elementLoaded );
+    			break;
+    			default:
+    		}
+    	});
+     	allElementsLoaded();
+     });
+
+	//  den loadElementsComplete-Event feuern, wenn alle Elemente geladen sind.
+//	$(Viewer).trigger('loadElementsComplete');
+//	variables.scene.tex1 = elements.texIds[0];
+//	Viewer.redraw();
+}
+
+function loadMesh( el, elementLoaded ) {
 	var element = el;
 	$.getJSON(settings.DATA_URL + el.url, function(data) {
 		element.indices  = data.indices;
@@ -61,25 +109,23 @@ function loadMesh(el) {
 		element.transparency = el.transparency;
 		element.hasBuffer = false;
 
-		pickColor = createPickColor(Viewer.pickInfo.pickIndex);
-		Viewer.pickInfo.pickArray[pickColor.join()] = el.id;
-		Viewer.pickInfo.pickIndex++;
+		picking.pickColor = utils.createPickColor(picking.pickIndex);
+		picking.pickArray[picking.pickColor.join()] = el.id;
+		picking.pickIndex++;
 		pc = [];
-		pc[0] = pickColor[0] / 255;
-		pc[1] = pickColor[1] / 255;
-		pc[2] = pickColor[2] / 255;
+		pc[0] = picking.pickColor[0] / 255;
+		pc[1] = picking.pickColor[1] / 255;
+		pc[2] = picking.pickColor[2] / 255;
 		element.pickColor = pc;
+		
+		meshes[el.id] = element;
 	});
 	
-	Viewer.elements.meshes[el.id] = element;
 	
-	$(Viewer).trigger('loadElementComplete', {
-		'id' : el.id,
-		'active' : el.display
-	});
+	elementLoaded( el );
 }
 
-function loadFibre(el) {
+function loadFibre(el, elementLoaded) {
 	var element = el;
 	$.getJSON(settings.DATA_URL + el.url, function(data) {
 		element.indices = data.indices;
@@ -117,13 +163,13 @@ function loadFibre(el) {
 		element.transparency = el.transparency;
 		element.hasBuffer = false;
 
-		pickColor = createPickColor(Viewer.pickInfo.pickIndex);
-		Viewer.pickInfo.pickArray[pickColor.join()] = el.id;
-		Viewer.pickInfo.pickIndex++;
+		picking.pickColor = utils.createPickColor(picking.pickIndex);
+		picking.pickArray[picking.pickColor.join()] = el.id;
+		picking.pickIndex++;
 		pc = [];
-		pc[0] = pickColor[0] / 255;
-		pc[1] = pickColor[1] / 255;
-		pc[2] = pickColor[2] / 255;
+		pc[0] = picking.pickColor[0] / 255;
+		pc[1] = picking.pickColor[1] / 255;
+		pc[2] = picking.pickColor[2] / 255;
 		element.pickColor = pc;
 
 
@@ -183,13 +229,11 @@ function loadFibre(el) {
 
 		element.color = el.color;
 		
-		Viewer.elements.fibres[el.id] = element;
+		fibres[el.id] = element;
 		
-		$(Viewer).trigger('loadElementComplete', {
-			'id' : el.id,
-			'active' : el.display
-		});
+		elementLoaded( el );	
 	});	
+	
 }
 
 function calcTubeNormals(elem) {
@@ -244,7 +288,7 @@ function calcTubeNormals(elem) {
 	return tubeNormals;
 }
 
-function loadTexture(el) {
+function loadTexture(el, elementLoaded ) {
 	var n = new Niftii();
 	n.load( settings.DATA_URL + el.url );
 
@@ -254,6 +298,8 @@ function loadTexture(el) {
 	
 	textures[el.id] = {};
 	//texIds.push(el.id);
+	
+	elementLoaded( el );
 }
 
 var waitId=0;
@@ -308,102 +354,6 @@ function handleLoadedTexture(texture) {
 	delete texture.image;
 }
 
-//***************************************************************************************************
-//
-//	load functions
-//
-//***************************************************************************************************/
-function loadElements( uiCallback ) {
-	//$(viewer).trigger('loadElementsStart');
-	
-	 $.getJSON(settings.DATA_URL + "elements.json", function(data) {
-     // alle Elemente durchgehen, 
-    	$.each(data, function(i, el) {
-//    		$(viewer).trigger('loadElementStart', {
-//    			'id' : el.id,
-//    			'name' : el.name,
-//    			'type' : el.type
-//    		});
-
-    		switch( el.type ) {
-    		case "mesh" :
-    			//loadMesh(el);
-    			break;
-    		case "fibre" :
-    			//loadFibre(el);
-    			break;
-    		case "texture" :
-    			loadTexture(el, uiCallback );
-    			uiCallback( {'id' : el.id, 'name' : el.name, 'type' : 'tex'} );
-    			break;
-    			default:
-    		}
-    	});
-     	
-     });
-
-	
-	//  den loadElementsComplete-Event feuern, wenn alle Elemente geladen sind.
-//	$(Viewer).trigger('loadElementsComplete');
-//	variables.scene.tex1 = elements.texIds[0];
-//	Viewer.redraw();
-}
-
-function loadActivations(activationsToLoad) {
-	$(Viewer).trigger('loadActivationsStart');
-
-	$.each(activationsToLoad, function(i, ac) {
-		createActivation( ac.id, ac.name, ac.coord.x, ac.coord.y, ac.coord.z, ac.size, ac.color.r, ac.color.g, ac.color.b );
-		elements.activations[ac.id].fromJSON = true;
-
-		$(Viewer).trigger('newActivation', {
-			'id' : ac.id,
-			'name' : ac.name,
-			'active' : true
-		});
-		
-		$(Viewer).trigger('loadActivationComplete', {
-			'id' : ac.id
-		});
-		
-		var saveAct = {};
-        saveAct.id = ac.id;
-        saveAct.name = ac.name;
-        saveAct.co = elements.activations[ac.id].coordinates;
-        saveAct.size = ac.size;
-        saveAct.rgb = elements.activations[ac.id].rgb;
-        variables.connectom.activations[ac.id] = saveAct;
-	});
-	
-	$(Viewer).trigger('loadActivationsComplete');
-}
-
-function loadConnections(connectionsToLoad) {
-	$(Viewer).trigger('loadConnectionsStart');
-
-	$.each(connectionsToLoad, function(i, con) {
-		var fromId = con.fromId;
-		var toId = con.toId;
-		var color = con.color;
-		var strength = con.strength;
-		var size = con.size;
-		var distance = con.distance;
-		var speed = con.speed;
-		var color2 = con.color2;
-		var strength2 = con.strength2;
-		var size2 = con.size2;
-		var distance2 = con.distance2;
-		var speed2 = con.speed2;
-		
-		addConnection( fromId, toId, color, strength, size, distance, speed, color2, strength2, size2, distance2, speed2, false );
-		
-		$(Viewer).trigger('loadConnectionComplete', {
-			'id' : con.id
-		});
-	});
-
-	$(Viewer).trigger('loadConnectionssComplete');
-}
 
 function loadScenes() {
     
@@ -433,6 +383,13 @@ function loadScenes() {
 		$(Viewer).trigger('loadScenesComplete');
 	});
 }
+
+//***************************************************************************************************
+//
+// 
+//
+//***************************************************************************************************/
+
 
 function setTexInterpolation ( id, v ) {
 	$.each(niftiis, function() {
