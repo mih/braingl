@@ -80,16 +80,16 @@ function redraw() {
 }
 
 function drawScene() {
-//	if (!variables.webgl.needsRedraw && variables.webgl.needsRedrawCount > 0 ) {
-//		variables.webgl.needsRedrawCount -= 1;
-//		return;
-//	}
-//	variables.webgl.needsRedrawCount = 10;
-	
-	
-	if (!variables.webgl.needsRedraw) {
+	if (!variables.webgl.needsRedraw && variables.webgl.needsRedrawCount > 0 ) {
+		variables.webgl.needsRedrawCount -= 1;
 		return;
 	}
+	variables.webgl.needsRedrawCount = 10;
+	
+	
+//	if (!variables.webgl.needsRedraw) {
+//		return;
+//	}
 
 	variables.webgl.needsRedraw = false;
 	
@@ -97,7 +97,7 @@ function drawScene() {
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
 	var ratio = mygl.viewportWidth() / mygl.viewportHeight();
-	
+
 	if ( ratio >= 1.0 ) {
 		mat4.ortho( -100*ratio, 100 * ratio, -100, 100, -500, 500, variables.webgl.pMatrix );	
 	}

@@ -108,6 +108,13 @@ define ( ["./glMatrix-0.9.5.min"], (function() {
 		var mv = mat4.create();
 		mat4.identity( mv );
 		
+		var halfMove = vec3.create();
+		halfMove[0] = -moveX;
+		halfMove[1] = moveY;
+		halfMove[2] = 0;
+		mat4.translate( mv, halfMove );
+		
+		
 		var scale = vec3.create();
 		scale[0] = zoom;
 		scale[1] = zoom;
@@ -152,14 +159,35 @@ define ( ["./glMatrix-0.9.5.min"], (function() {
 	function setZoom() {
 		zoom = 1.0;
 	}
+	
+	var midClickX = 0;
+	var midClickY = 0;
+	var moveX = 0;
+	var moveY = 0;
+	var oldMoveX = 0;
+	var oldMoveY = 0;
+	
+	function midClick( x, y ) {
+		oldMoveX = moveX;
+		oldMoveY = moveY;
+		midClickX = x;
+		midClickY = y;
+	}
 
+	function midDrag( x, y ) {
+		moveX = ( midClickX - x ) / 3 + oldMoveX;
+		moveY = ( midClickY - y ) / 3 + oldMoveY;
+	}
+	
 	return {
-		'setViewportDims': setViewportDims,
-		'click': click,
-		'drag': drag,
-        'get': get,
-        'zoomIn' : zoomIn,
-		'zoomOut' : zoomOut,
-		'setZoom' : setZoom,
+		setViewportDims: setViewportDims,
+		click: click,
+		drag: drag,
+        get: get,
+        zoomIn : zoomIn,
+		zoomOut : zoomOut,
+		setZoom : setZoom,
+		midClick : midClick,
+		midDrag: midDrag
     };
 }));

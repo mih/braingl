@@ -35,10 +35,6 @@ $(window).bind('resize', function() {
 //***************************************************************************************************/
 var leftDown = false;
 var middleDown = false;
-var leftClickX = 0;
-var leftClickY = 0;
-var midClickX = 0;
-var midClickY = 0;
     
 function fixupMouse(event) {
 	event = event || window.event;
@@ -93,15 +89,11 @@ function findPosY(obj) {
 $('#viewer-canvas').mousedown( function (event) {
 	e = fixupMouse(event);
 	if (e.which == 1) {
-		//mat4.set(variables.webgl.thisRot, variables.webgl.lastRot);
 		arcball.click(e.fixedX, e.fixedY);
-		leftClickX = e.fixedX;
-		leftClickY = e.fixedY;
 		leftDown = true;
 	} else if (e.which == 2) {
 		middleDown = true;
-		midClickX = e.fixedX;
-		midClickY = e.fixedY;
+		arcball.midClick(e.fixedX, e.fixedY);
 	}
 	event.preventDefault();
 	viewer.redraw();
@@ -120,18 +112,11 @@ $('#viewer-canvas').mouseup( function (event) {
 
 $('#viewer-canvas').mousemove( function (event) {
 	e = fixupMouse(event);
-	var xMult = 1.0; //game.board().width / mygl.viewportWidth();
-	var yMult = 1.0; //game.board().height / mygl.viewportHeight();
-	
 	if (leftDown) {
 		arcball.drag(e.fixedX, e.fixedY);
-		
-		leftClickX = e.fixedX;
-		leftClickY = e.fixedY;
 	} 
 	else if (middleDown) {
-		midClickX = e.fixedX;
-		midClickY = e.fixedY;
+		arcball.midDrag(e.fixedX, e.fixedY);
 	}
 	event.preventDefault();
 	viewer.redraw();
@@ -150,7 +135,12 @@ $('#viewer-canvas').on("mousewheel", function(event, delta, deltaX, deltaY) {
 
 	viewer.redraw();
 });
-	
+
+//***************************************************************************************************
+//
+// keyboard functions
+//
+//***************************************************************************************************/
 $(document).bind('keypress', function(e) {
     //console.log( "key # " + e.which);
     switch(e.which) {
