@@ -169,7 +169,7 @@ a {
 	cursor: move
 }
 
-#viewer {
+#viewer-div {
 	background: #fefefd;
 	-moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 	-webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);

@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <title>MRI Viewer</title>
         <link rel="stylesheet" type="text/css" href="static/stylesheets/screen.css" />
+        <script data-main="static/javascripts/main" src="static/javascripts/require-jquery.js"></script>
     </head>
     <body>
     	<div class="controlTab" id="links">
@@ -119,22 +120,10 @@
     	<section id="sceneButtons"></section>
     	</div>
 		
-		<div id="viewer">
+		<div id="viewer-div">
 			<canvas id="viewer-canvas"></canvas>
 		</div>
 		<div id="status"></div>
-		<script>window.settings = {'DATA_URL': '/data/'};</script>
-		<script src="static/javascripts/jquery-1.7.2.min.js"></script>
-		<script src="static/javascripts/html5slider.js"></script>
-		<script src="static/javascripts/glMatrix-0.9.5.min.js"></script>
-		<script src="static/javascripts/webgl-utils.js"></script>
-		<script src="static/javascripts/webgl-debug.js"></script>
-		<script src="static/javascripts/pnglib.js"></script>
-		<script src="static/javascripts/arcball.js"></script>
-		<script src="static/javascripts/utils.js"></script>
-		<script src="static/javascripts/niftii.js"></script>
-		<script src="static/javascripts/io.js"></script>
-		<script src="static/javascripts/ui.js"></script>
-		<script src="static/javascripts/viewer.js"></script>
+		<script>window.settings = {'DATA_URL': './data/'};</script>
     </body>
 </html>
