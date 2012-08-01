@@ -1,5 +1,5 @@
-require(["jquery", "mousewheel", "./gfx/mygl", "./gfx/viewer", "./gfx/arcball"], 
-		function($, mousewheel, mygl, viewer, arcball ) {
+define(["jquery", "mousewheel", "io", "./gfx/mygl", "./gfx/viewer", "./gfx/arcball", "./gfx/scene"], 
+		function($, mousewheel, io, mygl, viewer, arcball, scene ) {
 	
 //***************************************************************************************************
 //
@@ -149,5 +149,97 @@ $(document).bind('keypress', function(e) {
             break;
 	}
 });
-	
+
+//***************************************************************************************************
+//
+// element loading, create controls
+//
+//***************************************************************************************************/
+function addElementToUI ( el ) {
+	if ( el.type == "tex" ) {
+		$('#textureSelect').append($('<option></option>').val(el.id).html(el.name));
+		$('#textureSelect2').append($('<option></option>').val(el.id).html(el.name));
+	}
+}
+
+
+//***************************************************************************************************
+//
+// bind controls
+//
+//***************************************************************************************************/
+//**********************************************************************************************************
+//*
+//* mri tab  
+//*
+//**********************************************************************************************************
+// SLICES
+var sliderChangeHandler = function(property) {
+    return function(e) {
+    	var value = "";
+    	value = $(this).val();
+    	if ( $(this).attr('id') === "threshold1" ) {
+    		value = parseFloat($(this).val()).toFixed(3);
+    		document.getElementById('tn').innerHTML = value;
+    	}
+    	else if ( $(this).attr('id') === "threshold2" ) {
+    		value = parseFloat($(this).val()).toFixed(3);
+    		document.getElementById('tp').innerHTML = value;
+    	}
+    	else if ( $(this).attr('id') === "alpha2" ) {
+    		value = parseFloat($(this).val()).toFixed(3);
+    		document.getElementById('texAlpha').innerHTML = value;
+    	}
+    	$(this).parent().find('.value').text(value);
+    	scene.setValue( property, parseFloat(value) );
+    };
+};
+$('#sliceX').bind('change', sliderChangeHandler('sagittal')).trigger('change');
+$('#sliceY').bind('change', sliderChangeHandler('coronal')).trigger('change');
+$('#sliceZ').bind('change', sliderChangeHandler('axial')).trigger('change');
+$('#transp').bind('change', sliderChangeHandler('transparency')).trigger('change');
+$('#threshold1').bind('change', sliderChangeHandler('threshold1')).trigger('change');
+$('#threshold2').bind('change', sliderChangeHandler('threshold2')).trigger('change');
+$('#alpha2').bind('change', sliderChangeHandler('alpha2')).trigger('change');
+
+$('#textureSelect').bind('change',function() {
+	scene.setValue('tex1', $('#textureSelect').val() );
+	$('#sliceX').attr('max', io.niftiis()[$('#textureSelect').val()].getDims()[0] );
+	$('#sliceY').attr('max', io.niftiis()[$('#textureSelect').val()].getDims()[1] );
+	$('#sliceZ').attr('max', io.niftiis()[$('#textureSelect').val()].getDims()[2] );
+});
+
+$('#textureSelect2').bind('change',function() {
+	scene.setValue('tex2', $('#textureSelect2').val() );
+	scene.getColormapValues( true, setColormapValues );
+});
+
+$('#colormapSelect').bind('change',function() {
+	scene.setValue('colormap', $('#colormapSelect').val() );
+	scene.getColormapValues( false, setColormapValues );
+});
+
+function setColormapValues( data ) {
+	$('#colormapSelect option[value='+ data.id + ']').attr('selected', true);
+	$('#threshold1').attr('min', data.t1min );
+	$('#threshold1').attr('max', data.t1max );
+	$('#threshold1').attr('step', data.t1step );
+	$('#threshold2').attr('min', data.t2min );
+	$('#threshold2').attr('max', data.t2max );
+	$('#threshold2').attr('step', data.t2step );
+};
+
+$('#interpolate').bind('click',function() { io.setTexInterpolation( $('#textureSelect').val(), $('#interpolate').attr('checked')?true:false ); });
+
+
+//**********************************************************************************************************
+//*
+//* return visible functions  
+//*
+//**********************************************************************************************************
+return {
+	addElementToUI: addElementToUI
+};
+
+
 });

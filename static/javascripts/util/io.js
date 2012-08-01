@@ -1,9 +1,9 @@
-define( ['./niftii', './gfx/mygl'], (function(niftii, mygl) { 
+define( ["jquery", './niftii', './gfx/mygl'], (function($, niftii, mygl) { 
 
 var niftiis = {};
 var textures =  {};
 var texIds = [];
-texInterpolation = true;
+var interpolate = true;
 
 var meshes = {};
 var fibres = {};
@@ -253,7 +253,7 @@ function loadTexture(el) {
 	niftiis[el.id].name = el.name;
 	
 	textures[el.id] = {};
-//	Viewer.elements.texIds.push(el.id);
+	//texIds.push(el.id);
 }
 
 var waitId=0;
@@ -295,7 +295,7 @@ function waitForTextureLoad() {
 function handleLoadedTexture(texture) {
 	mygl.gl().bindTexture(mygl.gl().TEXTURE_2D, texture);
 	mygl.gl().texImage2D(mygl.gl().TEXTURE_2D, 0, mygl.gl().RGBA, mygl.gl().RGBA, mygl.gl().UNSIGNED_BYTE, texture.image);
-	if ( texInterpolation ) {
+	if ( interpolate ) {
 		mygl.gl().texParameteri(mygl.gl().TEXTURE_2D, mygl.gl().TEXTURE_MAG_FILTER, mygl.gl().LINEAR);
 		mygl.gl().texParameteri(mygl.gl().TEXTURE_2D, mygl.gl().TEXTURE_MIN_FILTER, mygl.gl().LINEAR);
 	}
@@ -313,7 +313,7 @@ function handleLoadedTexture(texture) {
 //	load functions
 //
 //***************************************************************************************************/
-function loadElements(elementsToLoad) {
+function loadElements( uiCallback ) {
 	//$(viewer).trigger('loadElementsStart');
 	
 	 $.getJSON(settings.DATA_URL + "elements.json", function(data) {
@@ -333,11 +333,8 @@ function loadElements(elementsToLoad) {
     			//loadFibre(el);
     			break;
     		case "texture" :
-    			loadTexture(el);
-//    			$(viewer).trigger('loadTexture', {
-//    				'id' : el.id,
-//    				'name' : el.name
-//    			});
+    			loadTexture(el, uiCallback );
+    			uiCallback( {'id' : el.id, 'name' : el.name, 'type' : 'tex'} );
     			break;
     			default:
     		}
@@ -437,11 +434,20 @@ function loadScenes() {
 	});
 }
 
+function setTexInterpolation ( id, v ) {
+	$.each(niftiis, function() {
+		textures[this.id] = {};
+	});
+	interpolate = !v;
+}
+
 return {
 	loadElements : loadElements,
 	loadTexture : loadTexture,
 	getTexture : getTexture,
+	setTexInterpolation : setTexInterpolation,
 	
+	niftiis : function() {return niftiis;},
 	textures : function() {return textures;},
 	meshes : function() {return meshes;},
 	fibres : function() {return fibres;},

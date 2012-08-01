@@ -1,5 +1,5 @@
-define( ["./mygl", "io", "./arcball", "./glMatrix-0.9.5.min"], 
-		(function(mygl, io, arcball ) { 
+define( ['./mygl', 'io', './arcball', './scene', './glMatrix-0.9.5.min'], 
+		(function(mygl, io, arcball, scene ) { 
 			
 			
 			elements.fibres = {};
@@ -24,22 +24,7 @@ mat4.identity( variables.webgl.mvMatrix );
 variables.webgl.pMatrix = mat4.create(); // projection matrix
 variables.webgl.lightPos = vec3.create(); // light position
 
-//state of the currently displayed scene
-variables.scene = {};
-variables.scene.zoom = 1.0;
-variables.scene.axial = 80;
-variables.scene.coronal = 100;
-variables.scene.sagittal = 80;
-variables.scene.tex1 = 'tex1';
-variables.scene.tex2 = "none"; //"fmri1";
-variables.scene.localFibreColor = false;
-variables.scene.showSlices = true;
-variables.scene.renderTubes = true;
-variables.scene.texThreshold1 = 1.0;
-variables.scene.texThreshold2 = 1.0;
-variables.scene.colormap = 1.0;
-variables.scene.texAlpha2 = 1.0;
-variables.scene.texInterpolation = true;
+
 
 
 //***************************************************************************************************
@@ -148,7 +133,7 @@ function draw() {
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, peels['C0'], 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    if ( variables.scene.showSlices ) {
+    if ( scene.getValue( 'showSlices' ) ) {
 		drawSlices();
 	}
 	$.each(elements.meshes, function() {
@@ -170,7 +155,7 @@ function draw() {
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
-	if ( variables.scene.showSlices ) {
+	if ( scene.getValue( 'showSlices' ) ) {
 		drawSlices();
 	}
 	
@@ -406,7 +391,7 @@ function drawSlices() {
 	
 	var axialPosBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, axialPosBuffer);
-	var ap = variables.scene.axial + 0.5;
+	var ap = scene.ival( 'axial' ) + 0.5;
 	var vertices = [ 0,   0,   ap, 0.0, 0.0, 
 	                 256, 0.5, ap, 1.0, 0.0,
 	                 256, 256, ap, 1.0, 1.0,
@@ -423,20 +408,20 @@ function drawSlices() {
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW);
 
 	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, io.getTexture(variables.scene.tex1, 'axial', variables.scene.axial));
+	gl.bindTexture(gl.TEXTURE_2D, io.getTexture(scene.getValue( 'tex1' ), 'axial', scene.ival( 'axial' )));
 	gl.uniform1i(shaders['slice'].uSampler, 0);
 	gl.uniform1i(shaders['slice'].uMinorMode, variables.webgl.minorMode );
 
-	if (variables.scene.tex2 != "none") {
+	if ( scene.getValue( 'tex2' ) != 'none' ) {
 		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, io.getTexture(variables.scene.tex2, 'axial', variables.scene.axial));
+		gl.bindTexture(gl.TEXTURE_2D, io.getTexture(scene.getValue( 'tex2' ), 'axial', scene.ival( 'axial' )));
 		gl.uniform1i(shaders['slice'].uSampler1, 1);
-		gl.uniform1i(shaders['slice'].uColorMap,variables.scene.colormap);
-		gl.uniform1f(shaders['slice'].uMin, elements.niftiis[variables.scene.tex2].getMin() );
-		gl.uniform1f(shaders['slice'].uMax, elements.niftiis[variables.scene.tex2].getMax() );
-		gl.uniform1f(shaders['slice'].uThreshold1, variables.scene.texThreshold1);
-		gl.uniform1f(shaders['slice'].uThreshold2, variables.scene.texThreshold2);
-		gl.uniform1f(shaders['slice'].uAlpha2, variables.scene.texAlpha2);
+		gl.uniform1i(shaders['slice'].uColorMap,scene.ival( 'colormap' ));
+		gl.uniform1f(shaders['slice'].uMin, io.niftiis()[scene.getValue( 'tex2' )].getMin() );
+		gl.uniform1f(shaders['slice'].uMax, io.niftiis()[scene.getValue( 'tex2' )].getMax() );
+		gl.uniform1f(shaders['slice'].uThreshold1, scene.fval( 'threshold1' ));
+		gl.uniform1f(shaders['slice'].uThreshold2, scene.fval( 'threshold2' ));
+		gl.uniform1f(shaders['slice'].uAlpha2, scene.fval( 'alpha2' ));
 	}
 
 	gl.uniformMatrix4fv(shaders['slice'].uPMatrix, false, variables.webgl.pMatrix);
@@ -447,7 +432,7 @@ function drawSlices() {
 
 	var coronalPosBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, coronalPosBuffer);
-	var cp = variables.scene.coronal + 0.5;
+	var cp = scene.ival( 'coronal' ) + 0.5;
 	var vertices = [ 0,   cp, 0,   0.0, 0.0,
 	                 256, cp, 0,   1.0, 0.0,
 	                 256, cp, 256, 1.0, 1.0,
@@ -464,12 +449,12 @@ function drawSlices() {
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW);
 
 	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, io.getTexture(variables.scene.tex1, 'coronal', variables.scene.coronal));
+	gl.bindTexture(gl.TEXTURE_2D, io.getTexture(scene.getValue( 'tex1' ), 'coronal', scene.ival( 'coronal' )));
 	gl.uniform1i(shaders['slice'].sampler, 0);
 
-	if (variables.scene.tex2 != "none") {
+	if (scene.getValue( 'tex2' ) != 'none') {
 		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, io.getTexture(variables.scene.tex2, 'coronal', variables.scene.coronal));
+		gl.bindTexture(gl.TEXTURE_2D, io.getTexture(scene.getValue( 'tex2' ), 'coronal', scene.ival( 'coronal' )));
 		gl.uniform1i(shaders['slice'].uSampler1, 1);
 	}
 
@@ -478,7 +463,7 @@ function drawSlices() {
 	
 	var sagittalPosBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, sagittalPosBuffer);
-	var sp = variables.scene.sagittal + 0.5;
+	var sp = scene.ival( 'sagittal' ) + 0.5;
 	var vertices = [ sp, 0,   0,   0.0, 0.0,
 	                 sp, 0,   256, 0.0, 1.0,
 	                 sp, 256, 256, 1.0, 1.0,
@@ -494,12 +479,12 @@ function drawSlices() {
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW);
 
 	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, io.getTexture(variables.scene.tex1, 'sagittal', variables.scene.sagittal));
+	gl.bindTexture(gl.TEXTURE_2D, io.getTexture(scene.getValue( 'tex1' ), 'sagittal', scene.ival( 'sagittal' )));
 	gl.uniform1i(shaders['slice'].sampler, 0);
 
-	if (variables.scene.tex2 != "none") {
+	if (scene.getValue( 'tex2' ) != 'none') {
 		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, io.getTexture(variables.scene.tex2, 'sagittal', variables.scene.sagittal));
+		gl.bindTexture(gl.TEXTURE_2D, io.getTexture(scene.getValue( 'tex2' ), 'sagittal', scene.ival( 'sagittal' )));
 		gl.uniform1i(shaders['slice'].uSampler1, 1);
 	}
 
@@ -524,6 +509,7 @@ function resetView() {
 
 	redraw();
 }
+
 
 //***************************************************************************************************
 //

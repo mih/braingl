@@ -59,7 +59,7 @@ require(["jquery", "ui", "io", "./gfx/viewer", "./gfx/mygl"],
                 };
             }, 200);
             
-            io.loadElements();
+            io.loadElements( ui.addElementToUI );
         });      
         
         // method for synchronous loading of json files
