@@ -100,6 +100,23 @@ function toggleElement(id, callback) {
 	}
 }
 
+function getElementAlpha(id) {
+	if ( io.meshes()[id] ) {
+		return io.meshes()[id].transparency;
+	}
+	if ( io.fibres()[id] ) {
+		return io.fibres()[id].transparency;
+	}
+}
+
+function setElementAlpha(id, alpha) {
+	if ( io.meshes()[id] ) {
+		io.meshes()[id].transparency = alpha;
+	}
+	if ( io.fibres()[id] ) {
+		io.fibres()[id].transparency = alpha;
+	}
+}
 
 return {
 	setValue : setValue,
@@ -107,6 +124,9 @@ return {
 	ival : ival,
 	fval : fval,
 	getColormapValues: getColormapValues,
-	toggleElement : toggleElement
+	toggleElement : toggleElement,
+	getElementAlpha : getElementAlpha,
+	setElementAlpha : setElementAlpha,
+	
 };
 }));

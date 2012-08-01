@@ -366,6 +366,25 @@ function setColormapValues( data ) {
 $('#interpolate').bind('click',function() { io.setTexInterpolation( $('#textureSelect').val(), $('#interpolate').attr('checked')?true:false ); });
 
 
+
+//**********************************************************************************************************
+//*
+//* elements tab  
+//*
+//**********************************************************************************************************
+$('#elementSelect').change( function() { 
+	$('#elementAlpha').val( scene.getElementAlpha( $('#elementSelect option:selected').val() ) * 100 );
+});
+
+var elementAlphaHandler = function() {
+    return function(e) {
+    	scene.setElementAlpha( $('#elementSelect option:selected').val(), $('#elementAlpha').val() / 100 );
+    };
+};
+
+$('#elementAlpha').bind('change', elementAlphaHandler() ).trigger('change');
+
+
 //**********************************************************************************************************
 //*
 //* return visible functions  

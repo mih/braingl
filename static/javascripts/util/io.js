@@ -119,10 +119,9 @@ function loadMesh( el, elementLoaded ) {
 		element.pickColor = pc;
 		
 		meshes[el.id] = element;
+		
+		elementLoaded( el );
 	});
-	
-	
-	elementLoaded( el );
 }
 
 function loadFibre(el, elementLoaded) {
