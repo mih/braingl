@@ -11,7 +11,7 @@ requirejs.config({
     }
 });
 
-require(["jquery", "ui", "io", "./gfx/viewer", "./gfx/mygl"], 
+require(['jquery', 'ui', 'io', './gfx/viewer', './gfx/mygl', 'html5slider'], 
 		function($, ui, io, viewer, mygl ) {
     $(function() {
     	// Sobald wir mit dem DOM arbeiten koennen,
