@@ -254,6 +254,8 @@ function elementLoaded( el ) {
 		$('#sliceY').attr('max', io.niftiis()[$('#textureSelect').children().first().val()].getDims()[1] );
 		$('#sliceZ').attr('max', io.niftiis()[$('#textureSelect').children().first().val()].getDims()[2] );
 		
+		
+		scene.init();
 		scene.setValue('loadingComplete', true );
     }
 }

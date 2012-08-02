@@ -18,6 +18,13 @@ variables["alpha2"] = 1.0;
 variables["interpolate"] = true;
 variables["loadingComplete"] = false;
 
+var meshes = {};
+var fibres = {};
+
+function init () {
+	meshes = io.meshes();
+	fibres = io.fibres();
+}
 
 function getValue( name ) {
 	return variables[name];
@@ -84,8 +91,6 @@ function getColormapValues( suggest, callback ) {
 }
 
 function toggleElement(id, callback) {
-	var meshes = io.meshes();
-	var fibres = io.fibres();
 	if (id in meshes) {
 		meshes[id].display = !meshes[id].display;
 		callback( id, meshes[id].display);
@@ -101,20 +106,20 @@ function toggleElement(id, callback) {
 }
 
 function getElementAlpha(id) {
-	if ( io.meshes()[id] ) {
-		return io.meshes()[id].transparency;
+	if ( meshes[id] ) {
+		return meshes[id].transparency;
 	}
-	if ( io.fibres()[id] ) {
-		return io.fibres()[id].transparency;
+	if ( io.fibres[id] ) {
+		return fibres[id].transparency;
 	}
 }
 
 function setElementAlpha(id, alpha) {
-	if ( io.meshes()[id] ) {
-		io.meshes()[id].transparency = alpha;
+	if ( meshes[id] ) {
+		meshes[id].transparency = alpha;
 	}
-	if ( io.fibres()[id] ) {
-		io.fibres()[id].transparency = alpha;
+	if ( fibres[id] ) {
+		fibres[id].transparency = alpha;
 	}
 }
 
@@ -123,6 +128,7 @@ function toggleValue( name ) {
 }
 
 return {
+	init : init,
 	setValue : setValue,
 	getValue : getValue,
 	ival : ival,
