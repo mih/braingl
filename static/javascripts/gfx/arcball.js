@@ -13,12 +13,8 @@ define ( ["./glMatrix-0.9.5.min"], (function() {
 	var m_rot = mat4.create();				 			// current rotation matrix
 	mat4.identity(m_rot);
 	var v_from = vec3.create();
-	
 	var lastRot = mat4.create();
 	mat4.identity( lastRot );
-	
-	var returnRot = mat4.create();
-	mat4.identity( returnRot );
 	
 	/// maps the specified mouse position to the sphere defined
 	/// with center and radius. the resulting vector lies on the
@@ -179,6 +175,14 @@ define ( ["./glMatrix-0.9.5.min"], (function() {
 		moveY = ( midClickY - y ) / 3 + oldMoveY;
 	}
 	
+	function reset() {
+		m_rot = mat4.create();				 			// current rotation matrix
+		mat4.identity(m_rot);
+		v_from = vec3.create();
+		lastRot = mat4.create();
+		mat4.identity( lastRot );
+	} 
+	
 	return {
 		setViewportDims: setViewportDims,
 		click: click,
@@ -188,6 +192,7 @@ define ( ["./glMatrix-0.9.5.min"], (function() {
 		zoomOut : zoomOut,
 		setZoom : setZoom,
 		midClick : midClick,
-		midDrag: midDrag
+		midDrag: midDrag,
+		reset: reset
     };
 }));

@@ -786,9 +786,10 @@ function bindFibreBuffers(elem) {
 //
 //***************************************************************************************************/
 function resetView() {
+	arcball.reset();
 	arcball.setViewportDims( mygl.viewportWidth(), mygl.viewportHeight() );
 	arcball.setZoom( 1.0 );
-
+	
 	redraw();
 }
 
