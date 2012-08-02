@@ -6,7 +6,7 @@ variables["zoom"] = 1.0;
 variables["axial"] = 80;
 variables["coronal"] = 100;
 variables["sagittal"] = 80;
-variables["tex1"] = 'tex1';
+variables["tex1"] = 'none';
 variables["tex2"] = "none"; //"fmri1";
 variables["localFibreColor"] = false;
 variables["showSlices"] = true;
@@ -100,6 +100,27 @@ function toggleElement(id, callback) {
 	}
 }
 
+function getElementAlpha(id) {
+	if ( io.meshes()[id] ) {
+		return io.meshes()[id].transparency;
+	}
+	if ( io.fibres()[id] ) {
+		return io.fibres()[id].transparency;
+	}
+}
+
+function setElementAlpha(id, alpha) {
+	if ( io.meshes()[id] ) {
+		io.meshes()[id].transparency = alpha;
+	}
+	if ( io.fibres()[id] ) {
+		io.fibres()[id].transparency = alpha;
+	}
+}
+
+function toggleValue( name ) {
+	variables[name] = !variables[name];
+}
 
 return {
 	setValue : setValue,
@@ -107,6 +128,10 @@ return {
 	ival : ival,
 	fval : fval,
 	getColormapValues: getColormapValues,
-	toggleElement : toggleElement
+	toggleElement : toggleElement,
+	getElementAlpha : getElementAlpha,
+	setElementAlpha : setElementAlpha,
+	toggleValue : toggleValue
+	
 };
 }));
