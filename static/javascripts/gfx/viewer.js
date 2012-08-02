@@ -631,7 +631,7 @@ function setFibreLineUniforms() {
 	gl.uniformMatrix4fv(shaders['fibre_l'].uMVMatrix, false, variables.webgl.mvMatrix);
 	gl.uniform1f(shaders['fibre_l'].uAlpha, 1.0);
 	gl.uniform3f(shaders['fibre_l'].uLightLocation, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
-	gl.uniform1i(shaders['fibre_l'].uFibreColorMode, variables.scene.localFibreColor);
+	gl.uniform1i(shaders['fibre_l'].uFibreColorMode, scene.getValue('localFibreColor'));
 }
 
 
@@ -747,7 +747,7 @@ function drawFibersTransp(elem) {
 		gl.uniformMatrix4fv(shaders['fibre_l_transp'].uMVMatrix, false, variables.webgl.mvMatrix);
 		gl.uniform1f(shaders['fibre_l_transp'].uAlpha, 1.0);
 		gl.uniform3f(shaders['fibre_l_transp'].uLightLocation, variables.webgl.lightPos[0], variables.webgl.lightPos[1], variables.webgl.lightPos[2]);
-		gl.uniform1i(shaders['fibre_l_transp'].uFibreColorMode, variables.scene.localFibreColor);
+		gl.uniform1i(shaders['fibre_l_transp'].uFibreColorMode, scene.getValue('localFibreColor'));
 		
 		gl.enableVertexAttribArray(shaders['fibre_l_transp'].aVertexPosition);
 		gl.enableVertexAttribArray(shaders['fibre_l_transp'].aVertexNormal);

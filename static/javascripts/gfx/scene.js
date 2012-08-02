@@ -118,6 +118,10 @@ function setElementAlpha(id, alpha) {
 	}
 }
 
+function toggleValue( name ) {
+	variables[name] = !variables[name];
+}
+
 return {
 	setValue : setValue,
 	getValue : getValue,
@@ -127,6 +131,7 @@ return {
 	toggleElement : toggleElement,
 	getElementAlpha : getElementAlpha,
 	setElementAlpha : setElementAlpha,
+	toggleValue : toggleValue
 	
 };
 }));

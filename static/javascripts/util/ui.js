@@ -186,18 +186,27 @@ function toggleCallback (id, active) {
 	 $('#toggle-' + id).toggleClass('active', active);
 }
 
+var elementsLoading = 0;
+var allStarted = false;
 function loadElementStart( el ) {
 	addElementToUI( el );
+	++elementsLoading;
 }
 
 function elementLoaded( el ) {
 	console.log( 'finished loading ' + el.id );
 	$('#toggle-' + el.id).removeClass('disabled');
     $('#toggle-' + el.id).toggleClass('active', el.display);
+    --elementsLoading;
+    
+    if ( allStarted && elementsLoading == 0 ) {
+	    console.log( 'all elements loaded' );
+		scene.setValue('loadingComplete', true );
+		$('#status').css('display', 'none');
+    }
 }
 function allElementsLoaded() {
-	console.log( 'all elements loaded' );
-	scene.setValue('loadingComplete', true );
+	allStarted = true;
 } 
 
 
@@ -383,6 +392,17 @@ var elementAlphaHandler = function() {
 };
 
 $('#elementAlpha').bind('change', elementAlphaHandler() ).trigger('change');
+
+
+//**********************************************************************************************************
+//*
+//*  controls tab
+//*
+//**********************************************************************************************************
+$('#button_localFiberColor').bind('click',function() { scene.toggleValue('localFibreColor'); });
+$('#button_textureInterpolation').bind('click',function() { scene.toggleValue('renderTubes'); });
+$('#button_toggleSlices').bind('click',function() { scene.toggleValue('showSlices'); });
+//$('#button_toggleTooltips').bind('click',function() { Viewer.control('tooltips'); });
 
 
 //**********************************************************************************************************
