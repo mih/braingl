@@ -93,6 +93,8 @@ function drawScene() {
 		mat4.ortho( -100, 100, -100/ ratio, 100 / ratio, -500, 500, variables.webgl.pMatrix );
 	}
 
+	variables.webgl.mvMatrix.set( arcball.get() );
+	
 	variables.webgl.lightPos[0] = 0.0;
 	variables.webgl.lightPos[1] = 0.0;
 	variables.webgl.lightPos[2] = -1.0;
@@ -102,10 +104,6 @@ function drawScene() {
 	mat4.transpose( lightMat );
 	
 	mat4.multiplyVec3(lightMat, variables.webgl.lightPos);
-
-	
-	variables.webgl.mvMatrix.set( arcball.get() );
-	
 
 	gl.enable(gl.DEPTH_TEST);
 	
