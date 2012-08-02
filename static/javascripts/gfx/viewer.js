@@ -1,9 +1,6 @@
 define( ['./mygl', 'io', './arcball', './scene', './glMatrix-0.9.5.min'], 
 		(function(mygl, io, arcball, scene ) { 
 			
-			
-			fibres = {};
-			elements.meshes = {};			
 //***************************************************************************************************
 //
 //	definition of global variables

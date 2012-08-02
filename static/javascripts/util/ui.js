@@ -7,8 +7,13 @@ define(["jquery", "mousewheel", "io", "./gfx/mygl", "./gfx/viewer", "./gfx/arcba
 //
 //***************************************************************************************************/
 $(window).bind('resize', function() {
+	var leftOffset = ( $('#links').css('display') == 'none' ) ? 0 : parseInt( $('#links').css('width') ) + 15;
+	
+    
+	$('#viewer-div').css('left', leftOffset  );
+	
+    $('#viewer-div').width( $(document).width() - ( leftOffset + 10 ) );
     $('#viewer-div').height( $(document).height() - 10 );
-    $('#viewer-div').width( $(document).width() - ( $('#links').width() +  25 ) );
     var $vc = $('#viewer-canvas');
     $vc.height( $('#viewer-div').height() );
     $vc.width( $('#viewer-div').width() );
@@ -26,7 +31,36 @@ $(window).bind('resize', function() {
 	viewer.redraw();
 });	
 	
-	
+var tabStatus = {};	
+function toogleFullScreen () {
+	if ( $('#links').css('display') == 'none' ) {
+		$('#links').css('display', 'block');
+		$('#divViewButtons').css('display', 'block');
+		$('#divSceneButtons').css('display', 'block');
+		
+		$('#infoTab').css('display', tabStatus['infoTab']);
+		$('#controlTab1').css('display', tabStatus['controlTab1']);
+		$('#mriTab').css('display', tabStatus['mriTab']);
+		$('#elementTab').css('display', tabStatus['elementTab']);
+	} 
+	else {
+		$('#links').css('display', 'none');
+		$('#divViewButtons').css('display', 'none');
+		$('#divSceneButtons').css('display', 'none');
+		
+		tabStatus['infoTab'] = $('#infoTab').css('display');
+		tabStatus['controlTab1'] = $('#controlTab1').css('display');
+		tabStatus['mriTab'] = $('#mriTab').css('display');
+		tabStatus['elementTab'] = $('#elementTab').css('display');
+		
+		
+		$('#infoTab').css('display', 'none');
+		$('#controlTab1').css('display', 'none');
+		$('#mriTab').css('display', 'none');
+		$('#elementTab').css('display', 'none');
+	}
+	$(window).trigger('resize');
+}
 	
 //***************************************************************************************************
 //
@@ -142,13 +176,24 @@ $('#viewer-canvas').on("mousewheel", function(event, delta, deltaX, deltaY) {
 //
 //***************************************************************************************************/
 $(document).bind('keypress', function(e) {
-    console.log( "key # " + e.which);
+    //console.log( "key # " + e.which);
     switch(e.which) {
         case 32: // Spacebar
             viewer.resetView();
             break;
+        case 102: // f
+        	toogleFullScreen();
+        	break;
 	}
 });
+
+//***************************************************************************************************
+//
+// misc functions
+//
+//***************************************************************************************************/
+
+
 
 //***************************************************************************************************
 //
@@ -198,11 +243,18 @@ function elementLoaded( el ) {
 	$('#toggle-' + el.id).removeClass('disabled');
     $('#toggle-' + el.id).toggleClass('active', el.display);
     --elementsLoading;
-    
+
     if ( allStarted && elementsLoading == 0 ) {
+        // here everything is loaded 
 	    console.log( 'all elements loaded' );
-		scene.setValue('loadingComplete', true );
 		$('#status').css('display', 'none');
+		
+		scene.setValue('tex1', $('#textureSelect').children().first().val() );
+		$('#sliceX').attr('max', io.niftiis()[$('#textureSelect').children().first().val()].getDims()[0] );
+		$('#sliceY').attr('max', io.niftiis()[$('#textureSelect').children().first().val()].getDims()[1] );
+		$('#sliceZ').attr('max', io.niftiis()[$('#textureSelect').children().first().val()].getDims()[2] );
+		
+		scene.setValue('loadingComplete', true );
     }
 }
 function allElementsLoaded() {
@@ -413,7 +465,8 @@ $('#button_toggleSlices').bind('click',function() { scene.toggleValue('showSlice
 return {
 	loadElementStart: loadElementStart,
 	elementLoaded : elementLoaded, 
-	allElementsLoaded : allElementsLoaded 
+	allElementsLoaded : allElementsLoaded,
+	toogleFullScreen : toogleFullScreen
 };
 
 
