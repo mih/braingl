@@ -578,9 +578,6 @@ function drawMeshTransp(elem) {
 	
 	setPeelUniforms( 'mesh_transp' );
 	
-
-	gl.enableVertexAttribArray(shaders['mesh_transp'].aVertexPosition);
-		
 	if ( !elem.hasBuffer ) {
 		bindMeshBuffers(elem);
 	}
