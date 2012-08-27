@@ -1,4 +1,4 @@
-define ( ["./gl-matrix-min"], (function() {
+define ( ["./glMatrix-0.9.5.min"], (function() {
 	
 	var Epsilon = 0.00001;
 	var width = 500; 										// width of window

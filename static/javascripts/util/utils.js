@@ -1,4 +1,4 @@
-define( ['./gfx/gl-matrix-min'], (function() {
+define( ['./gfx/glMatrix-0.9.5.min'], (function() {
 
 // some variables from the dataset we use
 // these must be changed if another dataset is used for correct coordinate transformation

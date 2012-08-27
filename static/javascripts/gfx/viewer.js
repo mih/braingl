@@ -1,4 +1,4 @@
-define( ['./mygl', 'io', './arcball', './scene', './gl-matrix-min'], 
+define( ['./mygl', 'io', './arcball', './scene', './glMatrix-0.9.5.min'], 
 		(function(mygl, io, arcball, scene ) { 
 			
 //***************************************************************************************************
