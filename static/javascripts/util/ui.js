@@ -184,7 +184,26 @@ $(document).bind('keypress', function(e) {
         case 102: // f
         	toogleFullScreen();
         	break;
-	}
+        case 120:
+            scene.setValue("sagittal",scene.getValue("sagittal")+1); 
+            break;
+        case 88:
+            scene.setValue("sagittal",scene.getValue("sagittal")-1); 
+            break;
+        case 121:
+            scene.setValue("coronal",scene.getValue("coronal")+1); 
+            break;
+        case 89:
+            scene.setValue("coronal",scene.getValue("coronal")-1); 
+            break;
+        case 122:
+            scene.setValue("axial",scene.getValue("axial")+1); 
+            break;
+        case 90:
+            scene.setValue("axial",scene.getValue("axial")-1); 
+            break;
+
+            }
 });
 
 //***************************************************************************************************
@@ -257,6 +276,15 @@ function elementLoaded( el ) {
 		
 		scene.init();
 		scene.setValue('loadingComplete', true );
+
+        var x = io.niftiis()[$('#textureSelect').children().first().val()].getDims()[0] / 2;
+		var y = io.niftiis()[$('#textureSelect').children().first().val()].getDims()[1] / 2;
+		var z = io.niftiis()[$('#textureSelect').children().first().val()].getDims()[2] / 2;
+		console.log( "hallo" +  x + " " + y + " " + z );
+		scene.setValue('sagittal', x );
+		scene.setValue('coronal', y );
+		scene.setValue('axial', z );
+		arcball.setCenter( x, y ,z );
     }
 }
 function allElementsLoaded() {
