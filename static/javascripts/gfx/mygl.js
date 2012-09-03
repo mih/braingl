@@ -1,4 +1,4 @@
-define( ["jquery", 'io', 'webgl-debug'], (function($) {
+define( ["jquery", 'io', './webgl-debug'], (function($) {
 
 var gl = {}; // stores the webgl context
 var shaders = {}; // set storing the shaders
