@@ -20,6 +20,7 @@ variables.webgl.mvMatrix = mat4.create(); // model view matrix
 mat4.identity( variables.webgl.mvMatrix );
 variables.webgl.pMatrix = mat4.create(); // projection matrix
 variables.webgl.lightPos = vec3.create(); // light position
+variables.webgl.clearColor = {};
 
 
 
@@ -36,11 +37,20 @@ function init(opts, callback) {
 	shaders = mygl.shaderPrograms();
 	
 	if ('backgroundColor' in opts) {
-		gl.clearColor(opts.backgroundColor[0], opts.backgroundColor[1], opts.backgroundColor[2], 0.0);
+		variables.webgl.clearColor.r = opts.backgroundColor[0];
+		variables.webgl.clearColor.g = opts.backgroundColor[1];
+		variables.webgl.clearColor.b = opts.backgroundColor[2];
+		variables.webgl.clearColor.a = opts.backgroundColor[3];
+		
+		
 	} else {
-		gl.clearColor(1.0, 1.0, 1.0, 0.0);
+		variables.webgl.clearColor.r = 1.0;
+		variables.webgl.clearColor.g = 1.0;
+		variables.webgl.clearColor.b = 1.0;
+		variables.webgl.clearColor.a = 0.0;
+		
 	}
-	
+	gl.clearColor( variables.webgl.clearColor.r,variables.webgl.clearColor.g,variables.webgl.clearColor.b,variables.webgl.clearColor.a);
 	resetView();
 
 	callback();
@@ -127,6 +137,7 @@ function draw() {
 	gl.enable(gl.DEPTH_TEST);
 	gl.depthFunc(gl.LEQUAL);
     gl.clearDepth(1);
+	gl.clearColor( variables.webgl.clearColor.r,variables.webgl.clearColor.g,variables.webgl.clearColor.b,variables.webgl.clearColor.a);
     
     var peels = mygl.peels();
     var peelFramebuffer = mygl.peelFramebuffer();
@@ -160,7 +171,6 @@ function draw() {
 	// set render target to D0
 	gl.bindFramebuffer( gl.FRAMEBUFFER, peelFramebuffer );
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, peels['D0'], 0);
-    gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
 	if ( scene.getValue( 'showSlices' ) ) {

@@ -280,7 +280,7 @@ function elementLoaded( el ) {
         var x = io.niftiis()[$('#textureSelect').children().first().val()].getDims()[0] / 2;
 		var y = io.niftiis()[$('#textureSelect').children().first().val()].getDims()[1] / 2;
 		var z = io.niftiis()[$('#textureSelect').children().first().val()].getDims()[2] / 2;
-		console.log( "hallo" +  x + " " + y + " " + z );
+		
 		scene.setValue('sagittal', x );
 		scene.setValue('coronal', y );
 		scene.setValue('axial', z );

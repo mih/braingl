@@ -22,8 +22,8 @@ var sizeMult = 1;
 //
 //***************************************************************************************************/
 function initGL(canvas) {
-	//gl = WebGLDebugUtils.makeDebugContext(canvas.getContext("experimental-webgl"));
-	gl = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
+	gl = WebGLDebugUtils.makeDebugContext(canvas.getContext("experimental-webgl"));
+	//gl = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
 	//gl = canvas.getContext("experimental-webgl", { alpha: false } );
 	viewportWidth =  $(canvas).width();
 	viewportHeight = $(canvas).height();
