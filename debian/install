@@ -1,0 +1,4 @@
+static/images            /usr/share/javascript/braingl
+static/javascripts       /usr/share/javascript/braingl
+static/shaders           /usr/share/javascript/braingl
+static/stylesheets       /usr/share/javascript/braingl

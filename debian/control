@@ -1,0 +1,19 @@
+Source: braingl
+Section: web
+Priority: extra
+Maintainer: NeuroDebian Team <team@neuro.debian.org>
+Uploaders: Michael Hanke <mih@debian.org>
+Build-Depends: debhelper (>= 9~)
+Standards-Version: 3.9.3
+Homepage: http://braingl.de
+Vcs-Browser: http://git.debian.org/?p=pkg-exppsy/braingl.git
+Vcs-Git: git://git.debian.org/git/pkg-exppsy/braingl.git
+
+Package: libjs-braingl
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends}, libjs-jquery, libjs-jquery-mousewheel
+Recommends: javascript-common
+Description: JavaScript library providing a WebGL-based viewer for MRI-images
+ This is a JavaScript that allows for straighforward visualization of
+ volumetric and surface data from magnetic reasonance imaging (MRI).

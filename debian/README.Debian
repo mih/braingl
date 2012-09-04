@@ -1,0 +1,20 @@
+braingl for Debian
+------------------
+
+If you wish to include braingl in your HTML files which are served
+via a webserver you should add the following lines to your <HEAD>
+section:
+
+        <script language="javascript" type="text/javascript"
+        src="/javascript/braingl/javascripts/require-jquery.js"
+        data-main="/javascript/braingl/javascripts/main"></script>
+
+If you're generating files which are going to be served via the
+filesystem (such that no HTTP server is used) instead you should
+access braingl via the filesystem path :
+
+        <script language="javascript" type="text/javascript"
+        src="/usr/share/javascript/braingl/javascripts/require-jquery.js"
+        data-main="/usr/share/javascript/braingl/javascripts/main"></script>
+
+ -- Michael Hanke <mih@debian.org>  Mon, 3 Sep 2012 08:44:80 +0000 
