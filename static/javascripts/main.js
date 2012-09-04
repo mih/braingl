@@ -53,7 +53,7 @@ require(['jquery', 'ui', 'io', './gfx/viewer', './gfx/mygl', 'html5slider'],
                 	}
                 	                	
                 	viewer.init({
-                	    'backgroundColor': [0.99,0.99,0.98,1]
+                	    'backgroundColor': [1.0,1.0,1.0,1]
                 	}, loadElements);
                 	$(window).trigger('resize');
                 };

@@ -6,6 +6,9 @@ define ( ["./glMatrix-0.9.5.min"], (function() {
 	var adjust_width  = 1.0 / ((width - 1.0) * 0.5);
 	var adjust_height = 1.0 / ((height - 1.0) * 0.5);
 	var zoom = 1.0;
+    var xCenter = 80;
+    var yCenter = 100;
+    var zCenter = 80;
 
 	var v_mouse_current = vec3.create();  		// mouse position at the beginning of dragging
 	var v_mouse_down = vec3.create();  			// mouse position at the beginning of dragging
@@ -122,9 +125,9 @@ define ( ["./glMatrix-0.9.5.min"], (function() {
 		mat4.inverse( m_rot );
 		
 		var halfMove = vec3.create();
-		halfMove[0] = -80;
-		halfMove[1] = -100;
-		halfMove[2] = -80;
+		halfMove[0] = -xCenter;
+		halfMove[1] = -yCenter;
+		halfMove[2] = -zCenter;
 		
 		mat4.translate( mv, halfMove );
 		
@@ -183,6 +186,13 @@ define ( ["./glMatrix-0.9.5.min"], (function() {
 		mat4.identity( lastRot );
 	} 
 	
+    
+    function setCenter( x, y, z ) {
+		xCenter = x;
+		yCenter = y;
+		zCenter = z;
+	}
+	
 	return {
 		setViewportDims: setViewportDims,
 		click: click,
@@ -193,6 +203,7 @@ define ( ["./glMatrix-0.9.5.min"], (function() {
 		setZoom : setZoom,
 		midClick : midClick,
 		midDrag: midDrag,
-		reset: reset
+		setCenter: setCenter,
+        reset : reset
     };
 }));

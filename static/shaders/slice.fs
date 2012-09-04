@@ -88,12 +88,14 @@ void main(void)
 			float val = fragmentColor1.r * ( uMax - uMin );
 			if ( uColorMap == 3 )
 			{
+				
 				val = ( val + uMin ) / uMax;
-				val = val - uThreshold2;
+				val = val - ( uThreshold2/ uMax );
+				
 				if ( val > 0.0 )
 				{
-					val = val / ( 1.0 - uThreshold2 );
-					c = rainbowColorMap( fragmentColor1.r );
+					val = val / ( 1.0 - (uThreshold2/ uMax) );
+					c = rainbowColorMap( val );
 				}
 			}
 			else
@@ -103,10 +105,10 @@ void main(void)
 					if ( val < uMin * -1.0 )
 					{
 						val = 1.0 - ( ( val ) / ( uMin * -1.0 ) );
-						val = val - abs(uThreshold1);
+						val = val - abs(uThreshold1/uMin);
 						if ( val > 0.0 )
 						{
-							val = val / ( 1.0 - abs(uThreshold1) );
+							val = val / ( 1.0 - abs(uThreshold1/uMin) );
 							if ( uColorMap == 1 )
 								c = blueLightblueColorMap( val );
 							else
@@ -116,10 +118,10 @@ void main(void)
 					else
 					{
 						val = ( val + uMin ) / uMax;
-						val = val - uThreshold2;
+						val = val - uThreshold2/uMax;
 						if ( val > 0.0 )
 						{
-							val = val / ( 1.0 - uThreshold2 );
+							val = val / ( 1.0 - (uThreshold2/uMax) );
 							if ( uColorMap == 1 )
 								c = redYellowColorMap( val );
 							else
